@@ -1,0 +1,98 @@
+﻿<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Prova</title>
+<script src="../dati.js"></script>
+<style>
+    body {
+        margin: 0;
+        min-height: 100vh;
+        background: url("../menu_sfondo.png") no-repeat center center fixed;
+        background-size: cover;
+        font-family: Arial, sans-serif;
+    }
+    .container {
+        width: 100%;
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 50px 24px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    h1 {
+        font-size: 2.6em;
+        font-weight: 800;
+        margin: 0 0 40px;
+        letter-spacing: 1px;
+        background: linear-gradient(90deg, #0e7490, #22d3ee);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        filter: drop-shadow(0 0 10px rgba(34,211,238,0.55));
+    }
+    .menu {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 22px;
+        margin-bottom: 36px;
+    }
+    .btn {
+        flex: 1 1 380px;
+        max-width: 420px;
+        box-sizing: border-box;
+        padding: 22px 20px;
+        background-color: rgba(30, 41, 59, 0.8);
+        border: 2px solid #22d3ee;
+        border-radius: 14px;
+        color: #67e8f9;
+        font-size: 1.25em;
+        font-weight: 600;
+        text-decoration: none;
+        box-shadow: 0 0 14px rgba(34,211,238,0.3);
+        transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+    }
+    .btn:hover {
+        background-color: rgba(30, 41, 59, 0.95);
+        box-shadow: 0 0 22px rgba(34,211,238,0.6);
+        transform: translateY(-2px);
+    }
+    .back {
+        display: inline-block;
+        padding: 12px 28px;
+        background-color: rgba(30, 41, 59, 0.8);
+        border: 2px solid #94a3b8;
+        border-radius: 10px;
+        color: #cbd5e1;
+        font-size: 1em;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background-color 0.15s ease;
+    }
+    .back:hover { background-color: rgba(30, 41, 59, 0.95); }
+    .vuoto { font-style: italic; color: #1e293b; }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Prova</h1>
+    <div class="menu" id="menu"></div>
+    <a class="back" href="../index.html">Torna al Menu</a>
+</div>
+<script>
+    const lista = DATI["Prova"] || [];
+    const menu = document.getElementById("menu");
+    if (lista.length === 0) {
+        menu.innerHTML = "<p class=\"vuoto\">Nessun file in questa categoria.</p>";
+    }
+    lista.forEach(function (item) {
+        const a = document.createElement("a");
+        a.className = "btn";
+        a.href = encodeURIComponent(item.file);
+        a.textContent = item.nome;
+        menu.appendChild(a);
+    });
+</script>
+</body>
+</html>

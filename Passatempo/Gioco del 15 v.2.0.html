@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gioco del 15</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 12px;
+      background: #1a1a2e;
+      font-family: 'Segoe UI', sans-serif;
+      color: #eee;
+    }
+
+    h1 {
+      font-size: clamp(1.4rem, 6vw, 2rem);
+      margin-bottom: 0.4rem;
+      letter-spacing: 2px;
+      color: #e94560;
+      text-align: center;
+    }
+
+    #info {
+      margin-bottom: 1rem;
+      font-size: clamp(0.78rem, 3vw, 0.95rem);
+      color: #aaa;
+      text-align: center;
+    }
+
+    #board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: clamp(5px, 1.8vw, 8px);
+      background: #16213e;
+      padding: clamp(8px, 2.5vw, 14px);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      width: min(340px, calc(100vw - 24px));
+      height: min(340px, calc(100vw - 24px));
+    }
+
+    .tile {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(1.1rem, 4.5vw, 1.7rem);
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.12s ease, background 0.2s;
+      background: #0f3460;
+      color: #e0e0e0;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+
+    .tile:hover { background: #1a5276; transform: scale(1.06); }
+
+    .tile.empty {
+      background: transparent;
+      box-shadow: none;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .tile.moving { background: #e94560; color: #fff; }
+
+    #moves-counter {
+      margin-top: 0.8rem;
+      font-size: clamp(0.85rem, 3vw, 1rem);
+      color: #aaa;
+    }
+
+    #win-msg {
+      display: none;
+      margin-top: 0.8rem;
+      font-size: clamp(1rem, 4vw, 1.3rem);
+      font-weight: 700;
+      color: #2ecc71;
+      animation: pop 0.4s ease;
+    }
+
+    #controls {
+      margin-top: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      width: min(340px, calc(100vw - 24px));
+    }
+
+    button {
+      flex: 1 1 auto;
+      min-width: 90px;
+      padding: clamp(8px, 2vw, 10px) clamp(12px, 3.5vw, 22px);
+      font-size: clamp(0.82rem, 3vw, 0.95rem);
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    #btn-reset    { background: #e94560; color: #fff; }
+    #btn-reset:hover { background: #c0392b; transform: scale(1.04); }
+
+    #btn-solve    { background: #0f3460; color: #eee; }
+    #btn-solve:hover { background: #1a5276; transform: scale(1.04); }
+
+    #btn-autosolve { background: #27ae60; color: #fff; }
+    #btn-autosolve:hover { background: #1e8449; transform: scale(1.04); }
+    #btn-autosolve:disabled { background: #555; color: #999; cursor: not-allowed; transform: none; }
+
+    #solve-status {
+      margin-top: 0.5rem;
+      font-size: clamp(0.78rem, 2.8vw, 0.88rem);
+      color: #f39c12;
+      min-height: 1.2em;
+      text-align: center;
+    }
+
+    #solve-mode {
+      margin-top: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: clamp(0.82rem, 3vw, 0.9rem);
+      color: #aaa;
+    }
+
+    .toggle-wrap {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+    .toggle-wrap input { opacity: 0; width: 0; height: 0; }
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: #444;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      top: 4px; left: 4px;
+      width: 16px; height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .toggle-wrap input:checked + .toggle-track { background: #27ae60; }
+    .toggle-wrap input:checked + .toggle-track::after { transform: translateX(20px); }
+
+    @keyframes pop {
+      0%   { transform: scale(0.5); opacity: 0; }
+      70%  { transform: scale(1.15); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    #watermark {
+      position: fixed;
+      bottom: 14px;
+      right: 18px;
+      font-size: 0.72rem;
+      color: rgba(255, 255, 255, 0.18);
+      letter-spacing: 1px;
+      pointer-events: none;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Gioco del 15</h1>
+<div id="info">Clicca su un numero adiacente al vuoto per spostarlo</div>
+
+<div id="board"></div>
+
+<div id="moves-counter">Mosse: <span id="moves">0</span></div>
+<div id="win-msg">🎉 Hai vinto!</div>
+
+<div id="watermark">Digit 54 v. 2.0</div>
+
+<div id="controls">
+  <button id="btn-reset">Mescola</button>
+  <button id="btn-autosolve">Risolvi auto</button>
+  <button id="btn-solve">Ordina</button>
+</div>
+<div id="solve-status"></div>
+<div id="solve-mode">
+  <label class="toggle-wrap">
+    <input type="checkbox" id="chk-auto" checked>
+    <span class="toggle-track"></span>
+  </label>
+  <span id="mode-label">Automatico</span>
+</div>
+
+<script>
+  const GOAL = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0];
+  let tiles = [];
+  let moves = 0;
+
+  const board   = document.getElementById('board');
+  const movesEl = document.getElementById('moves');
+  const winMsg  = document.getElementById('win-msg');
+
+  function solved(t) {
+    return t.every((v, i) => v === GOAL[i]);
+  }
+
+  // Fisher-Yates shuffle, garantisce puzzle risolvibile
+  function shuffle() {
+    let t = [...GOAL];
+    do {
+      for (let i = t.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [t[i], t[j]] = [t[j], t[i]];
+      }
+    } while (!isSolvable(t) || solved(t));
+    return t;
+  }
+
+  // Un puzzle 4x4 è risolvibile se:
+  // inversioni pari  → blank su riga pari dal basso → risolvibile
+  // inversioni pari  → blank su riga dispari dal basso → non risolvibile
+  // (e viceversa)
+  function isSolvable(t) {
+    let inv = 0;
+    const arr = t.filter(v => v !== 0);
+    for (let i = 0; i < arr.length - 1; i++)
+      for (let j = i + 1; j < arr.length; j++)
+        if (arr[i] > arr[j]) inv++;
+
+    const blankRow = Math.floor(t.indexOf(0) / 4); // 0-indexed dall'alto
+    const rowFromBottom = 4 - blankRow;             // 1-indexed dal basso
+
+    if (rowFromBottom % 2 === 0) return inv % 2 === 1;
+    else                          return inv % 2 === 0;
+  }
+
+  function getMovable(t) {
+    const empty = t.indexOf(0);
+    const r = Math.floor(empty / 4), c = empty % 4;
+    const neighbors = [];
+    if (r > 0) neighbors.push(empty - 4);
+    if (r < 3) neighbors.push(empty + 4);
+    if (c > 0) neighbors.push(empty - 1);
+    if (c < 3) neighbors.push(empty + 1);
+    return neighbors;
+  }
+
+  let highlightPos = -1;
+
+  function render() {
+    board.innerHTML = '';
+    const movable = getMovable(tiles);
+
+    tiles.forEach((val, idx) => {
+      const div = document.createElement('div');
+      div.classList.add('tile');
+      if (val === 0) {
+        div.classList.add('empty');
+      } else {
+        div.textContent = val;
+        if (idx === highlightPos) div.classList.add('moving');
+        if (movable.includes(idx)) {
+          div.addEventListener('click', () => { invalidatePath(); move(idx); });
+        }
+      }
+      board.appendChild(div);
+    });
+
+    movesEl.textContent = moves;
+    winMsg.style.display = solved(tiles) ? 'block' : 'none';
+  }
+
+  function move(idx) {
+    const empty = tiles.indexOf(0);
+    [tiles[empty], tiles[idx]] = [tiles[idx], tiles[empty]];
+    highlightPos = empty;
+    moves++;
+    render();
+  }
+
+  function reset() {
+    tiles = shuffle();
+    moves = 0;
+    highlightPos = -1;
+    winMsg.style.display = 'none';
+    render();
+  }
+
+  function orderTiles() {
+    tiles = [...GOAL];
+    moves = 0;
+    highlightPos = -1;
+    winMsg.style.display = 'none';
+    render();
+  }
+
+  // Tastiera: frecce
+  document.addEventListener('keydown', e => {
+    const empty = tiles.indexOf(0);
+    const r = Math.floor(empty / 4), c = empty % 4;
+    let target = -1;
+    if (e.key === 'ArrowUp'    && r < 3) target = empty + 4;
+    if (e.key === 'ArrowDown'  && r > 0) target = empty - 4;
+    if (e.key === 'ArrowLeft'  && c < 3) target = empty + 1;
+    if (e.key === 'ArrowRight' && c > 0) target = empty - 1;
+    if (target !== -1) { e.preventDefault(); invalidatePath(); move(target); }
+  });
+
+  // ── IDA* solver (Web Worker) ────────────────────────────────────────────────
+  const WORKER_SRC = `
+    function manhattan(t) {
+      let d = 0;
+      for (let i = 0; i < 16; i++) {
+        if (t[i] === 0) continue;
+        const g = t[i] - 1;
+        d += Math.abs((i>>2) - (g>>2)) + Math.abs((i&3) - (g&3));
+      }
+      return d;
+    }
+    function linearConflict(t) {
+      let c = 0;
+      for (let row = 0; row < 4; row++) {
+        for (let a = 0; a < 3; a++) {
+          const va = t[row*4+a]; if (!va) continue;
+          if ((va-1)>>2 !== row) continue;
+          for (let b = a+1; b < 4; b++) {
+            const vb = t[row*4+b]; if (!vb) continue;
+            if ((vb-1)>>2 === row && va > vb) c += 2;
+          }
+        }
+      }
+      for (let col = 0; col < 4; col++) {
+        for (let a = 0; a < 3; a++) {
+          const va = t[a*4+col]; if (!va) continue;
+          if ((va-1)&3 !== col) continue;
+          for (let b = a+1; b < 4; b++) {
+            const vb = t[b*4+col]; if (!vb) continue;
+            if ((vb-1)&3 === col && va > vb) c += 2;
+          }
+        }
+      }
+      return c;
+    }
+    function hval(t) { return manhattan(t) + linearConflict(t); }
+
+    function search(state, lastEmpty, g, bound, path) {
+      const h = hval(state);
+      const f = g + h;
+      if (f > bound) return f;
+      if (h === 0) return -1;
+      const empty = state.indexOf(0);
+      const r = empty >> 2, c = empty & 3;
+      let min = Infinity;
+      const dirs = [];
+      if (r > 0) dirs.push(empty - 4);
+      if (r < 3) dirs.push(empty + 4);
+      if (c > 0) dirs.push(empty - 1);
+      if (c < 3) dirs.push(empty + 1);
+      for (const ni of dirs) {
+        if (ni === lastEmpty) continue;
+        [state[empty], state[ni]] = [state[ni], state[empty]];
+        path.push(ni);
+        const t = search(state, empty, g + 1, bound, path);
+        [state[empty], state[ni]] = [state[ni], state[empty]];
+        if (t === -1) return -1;
+        path.pop();
+        if (t < min) min = t;
+      }
+      return min;
+    }
+
+    self.onmessage = function(e) {
+      const state = e.data;
+      let bound = hval(state);
+      while (true) {
+        const path = [];
+        const result = search(state, -1, 0, bound, path);
+        if (result === -1) { self.postMessage({ ok: true, path }); return; }
+        if (result === Infinity) { self.postMessage({ ok: false }); return; }
+        bound = result;
+      }
+    };
+  `;
+
+  // ── Auto-solve ──────────────────────────────────────────────────────────────
+  let solveTimer = null;
+  let solveWorker = null;
+  let solvePath   = null;   // cached path for step-by-step mode
+  let solveStep   = 0;
+  const statusEl    = document.getElementById('solve-status');
+  const btnAutosolve = document.getElementById('btn-autosolve');
+  const chkAuto     = document.getElementById('chk-auto');
+  const modeLabel   = document.getElementById('mode-label');
+
+  chkAuto.addEventListener('change', () => {
+    modeLabel.textContent = chkAuto.checked ? 'Automatico' : 'Passo-passo';
+    cancelAll();
+  });
+
+  function cancelAll() {
+    if (solveTimer) { clearTimeout(solveTimer); solveTimer = null; }
+    if (solveWorker) { solveWorker.terminate(); solveWorker = null; }
+    solvePath = null;
+    solveStep = 0;
+    btnAutosolve.textContent = 'Risolvi auto';
+    btnAutosolve.disabled = false;
+    statusEl.textContent = '';
+  }
+
+  function invalidatePath() {
+    if (!chkAuto.checked && solvePath) {
+      solvePath = null;
+      solveStep = 0;
+      statusEl.textContent = '';
+    }
+  }
+
+  function startWorker(state, onPath) {
+    const blob = new Blob([WORKER_SRC], { type: 'application/javascript' });
+    const url  = URL.createObjectURL(blob);
+    solveWorker = new Worker(url);
+    URL.revokeObjectURL(url);
+    solveWorker.onmessage = function(e) {
+      solveWorker = null;
+      if (!e.data.ok) { statusEl.textContent = 'Nessuna soluzione trovata.'; btnAutosolve.disabled = false; return; }
+      onPath(e.data.path);
+    };
+    solveWorker.onerror = function() {
+      statusEl.textContent = 'Errore nel calcolo.';
+      btnAutosolve.disabled = false;
+    };
+    solveWorker.postMessage(state);
+  }
+
+  function autoSolve() {
+    if (solved(tiles)) { statusEl.textContent = 'È già risolto!'; return; }
+
+    if (chkAuto.checked) {
+      // ── modalità automatica ──
+      if (solveTimer || solveWorker) { cancelAll(); return; }
+      btnAutosolve.textContent = 'Stop';
+      statusEl.textContent = 'Calcolo soluzione…';
+      startWorker([...tiles], path => {
+        statusEl.textContent = `Soluzione: ${path.length} mosse`;
+        let step = 0;
+        function nextStep() {
+          if (step >= path.length) { cancelAll(); return; }
+          // fase 1: accende la sorgente (pre-mossa)
+          highlightPos = path[step];
+          render();
+          solveTimer = setTimeout(() => {
+            // fase 2: esegue la mossa (destinazione rossa)
+            move(path[step++]);
+            solveTimer = setTimeout(nextStep, 600);
+          }, 500);
+        }
+        nextStep();
+      });
+    } else {
+      // ── modalità passo-passo ──
+      if (solveWorker) return; // calcolo in corso, attendi
+
+      if (!solvePath) {
+        // prima pressione: calcola soltanto, non muove ancora
+        btnAutosolve.disabled = true;
+        statusEl.textContent = 'Calcolo soluzione…';
+        startWorker([...tiles], path => {
+          solvePath = path;
+          solveStep = 0;
+          btnAutosolve.disabled = false;
+          statusEl.textContent = `Pronto: ${path.length} passi — premi per avanzare`;
+        });
+      } else {
+        applyStep();
+      }
+    }
+  }
+
+  function applyStep() {
+    if (solveStep >= solvePath.length) {
+      cancelAll();
+      return;
+    }
+    move(solvePath[solveStep++]);
+    statusEl.textContent = `Passo ${solveStep} / ${solvePath.length}`;
+    if (solveStep >= solvePath.length) {
+      btnAutosolve.disabled = true;
+      setTimeout(() => cancelAll(), 800);
+    }
+  }
+
+  document.getElementById('btn-reset').addEventListener('click', () => { cancelAll(); reset(); });
+  document.getElementById('btn-solve').addEventListener('click', () => { cancelAll(); orderTiles(); });
+  btnAutosolve.addEventListener('click', autoSolve);
+
+  reset();
+</script>
+</body>
+</html>

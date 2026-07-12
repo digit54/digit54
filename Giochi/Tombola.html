@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tombola Ver. (27) - 13-05-2025</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: #90ee90;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container { width: 630px; }
+
+        /* Header: titolo + riquadro numero */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 20px 10px 10px 20px;
+        }
+
+        .title {
+            font-size: 30px;
+            font-style: italic;
+            font-weight: bold;
+            color: #0000FF;
+        }
+
+        .number-box-wrapper {
+            border: 5px solid blue;
+            background: yellow;
+        }
+
+        #last-number {
+            font-size: 52px;
+            font-weight: bold;
+            color: red;
+            background: yellow;
+            min-width: 110px;
+            height: 85px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+        }
+
+        /* Ultimi 5 numeri */
+        #last-five {
+            font-size: 14px;
+            color: #0000FF;
+            text-align: center;
+            margin-bottom: 10px;
+            min-height: 22px;
+        }
+
+        /* Griglia 10x9 */
+        .grid-wrapper {
+            border: 5px solid blue;
+            padding: 4px;
+            background-color: #90ee90;
+            margin: 0 10px 10px 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 2px 1px;
+        }
+
+        .cell {
+            background: white;
+            border: 1px solid #aaa;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            color: black;
+        }
+
+        .cell.extracted { background: yellow; color: black; }
+        .cell.marked    { color: red; }
+
+        /* ── Stile base pulsanti 3D ── */
+        .btn-3d {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            outline: none;
+            position: relative;
+            transition: transform 0.07s ease, box-shadow 0.07s ease;
+            transform: translateY(0);
+        }
+        .btn-3d:active:not(:disabled) {
+            transform: translateY(4px);
+        }
+        .btn-3d:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Pulsanti ESTRAI / CANCELLA */
+        .btn-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px 14px 20px;
+        }
+
+        #btn-extract {
+            background: lime;
+            padding: 9px 20px;
+            width: 47%;
+            box-shadow: 0 6px 0 #2e8b00, 0 7px 8px rgba(0,0,0,0.25);
+        }
+        #btn-extract:active:not(:disabled) {
+            box-shadow: 0 1px 0 #2e8b00, 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        #btn-reset {
+            background: #ffd700;
+            padding: 9px 20px;
+            width: 47%;
+            box-shadow: 0 6px 0 #aa8c00, 0 7px 8px rgba(0,0,0,0.25);
+        }
+        #btn-reset:active {
+            box-shadow: 0 1px 0 #aa8c00, 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        /* ── Riga checkbox sopra la griglia ── */
+        .checks-row {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 0 10px 6px 22px;
+        }
+
+        .chk-label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #003300;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .chk-label input[type="checkbox"] {
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+            accent-color: #0000FF;
+        }
+
+        /* Riga inferiore: lampeggia */
+        .bottom-row {
+            display: flex;
+            align-items: center;
+            padding: 0 10px 24px 20px;
+            gap: 12px;
+        }
+
+        .voice-label {
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        #btn-flash {
+            background: lightblue;
+            padding: 9px 20px;
+            flex: 1;
+            user-select: none;
+            box-shadow: 0 6px 0 #4a8faa, 0 7px 8px rgba(0,0,0,0.25);
+        }
+        #btn-flash:active {
+            box-shadow: 0 1px 0 #4a8faa, 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        /* ── Pulsante Help (header) ── */
+        #btn-help {
+            background: #0000FF;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            border: none;
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            cursor: pointer;
+            padding: 0;
+            align-self: center;
+            flex-shrink: 0;
+            box-shadow: 0 5px 0 #00008b, 0 6px 8px rgba(0,0,0,0.3);
+            transition: transform 0.07s ease, box-shadow 0.07s ease;
+            transform: translateY(0);
+        }
+        #btn-help:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #00008b, 0 2px 4px rgba(0,0,0,0.2);
+        }
+        #btn-help:hover { background: #1a1aff; }
+
+        /* ── Modale Help ── */
+        #help-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        #help-overlay.open { display: flex; }
+
+        #help-box {
+            background: #fff;
+            border: 4px solid blue;
+            border-radius: 8px;
+            padding: 24px 28px;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        #help-box h2 {
+            color: #0000FF;
+            font-size: 20px;
+            font-style: italic;
+            margin-bottom: 14px;
+            text-align: center;
+        }
+
+        #help-box table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        #help-box tr { border-bottom: 1px solid #ddd; }
+        #help-box tr:last-child { border-bottom: none; }
+        #help-box td {
+            padding: 6px 8px;
+            vertical-align: top;
+        }
+        #help-box td:first-child {
+            font-weight: bold;
+            white-space: nowrap;
+            color: #333;
+            width: 42%;
+        }
+        #help-box td:last-child { color: #555; }
+
+        #help-close {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: #555;
+            line-height: 1;
+        }
+        #help-close:hover { color: red; }
+
+        #help-box .help-footer {
+            margin-top: 14px;
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- Header -->
+    <div class="header">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <div class="title">TOMBOLA</div>
+            <button id="btn-help" title="Aiuto">?</button>
+        </div>
+        <div class="number-box-wrapper">
+            <div id="last-number"></div>
+        </div>
+    </div>
+
+    <!-- Ultimi 5 numeri estratti -->
+    <div id="last-five"></div>
+
+    <!-- Checkbox sopra la griglia (in alto a sx) -->
+    <div class="checks-row">
+        <label class="chk-label">
+            <input type="checkbox" id="voice-check">
+            🔊 Voce attiva
+        </label>
+        <label class="chk-label">
+            <input type="checkbox" id="fullscreen-check">
+            ⛶ Schermo intero
+        </label>
+    </div>
+
+    <!-- Griglia 10x9 -->
+    <div class="grid-wrapper">
+        <div class="grid" id="grid"></div>
+    </div>
+
+    <!-- ESTRAI / CANCELLA -->
+    <div class="btn-row">
+        <button id="btn-extract" class="btn-3d">ESTRAI</button>
+        <button id="btn-reset" class="btn-3d">CANCELLA</button>
+    </div>
+
+    <!-- Lampeggia -->
+    <div class="bottom-row">
+        <button id="btn-flash" class="btn-3d">LAMPEGGIA NUMERO</button>
+    </div>
+
+</div>
+
+<!-- ── Modale Help ── -->
+<div id="help-overlay">
+    <div id="help-box">
+        <button id="help-close" title="Chiudi">✕</button>
+        <h2>🎱 TOMBOLA — Guida rapida</h2>
+        <table>
+            <tr>
+                <td>ESTRAI</td>
+                <td>Estrae un numero casuale da 1 a 90 e lo mostra nel riquadro giallo.</td>
+            </tr>
+            <tr>
+                <td>Barra spaziatrice</td>
+                <td>Equivale al pulsante <strong>ESTRAI</strong>.</td>
+            </tr>
+            <tr>
+                <td>Clic su una cella</td>
+                <td>Segna il numero in <span style="color:red;font-weight:bold">rosso</span> sulla griglia (per spuntarlo sulla tua cartella).</td>
+            </tr>
+            <tr>
+                <td>Doppio clic su una cella</td>
+                <td>Cancella tutti i segni rossi (azzera i segni senza resettare il gioco).</td>
+            </tr>
+            <tr>
+                <td>CINQUINA</td>
+                <td>Quando hai cliccato <strong>5 numeri</strong>, il programma annuncia automaticamente la cinquina.</td>
+            </tr>
+            <tr>
+                <td>LAMPEGGIA NUMERO</td>
+                <td>Tieni premuto per far lampeggiare il numero appena estratto (e i numeri della cinquina).</td>
+            </tr>
+            <tr>
+                <td>Voce attiva</td>
+                <td>Attiva / disattiva la lettura vocale del numero estratto (richiede browser con supporto Web Speech API).</td>
+            </tr>
+            <tr>
+                <td>CANCELLA</td>
+                <td>Resetta completamente la partita: azzera griglia, numeri e segni.</td>
+            </tr>
+            <tr>
+                <td>Schermo intero</td>
+                <td>Attiva / disattiva la modalità schermo intero. Se spuntato, entra in fullscreen al primo clic o tasto.</td>
+            </tr>
+            <tr>
+                <td>⌨ Esc</td>
+                <td>Esce dallo schermo intero e deseleziona automaticamente il checkbox <em>Schermo intero</em>.</td>
+            </tr>
+        </table>
+        <div class="help-footer">Tombola Ver. (27) — 13-05-2025</div>
+    </div>
+</div>
+
+<script>
+    // ── Stato ──────────────────────────────────────────────────
+    const extractedNumbers  = new Set();
+    const extractedSequence = [];
+    const markedNumbers     = new Set();
+    let bingoAchieved = false;
+    let flashing      = false;
+    let flashTimeout  = null;
+
+    // ── Costruzione griglia (9 righe × 10 colonne = 90 celle) ──
+    const gridEl = document.getElementById('grid');
+    const cells  = {};
+
+    for (let i = 0; i < 9; i++) {
+        for (let j = 0; j < 10; j++) {
+            const num  = i * 10 + j + 1;
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.addEventListener('click',    () => onCellClick(num, cell));
+            cell.addEventListener('dblclick', onCellDblClick);
+            gridEl.appendChild(cell);
+            cells[num] = cell;
+        }
+    }
+
+    // ── Voce (Web Speech API) ──────────────────────────────────
+    let italianVoice = null;
+
+    function loadVoices() {
+        const voices = speechSynthesis.getVoices();
+        italianVoice = voices.find(v => v.lang.startsWith('it')) || null;
+    }
+    loadVoices();
+    if ('onvoiceschanged' in speechSynthesis) {
+        speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    function speak(text) {
+        if (!document.getElementById('voice-check').checked) return;
+        if (!('speechSynthesis' in window)) return;
+        speechSynthesis.cancel();
+        const utt = new SpeechSynthesisUtterance(text);
+        utt.lang = 'it-IT';
+        utt.rate = 0.9;
+        if (italianVoice) utt.voice = italianVoice;
+        speechSynthesis.speak(utt);
+    }
+
+    // ── Interazioni celle ──────────────────────────────────────
+    function onCellClick(num, cell) {
+        if (bingoAchieved) return;
+        if (!cell.classList.contains('extracted')) return;
+        cell.classList.add('marked');
+        markedNumbers.add(num);
+        checkBingo();
+    }
+
+    function onCellDblClick() {
+        document.querySelectorAll('.cell.marked').forEach(c => {
+            c.classList.remove('marked');
+            c.style.background = '';
+            c.style.color = '';
+        });
+        markedNumbers.clear();
+        bingoAchieved = false;
+    }
+
+    function checkBingo() {
+        if (markedNumbers.size === 5) {
+            const sorted = [...markedNumbers].sort((a, b) => a - b);
+            const msg = `Cinquina! Numeri: ${sorted.join(', ')}`;
+            speak(msg);
+            setTimeout(() => alert(msg), 150);
+            bingoAchieved = true;
+        }
+    }
+
+    // ── Estrai numero ──────────────────────────────────────────
+    function extractNumber() {
+        if (extractedNumbers.size === 90) {
+            alert('Tutti i numeri sono stati estratti!');
+            return;
+        }
+
+        const available = [];
+        for (let n = 1; n <= 90; n++) {
+            if (!extractedNumbers.has(n)) available.push(n);
+        }
+        const number = available[Math.floor(Math.random() * available.length)];
+        extractedNumbers.add(number);
+        extractedSequence.push(number);
+
+        // Aggiorna riquadro numero
+        const lastNumEl = document.getElementById('last-number');
+        lastNumEl.textContent = number;
+        lastNumEl.style.background = 'yellow';
+        lastNumEl.style.color = 'red';
+
+        // Mostra numero nella cella
+        cells[number].textContent = number;
+        cells[number].classList.add('extracted');
+
+        // Azzera i segni rossi (come nell'originale)
+        document.querySelectorAll('.cell.marked').forEach(c => {
+            c.classList.remove('marked');
+            c.style.background = '';
+            c.style.color = '';
+        });
+        markedNumbers.clear();
+
+        // Ultimi 5 numeri
+        const lastFive = extractedSequence.slice(-5);
+        document.getElementById('last-five').textContent =
+            `Ultimi 5 numeri estratti: ${lastFive.join(', ')}`;
+
+        speak(`Numero ${number}`);
+
+        if (extractedNumbers.size === 90) {
+            document.getElementById('btn-extract').disabled = true;
+        }
+    }
+
+    // ── Reset ──────────────────────────────────────────────────
+    function resetGame() {
+        extractedNumbers.clear();
+        extractedSequence.length = 0;
+        markedNumbers.clear();
+        bingoAchieved = false;
+        stopFlash();
+
+        for (let n = 1; n <= 90; n++) {
+            cells[n].textContent = '';
+            cells[n].className   = 'cell';
+            cells[n].style.background = '';
+            cells[n].style.color = '';
+        }
+
+        const lastNumEl = document.getElementById('last-number');
+        lastNumEl.textContent = '';
+        lastNumEl.style.background = 'yellow';
+        lastNumEl.style.color = 'red';
+
+        document.getElementById('last-five').textContent = '';
+        document.getElementById('btn-extract').disabled = false;
+    }
+
+    // ── Lampeggio ──────────────────────────────────────────────
+    function startFlash() {
+        if (extractedSequence.length === 0) return;
+        flashing = true;
+        flashLoop();
+    }
+
+    function stopFlash() {
+        flashing = false;
+        if (flashTimeout) { clearTimeout(flashTimeout); flashTimeout = null; }
+        const lastNumEl = document.getElementById('last-number');
+        lastNumEl.style.background = 'yellow';
+        lastNumEl.style.color      = 'red';
+        document.querySelectorAll('.cell.marked').forEach(c => {
+            c.style.background = '';
+            c.style.color = '';
+        });
+    }
+
+    function flashLoop() {
+        if (!flashing) return;
+        const lastNumEl  = document.getElementById('last-number');
+        const isYellow   = lastNumEl.style.background !== 'red';
+
+        // Alterna riquadro numero
+        lastNumEl.style.background = isYellow ? 'red'    : 'yellow';
+        lastNumEl.style.color      = isYellow ? 'yellow' : 'red';
+
+        // Celle marcate in fase opposta (come nell'originale Python)
+        document.querySelectorAll('.cell.marked').forEach(c => {
+            c.style.background = isYellow ? 'yellow' : 'red';
+            c.style.color      = isYellow ? 'red'    : 'yellow';
+        });
+
+        flashTimeout = setTimeout(flashLoop, 200);
+    }
+
+    // ── Event listener ─────────────────────────────────────────
+    document.getElementById('btn-extract').addEventListener('click', extractNumber);
+    document.getElementById('btn-reset').addEventListener('click', resetGame);
+
+    const btnFlash = document.getElementById('btn-flash');
+    btnFlash.addEventListener('mousedown',  startFlash);
+    btnFlash.addEventListener('mouseup',    stopFlash);
+    btnFlash.addEventListener('mouseleave', stopFlash);
+    btnFlash.addEventListener('touchstart', e => { e.preventDefault(); startFlash(); });
+    btnFlash.addEventListener('touchend',   stopFlash);
+
+    // ── Schermo intero ─────────────────────────────────────────
+    const fsCheck = document.getElementById('fullscreen-check');
+
+    function enterFullscreen() {
+        if (document.fullscreenElement) return;
+        const el = document.documentElement;
+        (el.requestFullscreen       ||
+         el.webkitRequestFullscreen ||
+         el.mozRequestFullScreen    ||
+         el.msRequestFullscreen     || (() => {})).call(el);
+    }
+
+    function exitFullscreen() {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) return;
+        (document.exitFullscreen       ||
+         document.webkitExitFullscreen ||
+         document.mozCancelFullScreen  ||
+         document.msExitFullscreen     || (() => {})).call(document);
+    }
+
+    fsCheck.addEventListener('change', () => {
+        fsCheck.checked ? enterFullscreen() : exitFullscreen();
+    });
+
+    // Sincronizza il checkbox se l'utente esce con Esc o altri mezzi
+    ['fullscreenchange','webkitfullscreenchange','mozfullscreenchange'].forEach(evt => {
+        document.addEventListener(evt, () => {
+            fsCheck.checked = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        });
+    });
+
+    // Entra in fullscreen automaticamente al primo gesto utente (se checkbox spuntato)
+    function tryAutoFullscreen() {
+        if (fsCheck.checked) enterFullscreen();
+        document.removeEventListener('click',   tryAutoFullscreen);
+        document.removeEventListener('keydown', tryAutoFullscreen);
+    }
+    document.addEventListener('click',   tryAutoFullscreen);
+    document.addEventListener('keydown', tryAutoFullscreen);
+
+    // ── Help modal ─────────────────────────────────────────────
+    const helpOverlay = document.getElementById('help-overlay');
+    document.getElementById('btn-help').addEventListener('click', () => helpOverlay.classList.add('open'));
+    document.getElementById('help-close').addEventListener('click', () => helpOverlay.classList.remove('open'));
+    helpOverlay.addEventListener('click', e => { if (e.target === helpOverlay) helpOverlay.classList.remove('open'); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') helpOverlay.classList.remove('open'); });
+
+    // Barra spaziatrice
+    let spaceDown = false;
+    document.addEventListener('keydown', e => {
+        if (e.code === 'Space' && !spaceDown) {
+            spaceDown = true;
+            e.preventDefault();
+        }
+    });
+    document.addEventListener('keyup', e => {
+        if (e.code === 'Space') {
+            extractNumber();
+            spaceDown = false;
+        }
+    });
+</script>
+</body>
+</html>

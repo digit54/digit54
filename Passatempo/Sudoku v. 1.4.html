@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a1a2e">
+  <title>Sudoku</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 6px 10px 8px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 55%, #0f3460 100%);
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: white;
+    }
+
+    h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: #e94560;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+
+    /* ── Difficulty ─────────────────────────────────────────── */
+    .difficulty {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 4px;
+      justify-content: center;
+    }
+
+    .diff-btn {
+      padding: 4px 14px;
+      border: 2px solid transparent;
+      border-radius: 16px;
+      font-size: 0.80rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s;
+      outline: none;
+    }
+
+    .diff-btn.easy   { background: rgba(39,174,96,0.15);  color: #2ecc71; border-color: #27ae60; }
+    .diff-btn.medium { background: rgba(230,126,34,0.15); color: #f39c12; border-color: #d68910; }
+    .diff-btn.hard   { background: rgba(231,76,60,0.15);  color: #e74c3c; border-color: #c0392b; }
+
+    .diff-btn.active.easy   { background: #27ae60; color: white; box-shadow: 0 0 12px rgba(46,204,113,.45); }
+    .diff-btn.active.medium { background: #d68910; color: white; box-shadow: 0 0 12px rgba(230,126,34,.45); }
+    .diff-btn.active.hard   { background: #c0392b; color: white; box-shadow: 0 0 12px rgba(231,76,60,.45); }
+    .diff-btn:hover { filter: brightness(1.15); transform: scale(1.05); }
+    .diff-btn:active { transform: scale(0.96); }
+
+    /* ── Help toggle ────────────────────────────────────────── */
+    .help-row { margin-bottom: 4px; display: flex; justify-content: center; }
+
+    .toggle-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.72);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.13);
+      border-radius: 14px;
+      padding: 3px 10px 3px 7px;
+      user-select: none;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .toggle-label:hover { background: rgba(255,255,255,0.11); }
+
+    .toggle-label input[type=checkbox] { display: none; }
+
+    .tog {
+      width: 28px; height: 15px;
+      background: rgba(255,255,255,0.22);
+      border-radius: 9px;
+      position: relative;
+      transition: background 0.22s;
+      flex-shrink: 0;
+    }
+    .tog::after {
+      content: '';
+      position: absolute;
+      width: 11px; height: 11px;
+      background: white;
+      border-radius: 50%;
+      top: 2px; left: 2px;
+      transition: transform 0.22s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+    }
+    .toggle-label input[type=checkbox]:checked + .tog             { background: #3498db; }
+    .toggle-label input[type=checkbox]:checked + .tog::after      { transform: translateX(13px); }
+    .toggle-label:has(input[type=checkbox]:checked) { border-color: rgba(52,152,219,0.5); }
+
+    /* ── Stats bar ──────────────────────────────────────────── */
+    .stats-bar {
+      display: flex;
+      gap: 16px;
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 4px;
+      justify-content: center;
+    }
+    .stats-bar strong { color: white; font-size: 0.88rem; }
+
+    /* ── Game area: sidebar + grid affiancati ──────────────── */
+    .game-area {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 6px;
+    }
+
+    .sidebar-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-shrink: 0;
+      width: 66px;
+      padding-top: 148px;   /* compensa h1 + difficulty + help-row + save-row + stats-bar */
+    }
+
+    /* Pulsanti compatti nella sidebar */
+    .sidebar-btns .act-btn {
+      padding: 7px 5px;
+      font-size: 0.7rem;
+      border-radius: 10px;
+      width: 66px;
+      line-height: 1.35;
+      text-align: center;
+    }
+
+    /* ── Colonna griglia + numpad ───────────────────────────── */
+    .grid-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* ── Grid ───────────────────────────────────────────────── */
+    #grid-wrap {
+      /* spazio fuori griglia: body padding + header + numpad + msg ≈ 270px */
+      width:  min(calc(100vh - 300px), calc(100vw - 96px), 350px);
+      height: min(calc(100vh - 300px), calc(100vw - 96px), 350px);
+    }
+
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      width: 100%;
+      height: 100%;
+      border: 3px solid rgba(220,230,255,0.75);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    /* ── Individual cells ───────────────────────────────────── */
+    .cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(0.8rem, 2.7vw, 1.35rem);
+      font-weight: 400;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(15,52,96,0.42);
+      color: rgba(180,210,255,0.65);
+      cursor: pointer;
+      transition: background 0.15s;
+      user-select: none;
+      outline: none;
+    }
+
+    /* 3×3 box thick borders */
+    .cell.br { border-right:  2.5px solid rgba(220,230,255,0.55) !important; }
+    .cell.bb { border-bottom: 2.5px solid rgba(220,230,255,0.55) !important; }
+
+    /* Given (pre-filled) */
+    .cell.given {
+      font-weight: 700;
+      color: #e8edf5;
+      background: rgba(20,55,110,0.72);
+      cursor: default;
+    }
+
+    /* User-entered correct */
+    .cell.user-ok {
+      color: #5dade2;
+      font-weight: 600;
+    }
+
+    /* User-entered wrong */
+    .cell.user-err {
+      color: #e74c3c;
+      font-weight: 600;
+    }
+
+    /* Related (same row / col / box) */
+    .cell.related {
+      background: rgba(52,152,219,0.10);
+    }
+
+    /* Same digit highlighted */
+    .cell.same-num {
+      background: rgba(52,152,219,0.22);
+    }
+
+    /* Active cell – tenue (subtle) as requested */
+    .cell.active {
+      background: rgba(52,152,219,0.30) !important;
+      box-shadow: inset 0 0 0 2px rgba(52,152,219,0.85);
+    }
+
+    /* Hint flash */
+    .cell.hint-flash {
+      background: rgba(155,89,182,0.55) !important;
+    }
+
+    /* ── Numpad: 2 righe (1-5 / 6-9 ⌫) ────────────────────── */
+    #numpad {
+      display: grid;
+      grid-template-columns: repeat(5, 40px);
+      gap: 5px;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+
+    .np-btn {
+      width: 40px; height: 40px;
+      border-radius: 9px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(15,52,96,0.75);
+      color: white;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.12s, transform 0.1s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    }
+    .np-btn:hover  { background: rgba(52,152,219,0.45); }
+    .np-btn:active { transform: scale(0.88); }
+    .np-btn.del    {
+      background: rgba(231,76,60,0.35);
+      border-color: rgba(231,76,60,0.5);
+      font-size: 1rem;
+    }
+    .np-btn.del:hover { background: rgba(231,76,60,0.65); }
+
+    /* ── Message ────────────────────────────────────────────── */
+    #msg {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.5);
+      min-height: 18px;
+      text-align: center;
+      margin-bottom: 8px;
+      max-width: 460px;
+    }
+
+    /* ── Action buttons ─────────────────────────────────────── */
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .act-btn {
+      padding: 9px 20px;
+      border: none;
+      border-radius: 22px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.13s, opacity 0.13s;
+    }
+    .act-btn:hover  { opacity: 0.85; transform: scale(1.04); }
+    .act-btn:active { transform: scale(0.94); }
+    .act-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; }
+
+    .btn-new   { background: linear-gradient(135deg,#219a52,#2ecc71); color:white; box-shadow:0 3px 10px rgba(46,204,113,.3); }
+    .btn-help  { background: linear-gradient(135deg,#6c3483,#9b59b6); color:white; box-shadow:0 3px 10px rgba(155,89,182,.3); }
+    .btn-reset { background: linear-gradient(135deg,#4d5d6e,#7f8c8d); color:white; }
+
+    /* ── Win overlay ────────────────────────────────────────── */
+    #win-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.72);
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+    #win-box {
+      background: #16213e;
+      border: 2px solid #2ecc71;
+      border-radius: 18px;
+      padding: 34px 48px;
+      text-align: center;
+      animation: pop 0.35s ease;
+      max-width: 330px;
+      width: 90%;
+    }
+    #win-box h2 { font-size: 2rem; color: #2ecc71; margin-bottom: 10px; }
+    #win-box p  { color: rgba(255,255,255,0.6); margin-bottom: 24px; font-size: 0.92rem; line-height: 1.6; }
+
+    @keyframes pop {
+      from { transform: scale(0.5); opacity: 0; }
+      70%  { transform: scale(1.08); }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    /* ── Watermark ──────────────────────────────────────────── */
+    #watermark {
+      position: fixed;
+      bottom: 14px;
+      right: 18px;
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.18);
+      letter-spacing: 1px;
+      pointer-events: none;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Game area: sidebar a sx + tutto il contenuto a dx dentro grid-col -->
+<div class="game-area">
+
+  <!-- Sidebar: pulsanti compatti -->
+  <div class="sidebar-btns">
+    <button class="act-btn btn-new"              onclick="newGame()">▶ Nuova<br>Partita</button>
+    <button class="act-btn btn-help" id="btn-ai" onclick="hint()">💡 Aiuto<br>Cella</button>
+    <button class="act-btn btn-reset"            onclick="resetPuzzle()">↺ Reset</button>
+  </div>
+
+  <!-- Colonna destra: header + griglia + numpad tutti allineati fra loro -->
+  <div class="grid-col">
+
+    <h1>Sudoku</h1>
+
+    <div class="difficulty">
+      <button class="diff-btn easy active" onclick="setDiff('easy')">● Facile</button>
+      <button class="diff-btn medium"      onclick="setDiff('medium')">● Medio</button>
+      <button class="diff-btn hard"        onclick="setDiff('hard')">● Difficile</button>
+    </div>
+
+    <div class="help-row">
+      <label class="toggle-label" title="Aiuto: errori in rosso, cursore non avanza se sbagliato">
+        <input type="checkbox" id="help-chk" checked onchange="setHelp(this.checked)">
+        <span class="tog"></span>
+        <span>💡 Aiuto errori</span>
+      </label>
+    </div>
+
+    <div class="help-row">
+      <label class="toggle-label" title="Salva la partita su questo dispositivo e riprendi al prossimo avvio">
+        <input type="checkbox" id="save-chk" onchange="setSave(this.checked)">
+        <span class="tog"></span>
+        <span>💾 Salva partita</span>
+      </label>
+    </div>
+
+    <div class="stats-bar">
+      <span>⏱ <strong id="v-time">00:00</strong></span>
+      <span>✗ <strong id="v-err">0</strong> errori</span>
+      <span>💡 <strong id="v-hint">0</strong> aiuti</span>
+    </div>
+
+    <div id="grid-wrap">
+      <div id="grid"></div>
+    </div>
+
+    <div id="numpad"></div>
+
+    <div id="msg">Scegli la difficoltà e premi ▶ Nuova Partita</div>
+
+  </div><!-- fine .grid-col -->
+
+</div><!-- fine .game-area -->
+
+<!-- Win overlay -->
+<div id="win-overlay">
+  <div id="win-box">
+    <h2>🎉 Risolto!</h2>
+    <p id="win-txt"></p>
+    <button class="act-btn btn-new"
+      onclick="document.getElementById('win-overlay').style.display='none'; newGame()">
+      ▶ Nuova Partita
+    </button>
+  </div>
+</div>
+
+<div id="watermark">Digit 54 v. 1.4</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════════════════════
+const REMOVE = { easy: 32, medium: 48, hard: 57 };
+
+// ═══════════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════════
+let difficulty = 'easy';
+let helpMode   = true;        // true = errori rossi + cursore bloccato se sbagliato
+let saveMode   = false;       // true = salvataggio automatico su localStorage
+let sol        = [];          // 9×9 solution
+let puzzle     = [];          // 9×9 current state (0 = empty)
+let givenM     = [];          // 9×9 boolean: true = pre-filled
+let active     = -1;          // flat index = row*9+col
+let pendingNum = 0;           // digit typed but not yet confirmed with Enter
+let errCount   = 0;
+let hintCount  = 0;
+let running    = false;
+let timerID    = null;
+let elapsed    = 0;
+
+// ═══════════════════════════════════════════════════════════════
+//  DIFFICULTY
+// ═══════════════════════════════════════════════════════════════
+function setDiff(d) {
+  difficulty = d;
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.diff-btn.' + d).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HELP MODE
+// ═══════════════════════════════════════════════════════════════
+function setHelp(val) {
+  helpMode = val;
+  render();
+  saveGame();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SAVE MODE
+// ═══════════════════════════════════════════════════════════════
+const SAVE_KEY = 'sudoku_save';
+
+function setSave(val) {
+  saveMode = val;
+  localStorage.setItem('sudoku_savemode', val ? '1' : '0');
+  if (!val) {
+    localStorage.removeItem(SAVE_KEY);
+    setMsg('💾 Salvataggio disattivato — dati eliminati.');
+  } else {
+    if (running) saveGame();
+    setMsg('💾 Salvataggio automatico attivato.');
+  }
+}
+
+function saveGame() {
+  if (!saveMode || !sol.length) return;
+  const data = {
+    difficulty, helpMode, running,
+    sol:    sol.map(r => [...r]),
+    puzzle: puzzle.map(r => [...r]),
+    givenM: givenM.map(r => [...r]),
+    active, errCount, hintCount, elapsed
+  };
+  localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+}
+
+function loadGame() {
+  // Ripristina preferenza saveMode
+  saveMode = localStorage.getItem('sudoku_savemode') === '1';
+  const chk = document.getElementById('save-chk');
+  if (chk) chk.checked = saveMode;
+  if (!saveMode) return false;
+
+  const raw = localStorage.getItem(SAVE_KEY);
+  if (!raw) return false;
+
+  try {
+    const d = JSON.parse(raw);
+    difficulty = d.difficulty || 'easy';
+    helpMode   = d.helpMode !== undefined ? d.helpMode : true;
+    running    = d.running  || false;
+    sol        = d.sol;
+    puzzle     = d.puzzle.map(r => [...r]);
+    givenM     = d.givenM.map(r => [...r]);
+    active     = d.active  !== undefined ? d.active : -1;
+    errCount   = d.errCount  || 0;
+    hintCount  = d.hintCount || 0;
+    elapsed    = d.elapsed   || 0;
+
+    // Aggiorna UI
+    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('.diff-btn.' + difficulty).classList.add('active');
+    document.getElementById('help-chk').checked = helpMode;
+    document.getElementById('v-err').textContent  = errCount;
+    document.getElementById('v-hint').textContent = hintCount;
+    updateTimer();
+
+    buildGrid();
+    render();
+    if (running) startTimer();
+    setMsg('💾 Partita ripristinata — continua da dove eri rimasto!');
+    return true;
+  } catch(e) {
+    localStorage.removeItem(SAVE_KEY);
+    return false;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SUDOKU GENERATOR
+// ═══════════════════════════════════════════════════════════════
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = 0 | (Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function isValidPlace(g, r, c, n) {
+  for (let i = 0; i < 9; i++) {
+    if (g[r][i] === n || g[i][c] === n) return false;
+  }
+  const br = (r / 3 | 0) * 3, bc = (c / 3 | 0) * 3;
+  for (let dr = 0; dr < 3; dr++)
+    for (let dc = 0; dc < 3; dc++)
+      if (g[br + dr][bc + dc] === n) return false;
+  return true;
+}
+
+function fillBox(g, r0, c0) {
+  const nums = shuffle([1,2,3,4,5,6,7,8,9]);
+  let k = 0;
+  for (let r = r0; r < r0 + 3; r++)
+    for (let c = c0; c < c0 + 3; c++)
+      g[r][c] = nums[k++];
+}
+
+function solveGrid(g) {
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      if (g[r][c] === 0) {
+        const nums = shuffle([1,2,3,4,5,6,7,8,9]);
+        for (const n of nums) {
+          if (isValidPlace(g, r, c, n)) {
+            g[r][c] = n;
+            if (solveGrid(g)) return true;
+            g[r][c] = 0;
+          }
+        }
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function generate(diff) {
+  const g = Array.from({length:9}, () => Array(9).fill(0));
+  // Fill 3 independent diagonal boxes first (faster backtracking)
+  fillBox(g, 0, 0);
+  fillBox(g, 3, 3);
+  fillBox(g, 6, 6);
+  solveGrid(g);
+
+  const solution = g.map(r => [...r]);
+  const puzz     = solution.map(r => [...r]);
+
+  // Remove cells according to difficulty
+  const positions = shuffle(Array.from({length:81}, (_, i) => i));
+  const toRemove  = REMOVE[diff];
+  for (let i = 0; i < toRemove; i++) {
+    puzz[positions[i] / 9 | 0][positions[i] % 9] = 0;
+  }
+  return { solution, puzzle: puzz };
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  BUILD GRID DOM
+// ═══════════════════════════════════════════════════════════════
+const gridEl = document.getElementById('grid');
+
+function buildGrid() {
+  gridEl.innerHTML = '';
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const div = document.createElement('div');
+      div.className = 'cell';
+      // Thick borders to delimit 3×3 boxes
+      if (c === 2 || c === 5) div.classList.add('br');
+      if (r === 2 || r === 5) div.classList.add('bb');
+      div.dataset.idx = r * 9 + c;
+      div.addEventListener('click',      () => onCellClick(r * 9 + c));
+      div.addEventListener('touchstart', () => onCellClick(r * 9 + c), { passive: true });
+      div.addEventListener('dblclick',   () => { if (helpMode) { active = r * 9 + c; hint(); } });
+      gridEl.appendChild(div);
+    }
+  }
+}
+
+function cellEl(idx) {
+  return gridEl.querySelector(`[data-idx="${idx}"]`);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════════════════
+function render() {
+  const ar = active >= 0 ? active / 9 | 0 : -1;
+  const ac = active >= 0 ? active % 9 : -1;
+  const av = active >= 0 ? puzzle[ar][ac] : 0;
+
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const idx = r * 9 + c;
+      const el  = cellEl(idx);
+      const val = puzzle[r][c];
+
+      // Rebuild classes (keep box-border markers)
+      el.className = 'cell';
+      if (c === 2 || c === 5) el.classList.add('br');
+      if (r === 2 || r === 5) el.classList.add('bb');
+
+      // Value
+      el.textContent = val > 0 ? val : '';
+
+      // Cell type
+      if (givenM[r][c]) {
+        el.classList.add('given');
+      } else if (val > 0) {
+        // Aiuto ON → rosso se sbagliato, blu se corretto
+        // Aiuto OFF → sempre stesso colore dei numeri corretti (nessun feedback)
+        if (helpMode) {
+          el.classList.add(val === sol[r][c] ? 'user-ok' : 'user-err');
+        } else {
+          el.classList.add('user-ok');
+        }
+      }
+
+      // Highlight relative to active cell
+      if (idx === active) {
+        el.classList.add('active');
+      } else if (ar >= 0) {
+        const sameBox = (r / 3 | 0) === (ar / 3 | 0) && (c / 3 | 0) === (ac / 3 | 0);
+        const related = r === ar || c === ac || sameBox;
+        if (val > 0 && av > 0 && val === av) {
+          el.classList.add('same-num');   // same digit as active
+        } else if (related) {
+          el.classList.add('related');    // same row / col / box
+        }
+      }
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  NUMPAD
+// ═══════════════════════════════════════════════════════════════
+function buildNumpad() {
+  const np = document.getElementById('numpad');
+  np.innerHTML = '';
+  for (let n = 1; n <= 9; n++) {
+    const b = document.createElement('button');
+    b.className = 'np-btn';
+    b.textContent = n;
+    b.addEventListener('click', () => commitNumber(n));
+    np.appendChild(b);
+  }
+  const del = document.createElement('button');
+  del.className = 'np-btn del';
+  del.textContent = '⌫';
+  del.addEventListener('click', () => commitNumber(0));
+  np.appendChild(del);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CELL CLICK / SELECT
+// ═══════════════════════════════════════════════════════════════
+function onCellClick(idx) {
+  if (!running) return;
+  pendingNum = 0;
+  active = idx;
+  render();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  COMMIT A NUMBER (write into cell, then advance)
+// ═══════════════════════════════════════════════════════════════
+function commitNumber(n) {
+  if (!running || active < 0) return;
+  const r = active / 9 | 0, c = active % 9;
+  if (givenM[r][c]) return;
+
+  const prev = puzzle[r][c];
+  puzzle[r][c] = n;
+
+  // Count new mistakes
+  if (n > 0 && n !== sol[r][c]) {
+    if (prev === 0 || prev === sol[r][c]) {
+      errCount++;
+      document.getElementById('v-err').textContent = errCount;
+    }
+  }
+
+  pendingNum = 0;
+  render();
+  saveGame();
+
+  // Aiuto ON → avanza solo se corretto
+  // Aiuto OFF → avanza sempre (il numero appare blu comunque)
+  if (n > 0 && (n === sol[r][c] || !helpMode)) moveNext();
+  checkWin();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  NAVIGATE TO NEXT EMPTY CELL (horizontal, then next row)
+// ═══════════════════════════════════════════════════════════════
+function moveNext() {
+  if (active < 0) return;
+  for (let i = 1; i <= 81; i++) {
+    const k = (active + i) % 81;
+    const r = k / 9 | 0, c = k % 9;
+    if (puzzle[r][c] === 0 && !givenM[r][c]) {
+      active = k;
+      render();
+      return;
+    }
+  }
+  render(); // No empty cell found (puzzle complete or full)
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HINT: reveal correct number in active cell
+// ═══════════════════════════════════════════════════════════════
+function hint() {
+  if (!running) { setMsg('Avvia prima una partita!'); return; }
+  if (active < 0) { setMsg('💡 Seleziona prima una cella da aiutare.'); return; }
+
+  const r = active / 9 | 0, c = active % 9;
+
+  if (givenM[r][c]) {
+    setMsg('Questa cella è già fornita dal puzzle.');
+    return;
+  }
+  if (puzzle[r][c] === sol[r][c] && puzzle[r][c] > 0) {
+    setMsg('✓ La cella è già corretta!');
+    return;
+  }
+
+  puzzle[r][c] = sol[r][c];
+  hintCount++;
+  document.getElementById('v-hint').textContent = hintCount;
+
+  // Flash animation
+  const el = cellEl(active);
+  el.classList.add('hint-flash');
+  setTimeout(() => render(), 420);
+
+  saveGame();
+  setMsg('💡 Suggerimento inserito in riga ' + (r + 1) + ', colonna ' + (c + 1) + '.');
+  checkWin();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  WIN CHECK
+// ═══════════════════════════════════════════════════════════════
+function checkWin() {
+  for (let r = 0; r < 9; r++)
+    for (let c = 0; c < 9; c++)
+      if (puzzle[r][c] !== sol[r][c]) return false;
+
+  stopTimer();
+  running = false;
+  const m = String(elapsed / 60 | 0).padStart(2, '0');
+  const s = String(elapsed % 60).padStart(2, '0');
+  document.getElementById('win-txt').textContent =
+    `Tempo: ${m}:${s}\nErrori: ${errCount}  ·  Aiuti: ${hintCount}`;
+  document.getElementById('win-overlay').style.display = 'flex';
+  return true;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  TIMER
+// ═══════════════════════════════════════════════════════════════
+function startTimer() {
+  stopTimer();
+  elapsed = 0;
+  updateTimer();
+  timerID = setInterval(() => { elapsed++; updateTimer(); saveGame(); }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerID);
+  timerID = null;
+}
+
+function updateTimer() {
+  const m = String(elapsed / 60 | 0).padStart(2, '0');
+  const s = String(elapsed % 60).padStart(2, '0');
+  document.getElementById('v-time').textContent = m + ':' + s;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  NEW GAME
+// ═══════════════════════════════════════════════════════════════
+function newGame() {
+  document.getElementById('win-overlay').style.display = 'none';
+  stopTimer();
+
+  const res = generate(difficulty);
+  sol    = res.solution;
+  puzzle = res.puzzle.map(r => [...r]);
+  givenM = res.puzzle.map(r => r.map(v => v > 0));
+
+  active     = -1;
+  pendingNum = 0;
+  errCount   = 0;
+  hintCount  = 0;
+  running    = true;
+
+  document.getElementById('v-err').textContent  = '0';
+  document.getElementById('v-hint').textContent = '0';
+
+  buildGrid();
+  render();
+  startTimer();
+
+  const names = { easy: 'Facile', medium: 'Medio', hard: 'Difficile' };
+  setMsg('Partita ' + names[difficulty] + ' iniziata — in bocca al lupo! 🍀');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RESET (ripristina il puzzle originale)
+// ═══════════════════════════════════════════════════════════════
+function resetPuzzle() {
+  if (!sol.length) return;
+
+  for (let r = 0; r < 9; r++)
+    for (let c = 0; c < 9; c++)
+      if (!givenM[r][c]) puzzle[r][c] = 0;
+
+  active     = -1;
+  pendingNum = 0;
+  errCount   = 0;
+  hintCount  = 0;
+  elapsed    = 0;
+  running    = true;
+
+  document.getElementById('v-err').textContent  = '0';
+  document.getElementById('v-hint').textContent = '0';
+  updateTimer();
+
+  render();
+  saveGame();
+  setMsg('Puzzle ripristinato — riparti dall\'inizio!');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  KEYBOARD
+// ═══════════════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (!running) return;
+
+  // ── Arrow keys: navigate ──────────────────────────────────
+  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+    e.preventDefault();
+    if (active < 0) { active = 0; render(); return; }
+    let r = active / 9 | 0, c = active % 9;
+    if (e.key === 'ArrowUp'    && r > 0) r--;
+    if (e.key === 'ArrowDown'  && r < 8) r++;
+    if (e.key === 'ArrowLeft'  && c > 0) c--;
+    if (e.key === 'ArrowRight' && c < 8) c++;
+    active = r * 9 + c;
+    pendingNum = 0;
+    render();
+    return;
+  }
+
+  if (active < 0) return;
+
+  const r = active / 9 | 0, c = active % 9;
+  if (givenM[r][c]) return;
+
+  // ── Digit keys: buffer the digit ─────────────────────────
+  if (e.key >= '1' && e.key <= '9') {
+    pendingNum = parseInt(e.key);
+    // Show preview in cell (styled as pending)
+    puzzle[r][c] = pendingNum;
+    render();
+    return;
+  }
+
+  // ── Enter: conferma cifra ─────────────────────────────────────
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    if (pendingNum > 0) {
+      const isCorrect = pendingNum === sol[r][c];
+
+      if (helpMode && !isCorrect) {
+        // ── Aiuto ON + numero SBAGLIATO: conta errore, cursore resta ──
+        errCount++;
+        document.getElementById('v-err').textContent = errCount;
+        setMsg('✗ Numero errato — riprova!');
+        pendingNum = 0;
+        render();
+      } else {
+        // ── Aiuto OFF oppure numero CORRETTO: avanza ──────────────────
+        if (!isCorrect) {
+          // Aiuto OFF con errore: conta ugualmente ma non bloccare
+          errCount++;
+          document.getElementById('v-err').textContent = errCount;
+        }
+        pendingNum = 0;
+        render();
+        moveNext();
+        checkWin();
+      }
+    } else {
+      // Nessuna cifra in attesa – avanza comunque
+      moveNext();
+    }
+    return;
+  }
+
+  // ── Delete / Backspace / 0: clear ────────────────────────
+  if (e.key === 'Delete' || e.key === 'Backspace' || e.key === '0') {
+    puzzle[r][c] = 0;
+    pendingNum = 0;
+    render();
+    return;
+  }
+
+  // ── Tab: cycle through cells (all, not just empty) ────────
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    active = (active + (e.shiftKey ? 80 : 1)) % 81;
+    pendingNum = 0;
+    render();
+    return;
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════════════════════
+function setMsg(t) { document.getElementById('msg').textContent = t; }
+
+// ═══════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════
+buildNumpad();
+if (!loadGame()) buildGrid();
+</script>
+</body>
+</html>
