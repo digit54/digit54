@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Percentualometro</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --accent: #6c63ff;
+      --accent2: #a78bfa;
+      --green: #34d399;
+      --red: #f87171;
+      --yellow: #fbbf24;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --border: #2d3250;
+      --radius: 14px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      padding: 0 16px 48px;
+    }
+
+    .sticky-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(15,17,23,0.92);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .header-text { display: flex; flex-direction: column; }
+
+    h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin: 0;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.75rem;
+      margin: 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 24px rgba(108, 99, 255, 0.12);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .card-icon {
+      font-size: 1.4rem;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface2);
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .card-desc {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .formula {
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.78rem;
+      color: var(--accent2);
+      font-family: monospace;
+      margin-bottom: 16px;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 1rem;
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color 0.2s;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    input[type="number"]:focus {
+      border-color: var(--accent);
+    }
+
+    button.calc-btn {
+      width: 100%;
+      padding: 11px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: auto;
+      padding-top: 11px;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    button.calc-btn:hover { opacity: 0.9; }
+    button.calc-btn:active { transform: scale(0.98); }
+
+    .result {
+      margin-top: 14px;
+      padding: 14px;
+      background: var(--surface2);
+      border-radius: 10px;
+      border-left: 3px solid var(--accent);
+      display: none;
+    }
+
+    .result.visible { display: block; }
+
+    .result-main {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--accent2);
+    }
+
+    .result-detail {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 4px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .result-row:last-child { border-bottom: none; }
+
+    .result-label { font-size: 0.82rem; color: var(--muted); }
+    .result-value { font-size: 1rem; font-weight: 600; }
+
+    .tag-green { color: var(--green); }
+    .tag-red   { color: var(--red); }
+    .tag-yellow { color: var(--yellow); }
+
+    .error {
+      margin-top: 12px;
+      color: var(--red);
+      font-size: 0.82rem;
+      display: none;
+    }
+    .error.visible { display: block; }
+
+    .reset-bar {
+      display: flex;
+      flex-shrink: 0;
+    }
+
+    button.reset-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 22px;
+      background: transparent;
+      border: 1px solid var(--red);
+      border-radius: 8px;
+      color: var(--red);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    button.reset-btn:hover {
+      background: var(--red);
+      color: #fff;
+    }
+
+    @media (max-width: 500px) {
+      .sticky-header { flex-wrap: wrap; justify-content: center; text-align: center; }
+      h1 { font-size: 1.1rem; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="sticky-header">
+  <div class="header-text">
+    <h1>Percentualometro</h1>
+    <p class="subtitle">Tutte le modalità di calcolo in un'unica pagina</p>
+  </div>
+  <div class="reset-bar">
+    <button class="reset-btn" onclick="resetAll()">&#10005; Cancella tutti i campi</button>
+  </div>
+</div>
+
+<div class="grid">
+
+  <!-- 1. X% di Y -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">🔢</div>
+      <div>
+        <div class="card-title">Percentuale di un numero</div>
+        <div class="card-desc">Quanto è il X% di Y?</div>
+      </div>
+    </div>
+    <div class="formula">risultato = (percentuale / 100) × valore</div>
+    <div class="field"><label>Percentuale (%)</label><input id="c1_pct" type="number" placeholder="es. 20" /></div>
+    <div class="field"><label>Valore di riferimento</label><input id="c1_val" type="number" placeholder="es. 500" /></div>
+    <div class="error" id="c1_err">Inserisci tutti i valori.</div>
+    <div class="result" id="c1_res">
+      <div class="result-main" id="c1_main"></div>
+      <div class="result-detail" id="c1_detail"></div>
+    </div>
+    <button class="calc-btn" onclick="calc1()">Calcola</button>
+  </div>
+
+  <!-- 2. Sconto % da prezzi -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">🏷️</div>
+      <div>
+        <div class="card-title">Percentuale di sconto</div>
+        <div class="card-desc">Conosco prezzo originale e scontato, qual è lo sconto %?</div>
+      </div>
+    </div>
+    <div class="formula">sconto% = ((originale − scontato) / originale) × 100</div>
+    <div class="field"><label>Prezzo originale (€)</label><input id="c2_orig" type="number" placeholder="es. 120" /></div>
+    <div class="field"><label>Prezzo scontato (€)</label><input id="c2_disc" type="number" placeholder="es. 84" /></div>
+    <div class="error" id="c2_err">Inserisci tutti i valori.</div>
+    <div class="result" id="c2_res">
+      <div class="result-row"><span class="result-label">Sconto %</span><span class="result-value tag-red" id="c2_pct"></span></div>
+      <div class="result-row"><span class="result-label">Risparmio</span><span class="result-value tag-green" id="c2_save"></span></div>
+    </div>
+    <button class="calc-btn" onclick="calc2()">Calcola</button>
+  </div>
+
+  <!-- 3. Prezzo finale dopo sconto -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">💸</div>
+      <div>
+        <div class="card-title">Prezzo dopo sconto</div>
+        <div class="card-desc">Conosco prezzo originale e % sconto, quanto pago?</div>
+      </div>
+    </div>
+    <div class="formula">finale = originale × (1 − sconto% / 100)</div>
+    <div class="field"><label>Prezzo originale (€)</label><input id="c3_orig" type="number" placeholder="es. 200" /></div>
+    <div class="field"><label>Sconto (%)</label><input id="c3_pct" type="number" placeholder="es. 30" /></div>
+    <div class="error" id="c3_err">Inserisci tutti i valori.</div>
+    <div class="result" id="c3_res">
+      <div class="result-row"><span class="result-label">Prezzo finale</span><span class="result-value tag-green" id="c3_final"></span></div>
+      <div class="result-row"><span class="result-label">Risparmio</span><span class="result-value tag-red" id="c3_save"></span></div>
+    </div>
+    <button class="calc-btn" onclick="calc3()">Calcola</button>
+  </div>
+
+  <!-- 4. Prezzo originale da scontato -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">🔍</div>
+      <div>
+        <div class="card-title">Risalire al prezzo originale</div>
+        <div class="card-desc">Ho pagato X con sconto Y%, qual era il prezzo pieno?</div>
+      </div>
+    </div>
+    <div class="formula">originale = prezzo_pagato / (1 − sconto% / 100)</div>
+    <div class="field"><label>Prezzo pagato (€)</label><input id="c4_paid" type="number" placeholder="es. 70" /></div>
+    <div class="field"><label>Sconto applicato (%)</label><input id="c4_pct" type="number" placeholder="es. 30" /></div>
+    <div class="error" id="c4_err">Inserisci tutti i valori.</div>
+    <div class="result" id="c4_res">
+      <div class="result-row"><span class="result-label">Prezzo originale</span><span class="result-value tag-yellow" id="c4_orig"></span></div>
+      <div class="result-row"><span class="result-label">Risparmio ottenuto</span><span class="result-value tag-green" id="c4_save"></span></div>
+    </div>
+    <button class="calc-btn" onclick="calc4()">Calcola</button>
+  </div>
+
+  <!-- 5. Variazione percentuale A→B -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">📈</div>
+      <div>
+        <div class="card-title">Variazione percentuale</div>
+        <div class="card-desc">Di quanto % è cambiato il valore da A a B?</div>
+      </div>
+    </div>
+    <div class="formula">variazione% = ((B − A) / |A|) × 100</div>
+    <div class="field"><label>Valore iniziale (A)</label><input id="c5_a" type="number" placeholder="es. 80" /></div>
+    <div class="field"><label>Valore finale (B)</label><input id="c5_b" type="number" placeholder="es. 100" /></div>
+    <div class="error" id="c5_err">Inserisci tutti i valori. A ≠ 0.</div>
+    <div class="result" id="c5_res">
+      <div class="result-row"><span class="result-label">Variazione %</span><span class="result-value" id="c5_var"></span></div>
+      <div class="result-row"><span class="result-label">Differenza assoluta</span><span class="result-value" id="c5_abs"></span></div>
+    </div>
+    <button class="calc-btn" onclick="calc5()">Calcola</button>
+  </div>
+
+  <!-- 6. X è il ___% di Y -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">❓</div>
+      <div>
+        <div class="card-title">Che percentuale è X di Y?</div>
+        <div class="card-desc">X corrisponde a quale % rispetto a Y?</div>
+      </div>
+    </div>
+    <div class="formula">percentuale = (X / Y) × 100</div>
+    <div class="field"><label>Valore X (parte)</label><input id="c6_x" type="number" placeholder="es. 45" /></div>
+    <div class="field"><label>Valore Y (totale)</label><input id="c6_y" type="number" placeholder="es. 200" /></div>
+    <div class="error" id="c6_err">Inserisci tutti i valori. Y ≠ 0.</div>
+    <div class="result" id="c6_res">
+      <div class="result-main" id="c6_main"></div>
+      <div class="result-detail" id="c6_detail"></div>
+    </div>
+    <button class="calc-btn" onclick="calc6()">Calcola</button>
+  </div>
+
+  <!-- 7. Valore totale da percentuale -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">🧮</div>
+      <div>
+        <div class="card-title">Trova il totale da una parte</div>
+        <div class="card-desc">X è il Y% di quale numero?</div>
+      </div>
+    </div>
+    <div class="formula">totale = X / (Y / 100)</div>
+    <div class="field"><label>Valore noto (X)</label><input id="c7_x" type="number" placeholder="es. 25" /></div>
+    <div class="field"><label>Percentuale che rappresenta (%)</label><input id="c7_pct" type="number" placeholder="es. 20" /></div>
+    <div class="error" id="c7_err">Inserisci tutti i valori. Percentuale ≠ 0.</div>
+    <div class="result" id="c7_res">
+      <div class="result-main" id="c7_main"></div>
+      <div class="result-detail" id="c7_detail"></div>
+    </div>
+    <button class="calc-btn" onclick="calc7()">Calcola</button>
+  </div>
+
+  <!-- 8. Aumento percentuale -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">⬆️</div>
+      <div>
+        <div class="card-title">Aumento percentuale</div>
+        <div class="card-desc">Valore originale + X% = ?</div>
+      </div>
+    </div>
+    <div class="formula">finale = originale × (1 + aumento% / 100)</div>
+    <div class="field"><label>Valore iniziale</label><input id="c8_val" type="number" placeholder="es. 1000" /></div>
+    <div class="field"><label>Aumento (%)</label><input id="c8_pct" type="number" placeholder="es. 15" /></div>
+    <div class="error" id="c8_err">Inserisci tutti i valori.</div>
+    <div class="result" id="c8_res">
+      <div class="result-row"><span class="result-label">Valore finale</span><span class="result-value tag-green" id="c8_final"></span></div>
+      <div class="result-row"><span class="result-label">Incremento assoluto</span><span class="result-value tag-yellow" id="c8_inc"></span></div>
+    </div>
+    <button class="calc-btn" onclick="calc8()">Calcola</button>
+  </div>
+
+  <!-- 9. Confronto due valori con margine -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">⚖️</div>
+      <div>
+        <div class="card-title">Margine / Mark-up</div>
+        <div class="card-desc">Da costo e prezzo di vendita: margine e mark-up</div>
+      </div>
+    </div>
+    <div class="formula">margine% = ((vendita − costo) / vendita) × 100<br>markup% = ((vendita − costo) / costo) × 100</div>
+    <div class="field"><label>Costo (€)</label><input id="c9_cost" type="number" placeholder="es. 60" /></div>
+    <div class="field"><label>Prezzo di vendita (€)</label><input id="c9_sell" type="number" placeholder="es. 100" /></div>
+    <div class="error" id="c9_err">Inserisci tutti i valori. Vendita > 0 e Costo > 0.</div>
+    <div class="result" id="c9_res">
+      <div class="result-row"><span class="result-label">Profitto lordo</span><span class="result-value tag-green" id="c9_profit"></span></div>
+      <div class="result-row"><span class="result-label">Margine %</span><span class="result-value tag-yellow" id="c9_margin"></span></div>
+      <div class="result-row"><span class="result-label">Mark-up %</span><span class="result-value tag-accent" id="c9_markup"></span></div>
+    </div>
+    <button class="calc-btn" onclick="calc9()">Calcola</button>
+  </div>
+
+  <!-- 10. IVA -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">🧾</div>
+      <div>
+        <div class="card-title">Calcolo IVA</div>
+        <div class="card-desc">Aggiungi o scorpori l'IVA da un importo</div>
+      </div>
+    </div>
+    <div class="formula">lordo = netto × (1 + IVA%/100)<br>netto = lordo / (1 + IVA%/100)</div>
+    <div class="field">
+      <label>Modalità</label>
+      <select id="c10_mode" style="width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:1rem;">
+        <option value="add">Aggiungi IVA (netto → lordo)</option>
+        <option value="remove">Scorporo IVA (lordo → netto)</option>
+      </select>
+    </div>
+    <div class="field"><label>Importo (€)</label><input id="c10_val" type="number" placeholder="es. 100" /></div>
+    <div class="field"><label>Aliquota IVA (%)</label><input id="c10_iva" type="number" placeholder="es. 22" /></div>
+    <div class="error" id="c10_err">Inserisci tutti i valori.</div>
+    <div class="result" id="c10_res">
+      <div class="result-row"><span class="result-label" id="c10_lbl1"></span><span class="result-value tag-green" id="c10_v1"></span></div>
+      <div class="result-row"><span class="result-label">Importo IVA</span><span class="result-value tag-yellow" id="c10_iva_val"></span></div>
+    </div>
+    <button class="calc-btn" onclick="calc10()">Calcola</button>
+  </div>
+
+</div>
+
+<script>
+  const fmt = (n, suffix = '') => {
+    const s = parseFloat(n.toFixed(4));
+    return (Number.isInteger(s) ? s.toString() : s.toFixed(2).replace('.', ',')) + suffix;
+  };
+  const eur = v => '€ ' + fmt(v);
+  const pct = v => fmt(v) + '%';
+
+  const show = (id, visible) => {
+    document.getElementById(id).classList.toggle('visible', visible);
+  };
+
+  const get = id => parseFloat(document.getElementById(id).value);
+  const valid = (...vals) => vals.every(v => !isNaN(v) && isFinite(v));
+
+  function resetCard(prefix) {
+    show(prefix + '_err', false);
+    show(prefix + '_res', false);
+  }
+
+  // 1
+  function calc1() {
+    resetCard('c1');
+    const [p, v] = [get('c1_pct'), get('c1_val')];
+    if (!valid(p, v)) return show('c1_err', true);
+    const r = (p / 100) * v;
+    document.getElementById('c1_main').textContent = fmt(r);
+    document.getElementById('c1_detail').textContent = `${pct(p)} di ${fmt(v)} = ${fmt(r)}`;
+    show('c1_res', true);
+  }
+
+  // 2
+  function calc2() {
+    resetCard('c2');
+    const [o, d] = [get('c2_orig'), get('c2_disc')];
+    if (!valid(o, d) || o <= 0) return show('c2_err', true);
+    const pctVal = ((o - d) / o) * 100;
+    const save = o - d;
+    document.getElementById('c2_pct').textContent = pct(pctVal);
+    document.getElementById('c2_save').textContent = eur(save);
+    show('c2_res', true);
+  }
+
+  // 3
+  function calc3() {
+    resetCard('c3');
+    const [o, p] = [get('c3_orig'), get('c3_pct')];
+    if (!valid(o, p)) return show('c3_err', true);
+    const final = o * (1 - p / 100);
+    const save = o - final;
+    document.getElementById('c3_final').textContent = eur(final);
+    document.getElementById('c3_save').textContent = eur(save);
+    show('c3_res', true);
+  }
+
+  // 4
+  function calc4() {
+    resetCard('c4');
+    const [paid, p] = [get('c4_paid'), get('c4_pct')];
+    if (!valid(paid, p) || p >= 100) return show('c4_err', true);
+    const orig = paid / (1 - p / 100);
+    const save = orig - paid;
+    document.getElementById('c4_orig').textContent = eur(orig);
+    document.getElementById('c4_save').textContent = eur(save);
+    show('c4_res', true);
+  }
+
+  // 5
+  function calc5() {
+    resetCard('c5');
+    const [a, b] = [get('c5_a'), get('c5_b')];
+    if (!valid(a, b) || a === 0) return show('c5_err', true);
+    const varPct = ((b - a) / Math.abs(a)) * 100;
+    const diff = b - a;
+    const el = document.getElementById('c5_var');
+    el.textContent = (varPct > 0 ? '+' : '') + pct(varPct);
+    el.className = 'result-value ' + (varPct > 0 ? 'tag-green' : varPct < 0 ? 'tag-red' : '');
+    const elD = document.getElementById('c5_abs');
+    elD.textContent = (diff > 0 ? '+' : '') + fmt(diff);
+    elD.className = 'result-value ' + (diff > 0 ? 'tag-green' : diff < 0 ? 'tag-red' : '');
+    show('c5_res', true);
+  }
+
+  // 6
+  function calc6() {
+    resetCard('c6');
+    const [x, y] = [get('c6_x'), get('c6_y')];
+    if (!valid(x, y) || y === 0) return show('c6_err', true);
+    const r = (x / y) * 100;
+    document.getElementById('c6_main').textContent = pct(r);
+    document.getElementById('c6_detail').textContent = `${fmt(x)} è il ${pct(r)} di ${fmt(y)}`;
+    show('c6_res', true);
+  }
+
+  // 7
+  function calc7() {
+    resetCard('c7');
+    const [x, p] = [get('c7_x'), get('c7_pct')];
+    if (!valid(x, p) || p === 0) return show('c7_err', true);
+    const tot = x / (p / 100);
+    document.getElementById('c7_main').textContent = fmt(tot);
+    document.getElementById('c7_detail').textContent = `${fmt(x)} è il ${pct(p)} di ${fmt(tot)}`;
+    show('c7_res', true);
+  }
+
+  // 8
+  function calc8() {
+    resetCard('c8');
+    const [v, p] = [get('c8_val'), get('c8_pct')];
+    if (!valid(v, p)) return show('c8_err', true);
+    const final = v * (1 + p / 100);
+    const inc = final - v;
+    document.getElementById('c8_final').textContent = fmt(final);
+    document.getElementById('c8_inc').textContent = '+' + fmt(inc);
+    show('c8_res', true);
+  }
+
+  // 9
+  function calc9() {
+    resetCard('c9');
+    const [c, s] = [get('c9_cost'), get('c9_sell')];
+    if (!valid(c, s) || s <= 0 || c <= 0) return show('c9_err', true);
+    const profit = s - c;
+    const margin = (profit / s) * 100;
+    const markup = (profit / c) * 100;
+    document.getElementById('c9_profit').textContent = eur(profit);
+    document.getElementById('c9_margin').textContent = pct(margin);
+    document.getElementById('c9_markup').textContent = pct(markup);
+    show('c9_res', true);
+  }
+
+  // 10
+  function calc10() {
+    resetCard('c10');
+    const [v, iva] = [get('c10_val'), get('c10_iva')];
+    const mode = document.getElementById('c10_mode').value;
+    if (!valid(v, iva)) return show('c10_err', true);
+    let netto, lordo, ivaAmt;
+    if (mode === 'add') {
+      netto = v;
+      lordo = v * (1 + iva / 100);
+      ivaAmt = lordo - netto;
+      document.getElementById('c10_lbl1').textContent = 'Importo lordo (con IVA)';
+      document.getElementById('c10_v1').textContent = eur(lordo);
+    } else {
+      lordo = v;
+      netto = v / (1 + iva / 100);
+      ivaAmt = lordo - netto;
+      document.getElementById('c10_lbl1').textContent = 'Importo netto (senza IVA)';
+      document.getElementById('c10_v1').textContent = eur(netto);
+    }
+    document.getElementById('c10_iva_val').textContent = eur(ivaAmt);
+    show('c10_res', true);
+  }
+
+  // Reset globale
+  function resetAll() {
+    document.querySelectorAll('input[type="number"]').forEach(inp => inp.value = '');
+    document.querySelectorAll('.result').forEach(el => el.classList.remove('visible'));
+    document.querySelectorAll('.error').forEach(el => el.classList.remove('visible'));
+  }
+
+  // Enter key: passa al campo successivo; sull'ultimo calcola
+  document.querySelectorAll('input[type="number"]').forEach(inp => {
+    inp.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      const card = inp.closest('.card');
+      const inputs = Array.from(card.querySelectorAll('input[type="number"]'));
+      const idx = inputs.indexOf(inp);
+      if (idx < inputs.length - 1) {
+        inputs[idx + 1].focus();
+        inputs[idx + 1].select();
+      } else {
+        card.querySelector('.calc-btn').click();
+        inputs[0].focus();
+        inputs[0].select();
+      }
+    });
+  });
+</script>
+</body>
+</html>
