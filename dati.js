@@ -1,6 +1,7 @@
 ﻿// File generato automaticamente da genera_menu.ps1 - non modificare a mano
 const DATI = {
-  "Convertitori Audio Video": [
+  "Convertitori Audio Video Immagini": [
+    { "nome": "Converitore formati immagini", "file": "Converitore formati immagini.html" },
     { "nome": "converter - m4a to mp3", "file": "converter - m4a to mp3.html" },
     { "nome": "converter Audio - Vari formati to mp3 e wav", "file": "converter Audio - Vari formati to mp3 e wav.html" }
   ],
