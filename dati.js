@@ -5,7 +5,8 @@ const DATI = {
     { "nome": "converter Audio - Vari formati to mp3 e wav", "file": "converter Audio - Vari formati to mp3 e wav.html" }
   ],
   "Farlocche": [
-    { "nome": "Giochino_screenv02", "file": "Giochino_screenv02.html" }
+    { "nome": "Giochino_screenv02", "file": "Giochino_screenv02.html" },
+    { "nome": "Simil salvaschermo", "file": "Simil salvaschermo.html" }
   ],
   "Giochi": [
     { "nome": "Tombola", "file": "Tombola.html" }
@@ -13,8 +14,6 @@ const DATI = {
   "Memoria": [
     { "nome": "allena_la_memoria", "file": "allena_la_memoria.html" },
     { "nome": "Memoria Visiva", "file": "Memoria Visiva.html" }
-  ],
-  "Musica": [
   ],
   "Passatempo": [
     { "nome": "Gioco del 15 v.2.0", "file": "Gioco del 15 v.2.0.html" },

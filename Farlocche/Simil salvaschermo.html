@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>ConfettiSaver</title>
+<style>
+  html, body { margin:0; padding:0; overflow:hidden; background:#000; height:100%; width:100%; cursor:default; }
+  canvas { display:block; }
+
+  #gear {
+    position:fixed; top:14px; right:14px; z-index:10;
+    width:38px; height:38px; border-radius:50%; border:none;
+    background:rgba(255,255,255,0.12); color:#fff; font-size:18px;
+    cursor:pointer; backdrop-filter: blur(4px);
+  }
+  #gear:hover { background:rgba(255,255,255,0.22); }
+
+  #panel {
+    position:fixed; top:60px; right:14px; z-index:10;
+    width:300px; padding:16px 18px; border-radius:10px;
+    background:rgba(20,20,20,0.85); color:#eee;
+    font:13px/1.4 "Segoe UI", Arial, sans-serif;
+    box-shadow:0 4px 20px rgba(0,0,0,0.5);
+    display:none;
+  }
+  #panel.open { display:block; }
+  #panel h3 { margin:0 0 10px; font-size:14px; font-weight:600; }
+  #panel label { display:flex; justify-content:space-between; align-items:center; margin:8px 0 2px; }
+  #panel input[type=range] { width:170px; }
+  #panel select { width:110px; background:#222; color:#eee; border:1px solid #444; border-radius:4px; }
+  #panel .val { width:52px; text-align:right; font-variant-numeric:tabular-nums; }
+  #panel .row { display:flex; justify-content:space-between; align-items:center; margin:8px 0 2px; }
+  #panel button.save {
+    margin-top:14px; width:100%; padding:8px; border:none; border-radius:6px;
+    background:#3a7bd5; color:#fff; font-weight:600; cursor:pointer;
+  }
+  #panel button.save:hover { background:#4a8be5; }
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<button id="gear" title="Impostazioni">&#9881;</button>
+
+<div id="panel">
+  <h3>ConfettiSaver - Impostazioni</h3>
+
+  <label>Velocita <span class="val" id="v_speed"></span></label>
+  <input type="range" id="speed" min="0.1" max="3.0" step="0.1">
+
+  <label>Densita <span class="val" id="v_densita"></span></label>
+  <input type="range" id="densita" min="0.00005" max="0.00060" step="0.00001">
+
+  <label>Gravita G <span class="val" id="v_g"></span></label>
+  <input type="range" id="g" min="0.05" max="1.20" step="0.01">
+
+  <label>Attrito v <span class="val" id="v_drag_v"></span></label>
+  <input type="range" id="drag_v" min="0.000" max="0.030" step="0.001">
+
+  <label>Wind base <span class="val" id="v_wind_base"></span></label>
+  <input type="range" id="wind_base" min="-0.40" max="0.40" step="0.01">
+
+  <label>Wind raffica <span class="val" id="v_wind_gust"></span></label>
+  <input type="range" id="wind_gust" min="0.00" max="1.00" step="0.01">
+
+  <div class="row">
+    <span>Modalita colore</span>
+    <select id="color_mode">
+      <option value="off">off</option>
+      <option value="cycle">cycle</option>
+      <option value="height">height</option>
+      <option value="wind">wind</option>
+    </select>
+  </div>
+
+  <label>Velocita colore <span class="val" id="v_color_speed"></span></label>
+  <input type="range" id="color_speed" min="0.00" max="0.50" step="0.01">
+
+  <div class="row">
+    <span>Min size</span>
+    <input type="number" id="min_size" min="3" max="40" style="width:60px">
+  </div>
+  <div class="row">
+    <span>Max size</span>
+    <input type="number" id="max_size" min="3" max="60" style="width:60px">
+  </div>
+
+  <button class="save" id="save">Salva e applica</button>
+</div>
+
+<script>
+const FRAME_MS = 16;
+
+const DEFAULTS = {
+  speed: 1.0,
+  densita: 0.00022,
+  min_size: 12,
+  max_size: 24,
+  g: 0.25,
+  drag_v: 0.015,
+  drag_w: 0.02,
+  wind_base: 0.04,
+  wind_gust: 0.12,
+  color_mode: "cycle",
+  color_speed: 0.06,
+};
+
+const PALETTE = [
+  "#ff4d4d", "#ff8c1a", "#ffd11a", "#8cd98c", "#66b3ff",
+  "#bf80ff", "#ff66cc", "#00e6e6", "#ffb3b3", "#b3ff66"
+];
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem("confettiSaverSettings");
+    if (raw) return Object.assign({}, DEFAULTS, JSON.parse(raw));
+  } catch (e) {}
+  return Object.assign({}, DEFAULTS);
+}
+
+function saveSettings(s) {
+  localStorage.setItem("confettiSaverSettings", JSON.stringify(s));
+}
+
+function hsvToHex(h, s, v) {
+  h = ((h % 1) + 1) % 1;
+  s = Math.max(0, Math.min(1, s));
+  v = Math.max(0, Math.min(1, v));
+  const i = Math.floor(h * 6);
+  const f = h * 6 - i;
+  const p = v * (1 - s);
+  const q = v * (1 - f * s);
+  const t = v * (1 - (1 - f) * s);
+  let r, g, b;
+  switch (i % 6) {
+    case 0: r = v; g = t; b = p; break;
+    case 1: r = q; g = v; b = p; break;
+    case 2: r = p; g = v; b = t; break;
+    case 3: r = p; g = q; b = v; break;
+    case 4: r = t; g = p; b = v; break;
+    default: r = v; g = p; b = q; break;
+  }
+  const toHex = x => Math.round(x * 255).toString(16).padStart(2, "0");
+  return "#" + toHex(r) + toHex(g) + toHex(b);
+}
+
+function makeLocalShape(shapeType, s) {
+  if (shapeType === 0) {
+    const h = s * 0.866;
+    return [[-s / 2, h / 3], [s / 2, h / 3], [0, -2 * h / 3]];
+  }
+  const a = s;
+  const b = s * (0.6 + Math.random() * 0.6);
+  const dx = s * 0.15, dy = s * 0.15;
+  return [[-a / 2, -b / 2], [a / 2 + dx, -b / 2 + dy], [a / 2, b / 2], [-a / 2 + dx, b / 2 + dy]];
+}
+
+function rotatePoints(points, angle, cx, cy) {
+  const ca = Math.cos(angle), sa = Math.sin(angle);
+  return points.map(([x, y]) => [x * ca - y * sa + cx, x * sa + y * ca + cy]);
+}
+
+function rand(a, b) { return a + Math.random() * (b - a); }
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+let W = 0, H = 0;
+let confetti = [];
+let S = loadSettings();
+
+function resize() {
+  W = window.innerWidth;
+  H = window.innerHeight;
+  canvas.width = W;
+  canvas.height = H;
+}
+
+function spawnConfetti() {
+  const N = Math.max(50, Math.floor(S.densita * W * H));
+  confetti = [];
+  for (let i = 0; i < N; i++) {
+    const size = Math.round(rand(S.min_size, S.max_size));
+    const shapeT = Math.random() < 0.5 ? 0 : 1;
+    const localPts = makeLocalShape(shapeT, size);
+
+    const x = rand(-0.1 * W, 1.1 * W);
+    const y = rand(-0.25 * H, 0.95 * H);
+    const vx = rand(-1.0, 1.0);
+    const vy = rand(-1.0, 0.5);
+
+    confetti.push({
+      local: localPts,
+      x, y, vx, vy,
+      angle: rand(0, 2 * Math.PI),
+      omega: rand(-0.2, 0.2),
+      gustF: rand(0.08, 0.20),
+      gustPhase: rand(0, 2 * Math.PI),
+      flAmp: rand(0.6, 1.2),
+      flFreq: rand(1.5, 3.0),
+      flPhase: rand(0, 2 * Math.PI),
+      gOff: rand(-0.06, 0.06),
+      color: PALETTE[Math.floor(Math.random() * PALETTE.length)],
+      h: Math.random(),
+    });
+  }
+}
+
+function respawnBanded(c) {
+  const r = Math.random();
+  if (r < 0.60) {
+    c.x = rand(-0.1 * W, 1.1 * W);
+    c.y = rand(-0.25 * H, -0.02 * H);
+  } else if (r < 0.90) {
+    c.x = rand(-0.1 * W, 1.1 * W);
+    c.y = rand(0.15 * H, 0.45 * H);
+  } else {
+    c.x = rand(-0.1 * W, 1.1 * W);
+    c.y = rand(0.02 * H, 0.12 * H);
+  }
+  c.vx = rand(-1.0, 1.0);
+  c.vy = rand(-1.0, 0.5);
+  c.omega = rand(-0.2, 0.2);
+  c.angle = rand(0, 2 * Math.PI);
+  c.gOff = rand(-0.06, 0.06);
+  c.h = Math.random();
+}
+
+const WIND_NOISE = 0.10;
+const STEP = FRAME_MS / 1000.0;
+
+let simTime = 0;
+let accumulator = 0;
+let lastNow = null;
+
+function stepPhysics(t) {
+  for (const c of confetti) {
+    const ax = S.wind_base + S.wind_gust * Math.sin(2 * Math.PI * c.gustF * t + c.gustPhase)
+             + rand(-WIND_NOISE, WIND_NOISE);
+    const ay = S.g + c.gOff;
+    const vyFlutter = c.flAmp * Math.sin(2 * Math.PI * c.flFreq * t + c.flPhase);
+
+    c.vx = (c.vx + ax) * (1.0 - S.drag_v);
+    c.vy = (c.vy + ay + vyFlutter) * (1.0 - S.drag_v);
+
+    c.x += c.vx;
+    c.y += c.vy;
+
+    c.omega *= (1.0 - S.drag_w);
+    c.angle += c.omega;
+
+    if (c.y > H + 40) respawnBanded(c);
+
+    if (S.color_mode !== "off") {
+      let newCol = c.color;
+      if (S.color_mode === "cycle") {
+        c.h = (c.h + S.color_speed * STEP) % 1.0;
+        newCol = hsvToHex(c.h, 0.95, 1.0);
+      } else if (S.color_mode === "height") {
+        const yy = Math.max(0.0, Math.min(1.0, c.y / H));
+        newCol = hsvToHex((yy + 0.15 * t) % 1.0, 0.9, 1.0);
+      } else if (S.color_mode === "wind") {
+        let h = 0.5 + 0.25 * Math.max(-1.0, Math.min(1.0, ax));
+        h = (h + 0.1 * S.color_speed * t) % 1.0;
+        newCol = hsvToHex(h, 0.95, 1.0);
+      }
+      c.color = newCol;
+    }
+  }
+}
+
+function draw() {
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, W, H);
+  for (const c of confetti) {
+    const pts = rotatePoints(c.local, c.angle, c.x, c.y);
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.closePath();
+    ctx.fillStyle = c.color;
+    ctx.fill();
+  }
+}
+
+function frame(now) {
+  if (lastNow === null) lastNow = now;
+  const realDt = Math.min((now - lastNow) / 1000, 0.25);
+  lastNow = now;
+
+  accumulator += realDt * S.speed;
+  let steps = 0;
+  while (accumulator >= STEP && steps < 10) {
+    stepPhysics(simTime);
+    simTime += STEP;
+    accumulator -= STEP;
+    steps++;
+  }
+
+  draw();
+  requestAnimationFrame(frame);
+}
+
+window.addEventListener("resize", () => { resize(); spawnConfetti(); });
+
+resize();
+spawnConfetti();
+requestAnimationFrame(frame);
+
+// --- Pannello impostazioni ---
+const panel = document.getElementById("panel");
+const gear = document.getElementById("gear");
+
+const fields = ["speed", "densita", "g", "drag_v", "wind_base", "wind_gust", "color_speed"];
+const fmt = {
+  speed: v => v.toFixed(1) + "x",
+  densita: v => v.toFixed(5),
+  g: v => v.toFixed(2),
+  drag_v: v => v.toFixed(3),
+  wind_base: v => v.toFixed(2),
+  wind_gust: v => v.toFixed(2),
+  color_speed: v => v.toFixed(2),
+};
+
+function syncPanelFromSettings() {
+  for (const key of fields) {
+    const input = document.getElementById(key);
+    input.value = S[key];
+    document.getElementById("v_" + key).textContent = fmt[key](S[key]);
+  }
+  document.getElementById("color_mode").value = S.color_mode;
+  document.getElementById("min_size").value = S.min_size;
+  document.getElementById("max_size").value = S.max_size;
+}
+
+for (const key of fields) {
+  document.getElementById(key).addEventListener("input", e => {
+    document.getElementById("v_" + key).textContent = fmt[key](parseFloat(e.target.value));
+  });
+}
+
+document.getElementById("speed").addEventListener("input", e => {
+  S.speed = parseFloat(e.target.value);
+  saveSettings(S);
+});
+
+gear.addEventListener("click", () => {
+  syncPanelFromSettings();
+  panel.classList.toggle("open");
+});
+
+document.getElementById("save").addEventListener("click", () => {
+  for (const key of fields) S[key] = parseFloat(document.getElementById(key).value);
+  S.color_mode = document.getElementById("color_mode").value;
+  S.min_size = parseInt(document.getElementById("min_size").value, 10);
+  S.max_size = Math.max(S.min_size, parseInt(document.getElementById("max_size").value, 10));
+  saveSettings(S);
+  spawnConfetti();
+  panel.classList.remove("open");
+});
+</script>
+</body>
+</html>
