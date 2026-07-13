@@ -26,6 +26,7 @@ const DATI = {
     { "nome": "chimica & Tavola periodica degli elementi v. 2.0", "file": "chimica & Tavola periodica degli elementi v. 2.0.html" }
   ],
   "Sport": [
+    { "nome": "Tour de  France 2026", "file": "Tour de  France 2026.html" }
   ],
   "Tutto_Pdf": [
     { "nome": "Estrae & Unisce file.Pdf v.2.4", "file": "Estrae & Unisce file.Pdf v.2.4.html" },

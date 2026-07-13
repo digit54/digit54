@@ -40,7 +40,7 @@ $rootHtml = @'
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<title>Digit 54 - Le mie pagine HTML</title>
+<title>Programmini seri ma non troppo</title>
 <script src="dati.js"></script>
 <style>
     body {
@@ -99,7 +99,7 @@ $rootHtml = @'
 </head>
 <body>
 <div class="container">
-    <h1>Digit 54 - Le mie pagine HTML</h1>
+    <h1>Programmini seri ma non troppo</h1>
     <div class="menu" id="menu"></div>
 </div>
 <script>

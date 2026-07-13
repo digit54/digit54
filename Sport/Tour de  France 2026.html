@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Startlist 2026 — Squadre e Corridori</title>
+<style>
+  :root{
+    --ink:#0a1526;
+    --paper:#f6f5f1;
+    --panel:#ffffff;
+    --accent:#c94f3d;
+    --accent-dark:#7a291c;
+    --line:#c9c4b8;
+    --text-dark:#1a2433;
+    --mono: 'JetBrains Mono', 'Courier New', monospace;
+    --grid-cols: 2.2fr 0.9fr 2fr 1.4fr 0.7fr;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    font-family:'Georgia','Times New Roman',serif;
+    color:var(--ink);
+    padding:40px 24px 80px;
+  }
+  h1{
+    font-family:'Georgia',serif;
+    font-weight:700;
+    font-size:clamp(28px,4vw,42px);
+    letter-spacing:-0.01em;
+    margin:0 0 4px;
+  }
+  .subtitle{
+    font-family:var(--mono);
+    text-transform:uppercase;
+    letter-spacing:0.12em;
+    font-size:12px;
+    font-weight:700;
+    color:var(--accent-dark);
+    margin:0 0 28px;
+  }
+  .wrap{
+    max-width:980px;
+    margin:0 auto;
+  }
+  #search{
+    all:unset;
+    box-sizing:border-box;
+    display:block;
+    width:100%;
+    font-family:var(--mono);
+    font-size:14px;
+    padding:12px 16px;
+    margin-bottom:14px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:4px;
+    color:var(--ink);
+  }
+  #search::placeholder{ color:#9aa2ad; }
+  #search:focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(201,79,61,0.12); }
+
+  .table-shell{
+    background:transparent;
+  }
+
+  /* Header row: distinct box tiles */
+  .head-row{
+    display:grid;
+    grid-template-columns: var(--grid-cols);
+    gap:6px;
+    margin-bottom:8px;
+    position:sticky;
+    top:0;
+    z-index:2;
+  }
+  .head-box{
+    background:var(--ink);
+    border-radius:6px;
+    box-shadow:0 2px 5px rgba(18,33,58,0.2);
+    overflow:hidden;
+  }
+  .head-box button{
+    all:unset;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    width:100%;
+    padding:13px 16px;
+    cursor:pointer;
+    color:#fff;
+    font-family:var(--mono);
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    font-weight:800;
+    box-sizing:border-box;
+    transition:background 0.15s ease;
+  }
+  .head-box button:hover{ background:rgba(255,255,255,0.1); }
+  .head-box button:focus-visible{ outline:2px solid var(--accent); outline-offset:-2px; }
+  .arrow{
+    font-size:11px;
+    opacity:0.35;
+    transition:opacity 0.15s ease, transform 0.15s ease;
+    flex-shrink:0;
+  }
+  .arrow.active{ opacity:1; color:var(--accent); }
+  .arrow.desc{ transform:rotate(180deg); }
+
+  /* Body rows */
+  .table-body{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:6px;
+    overflow:hidden;
+    box-shadow:0 1px 3px rgba(18,33,58,0.06);
+  }
+  .row{
+    display:grid;
+    grid-template-columns: var(--grid-cols);
+    border-bottom:1px solid var(--line);
+  }
+  .row:last-child{ border-bottom:none; }
+  .row:nth-child(even){ background:#fbfaf7; }
+  .row:hover{ background:#f1e9e2; }
+  .cell{
+    padding:11px 16px;
+    font-family:var(--mono);
+    font-size:15px;
+    font-weight:600;
+    color:var(--text-dark);
+    vertical-align:top;
+    display:flex;
+    align-items:center;
+  }
+  .cell.team{
+    color:var(--ink);
+    font-weight:800;
+    border-left:3px solid var(--accent);
+    margin-left:-3px;
+    padding-left:13px;
+  }
+  .cell.nat{ color:var(--text-dark); font-weight:600; }
+  .cell.bib{ color:var(--ink); font-weight:800; justify-content:center; }
+  .cell.age{ color:var(--text-dark); font-weight:700; justify-content:center; }
+
+  .count{
+    font-family:var(--mono);
+    font-size:12px;
+    font-weight:600;
+    color:var(--text-dark);
+    margin:14px 4px 0;
+  }
+  .count strong{ color:var(--ink); font-weight:800; }
+
+  @media (max-width:640px){
+    :root{ --grid-cols: 1.6fr 0.7fr 1.6fr 1.1fr 0.6fr; }
+    .head-box button{ padding:12px 6px; font-size:11px; }
+    .cell{ padding:9px 6px; font-size:13px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Startlist 2026</h1>
+  <p class="subtitle">Squadre · Corridori · Nazionalità — clicca un riquadro per ordinare</p>
+
+  <input type="text" id="search" placeholder="Cerca squadra, corridore o nazionalità…" autocomplete="off">
+
+  <div class="table-shell">
+    <div class="head-row" id="headRow">
+      <div class="head-box" data-col="0"><button type="button">Squadra <span class="arrow">▲</span></button></div>
+      <div class="head-box" data-col="1"><button type="button">Pettorale <span class="arrow">▲</span></button></div>
+      <div class="head-box" data-col="2"><button type="button">Ciclista <span class="arrow">▲</span></button></div>
+      <div class="head-box" data-col="3"><button type="button">Nazionalità <span class="arrow">▲</span></button></div>
+      <div class="head-box" data-col="4"><button type="button">Età <span class="arrow">▲</span></button></div>
+    </div>
+    <div class="table-body" id="tbody"></div>
+  </div>
+  <p class="count"><strong id="rowcount">0</strong> corridori totali</p>
+</div>
+
+<script>
+const DATA = [["Alpecin-Premier Tech", 105, "Jasper Philipsen", "Belgio", 28], ["Alpecin-Premier Tech", 101, "Mathieu van der Poel", "Paesi Bassi", 31], ["Alpecin-Premier Tech", 108, "Emiel Verstrynge", "Belgio", 24], ["Alpecin-Premier Tech", 107, "Jonas Rickaert", "Belgio", 32], ["Alpecin-Premier Tech", 104, "Tim Marsman", "Paesi Bassi", 25], ["Alpecin-Premier Tech", 102, "Ramses Debruyne", "Belgio", 23], ["Alpecin-Premier Tech", 106, "Edward Planckaert", "Belgio", 31], ["Alpecin-Premier Tech", 103, "Silvan Dillier", "Svizzera", 35], ["Bahrain Victorious", 77, "Antonio Tiberi", "Italia", 25], ["Bahrain Victorious", 71, "Lenny Martinez", "Francia", 22], ["Bahrain Victorious", 75, "Matej Mohorič", "Slovenia", 31], ["Bahrain Victorious", 72, "Phil Bauhaus", "Germania", 31], ["Bahrain Victorious", 73, "Damiano Caruso", "Italia", 38], ["Bahrain Victorious", 74, "Kamil Gradek", "Polonia", 35], ["Bahrain Victorious", 76, "Robert Stannard", "Australia", 27], ["Bahrain Victorious", 78, "Vlad Van Mechelen", "Belgio", 22], ["Decathlon CMA CGM", 51, "Paul Seixas", "Francia", 19], ["Decathlon CMA CGM", 55, "Olav Kooij", "Paesi Bassi", 24], ["Decathlon CMA CGM", 58, "Matthew Riccitello", "Stati Uniti d'America", 24], ["Decathlon CMA CGM", 52, "Tiesj Benoot", "Belgio", 32], ["Decathlon CMA CGM", 54, "Daan Hoole", "Paesi Bassi", 27], ["Decathlon CMA CGM", 57, "Nicolas Prodhomme", "Francia", 29], ["Decathlon CMA CGM", 56, "Aurélien Paret-Peintre", "Francia", 30], ["Decathlon CMA CGM", 53, "Cees Bol", "Paesi Bassi", 30], ["Team EF Education - Easypost", 44, "Ben Healy", "Irlanda", 25], ["Team EF Education - Easypost", 42, "Kasper Asgreen", "Danimarca", 31], ["Team EF Education - Easypost", 41, "Richard Carapaz", "Ecuador", 33], ["Team EF Education - Easypost", 43, "Alex Baudin", "Francia", 25], ["Team EF Education - Easypost", 45, "Sean Quinn", "Stati Uniti d'America", 26], ["Team EF Education - Easypost", 46, "Georg Steinhauser", "Germania", 24], ["Team EF Education - Easypost", 48, "Max Walker", "Stati Uniti d'America", 24], ["Team EF Education - Easypost", 47, "Michael Valgren", "Danimarca", 34], ["Groupama-FDJ United", 186, "Guillaume Martin Guyonnet", "Francia", 33], ["Groupama-FDJ United", 181, "Romain Grégoire", "Francia", 23], ["Groupama-FDJ United", 182, "Clément Berthet", "Francia", 28], ["Groupama-FDJ United", 183, "Clément Braz Afonso", "Francia", 26], ["Groupama-FDJ United", 185, "Lorenzo Germani", "Italia", 24], ["Groupama-FDJ United", 187, "Quentin Pacher", "Francia", 34], ["Groupama-FDJ United", 188, "Clément Russo", "Francia", 31], ["Groupama-FDJ United", 184, "Ewen Costiou", "Francia", 23], ["Netcompany INEOS", 82, "Thymen Arensman", "Paesi Bassi", 26], ["Netcompany INEOS", 81, "Egan Bernal", "Colombia", 29], ["Netcompany INEOS", 83, "Tobias Foss", "Norvegia", 29], ["Netcompany INEOS", 84, "Filippo Ganna", "Italia", 29], ["Netcompany INEOS", 85, "Dorian Godon", "Francia", 30], ["Netcompany INEOS", 86, "Michał Kwiatkowski", "Polonia", 36], ["Netcompany INEOS", 87, "Joshua Tarling", "Gran Bretagna", 22], ["Netcompany INEOS", 88, "Kévin Vauquelin", "Francia", 25], ["Lidl-Trek", 31, "Juan Ayuso", "Spagna", 23], ["Lidl-Trek", 33, "Mads Pedersen", "Danimarca", 30], ["Lidl-Trek", 37, "Mathias Vacek", "Cechia", 24], ["Lidl-Trek", 35, "Mattias Skjelmose", "Danimarca", 25], ["Lidl-Trek", 34, "Quinn Simmons", "Stati Uniti d'America", 25], ["Lidl-Trek", 32, "Derek James Gee", "Canada", 28], ["Lidl-Trek", 38, "Carlos Verona", "Spagna", 33], ["Lidl-Trek", 36, "Toms Skujiņš", "Lettonia", 35], ["Lotto Intermarché", 151, "Arnaud de Lie", "Belgio", 24], ["Lotto Intermarché", 156, "Lennert van Eetvelt", "Belgio", 24], ["Lotto Intermarché", 158, "Georg Zimmermann", "Germania", 28], ["Lotto Intermarché", 152, "Huub Artz", "Paesi Bassi", 24], ["Lotto Intermarché", 153, "Jenno Berckmoes", "Belgio", 25], ["Lotto Intermarché", 155, "Liam Slock", "Belgio", 25], ["Lotto Intermarché", 154, "Lars Craps", "Belgio", 24], ["Lotto Intermarché", 157, "Baptiste Veistroffer", "Francia", 26], ["Movistar Team", 141, "Cian Uijtdebroeks", "Belgio", 23], ["Movistar Team", 144, "Raúl García", "Spagna", 25], ["Movistar Team", 142, "Pablo Castrillo", "Spagna", 25], ["Movistar Team", 148, "Einer Rubio", "Colombia", 28], ["Movistar Team", 147, "Javier Romo", "Spagna", 27], ["Movistar Team", 146, "Nelson Oliveira", "Portogallo", 37], ["Movistar Team", 143, "Alveiro Jefferson Cepeda", "Ecuador", 30], ["Movistar Team", 145, "Michel Hessmann", "Germania", 25], ["NSN Cycling Team", 131, "Biniam Girmay", "Eritrea", 26], ["NSN Cycling Team", 137, "Jake Stewart", "Gran Bretagna", 26], ["NSN Cycling Team", 132, "Lewis Askey", "Gran Bretagna", 25], ["NSN Cycling Team", 136, "Krists Neilands", "Lettonia", 31], ["NSN Cycling Team", 134, "Marco Frigo", "Italia", 26], ["NSN Cycling Team", 135, "Matis Louvel", "Francia", 26], ["NSN Cycling Team", 133, "George Bennett", "Nuova Zelanda", 36], ["NSN Cycling Team", 138, "Tom Van Asbroeck", "Belgio", 36], ["Red Bull - BORA - Hansgrohe", 27, "Tim van Dijke", "Paesi Bassi", 26], ["Red Bull - BORA - Hansgrohe", 21, "Remco Evenepoel", "Belgio", 26], ["Red Bull - BORA - Hansgrohe", 23, "Nico Denz", "Germania", 32], ["Red Bull - BORA - Hansgrohe", 25, "Florian Lipowitz", "Germania", 25], ["Red Bull - BORA - Hansgrohe", 22, "Mattia Cattaneo", "Italia", 35], ["Red Bull - BORA - Hansgrohe", 26, "Jan Tratnik", "Slovenia", 36], ["Red Bull - BORA - Hansgrohe", 28, "Maxim van Gils", "Belgio", 26], ["Red Bull - BORA - Hansgrohe", 24, "Jai Hindley", "Australia", 30], ["Soudal Quick-Step", 93, "Valentin Paret-Peintre", "Francia", 25], ["Soudal Quick-Step", 91, "Tim Merlier", "Belgio", 33], ["Soudal Quick-Step", 92, "Pascal Eenkhoorn", "Paesi Bassi", 29], ["Soudal Quick-Step", 94, "Jasper Stuyven", "Belgio", 34], ["Soudal Quick-Step", 95, "Dylan van Baarle", "Paesi Bassi", 34], ["Soudal Quick-Step", 96, "Bert van Lerberghe", "Belgio", 33], ["Soudal Quick-Step", 97, "Ilan van Wilder", "Belgio", 26], ["Soudal Quick-Step", 98, "Louis Vervaecke", "Belgio", 32], ["Team Jayco AlUla", 115, "Michael Matthews", "Australia", 35], ["Team Jayco AlUla", 117, "Luke Plapp", "Australia", 25], ["Team Jayco AlUla", 112, "Pascal Ackermann", "Germania", 32], ["Team Jayco AlUla", 111, "Ben O'Connor", "Australia", 30], ["Team Jayco AlUla", 118, "Mauro Schmid", "Svizzera", 26], ["Team Jayco AlUla", 116, "Kelland O'Brien", "Australia", 28], ["Team Jayco AlUla", 114, "Felix Engelhardt", "Germania", 25], ["Team Jayco AlUla", 113, "Luke Durbridge", "Australia", 35], ["Team Picnic PostNL", 213, "Pavel Bittner", "Cechia", 23], ["Team Picnic PostNL", 211, "Warren Barguil", "Francia", 34], ["Team Picnic PostNL", 218, "Frank van den Broek", "Paesi Bassi", 25], ["Team Picnic PostNL", 215, "Robbe Dhondt", "Belgio", 22], ["Team Picnic PostNL", 217, "Julius van den Berg", "Paesi Bassi", 29], ["Team Picnic PostNL", 216, "Niklas Märkl", "Germania", 27], ["Team Picnic PostNL", 212, "Frits Biesterbos", "Paesi Bassi", 24], ["Team Picnic PostNL", 214, "John Degenkolb", "Beglio", 37], ["Team Visma | Lease a Bike", 14, "Victor Campenaerts", "Belgio", 34], ["Team Visma | Lease a Bike", 12, "Edoardo Affini", "Italia", 30], ["Team Visma | Lease a Bike", 15, "Per Strand Hagenes", "Norvegia", 22], ["Team Visma | Lease a Bike", 16, "Matteo Jorgenson", "Stati Uniti d'America", 27], ["Team Visma | Lease a Bike", 17, "Sepp Kuss", "Stati Uniti d'America", 31], ["Team Visma | Lease a Bike", 13, "Bruno Armirail", "Francia", 32], ["Team Visma | Lease a Bike", 18, "Davide Piganzoli", "Italia", 23], ["Team Visma | Lease a Bike", 11, "Jonas Vingegaard", "Danimarca", 29], ["UAE Team Emirates XRG", 1, "Tadej Pogačar", "Slovenia", 27], ["UAE Team Emirates XRG", 2, "Isaac del Toro", "Messico", 22], ["UAE Team Emirates XRG", 7, "Tim Wellens", "Belgio", 35], ["UAE Team Emirates XRG", 4, "Brandon McNulty", "Stati Uniti d'America", 28], ["UAE Team Emirates XRG", 8, "Adam Yates", "Gran Bretagna", 33], ["UAE Team Emirates XRG", 6, "Florian Vermeersch", "Belgio", 27], ["UAE Team Emirates XRG", 5, "Nils Politt", "Germania", 32], ["UAE Team Emirates XRG", 3, "Felix Großschartner", "Austria", 32], ["Uno-X Mobility", 124, "Magnus Cort", "Danimarca", 33], ["Uno-X Mobility", 121, "Tobias Johannessen", "Norvegia", 26], ["Uno-X Mobility", 126, "Anders Skaarseth", "Norvegia", 31], ["Uno-X Mobility", 128, "Søren Wærenskjold", "Norvegia", 26], ["Uno-X Mobility", 123, "Anthon Charmig", "Danimarca", 28], ["Uno-X Mobility", 122, "Jonas Abrahamsen", "Norvegia", 30], ["Uno-X Mobility", 127, "Torstein Træen", "Norvegia", 30], ["Uno-X Mobility", 125, "Anders Johannessen", "Norvegia", 26], ["XDS Astana Team", 66, "Mike Teunissen", "Paesi Bassi", 33], ["XDS Astana Team", 61, "Sergio Higuita", "Colombia", 28], ["XDS Astana Team", 65, "Harold Tejada", "Colombia", 29], ["XDS Astana Team", 64, "Max Kanter", "Germania", 28], ["XDS Astana Team", 68, "Nicolas Vinokurov", "Kazakistan", 23], ["XDS Astana Team", 62, "Davide Ballerini", "Italia", 31], ["XDS Astana Team", 63, "Aaron Gate", "Australia", 35], ["XDS Astana Team", 67, "Simone Velasco", "Italia", 30], ["Pinarello-Q.36.5 Pro Cycling Team", 171, "Tom Pidcock", "Gran Bretagna", 26], ["Pinarello-Q.36.5 Pro Cycling Team", 172, "Xabier Mikel Azparren", "Spagna", 27], ["Pinarello-Q.36.5 Pro Cycling Team", 173, "Chris Harper", "Australia", 31], ["Pinarello-Q.36.5 Pro Cycling Team", 174, "Quinten Hermans", "Belgio", 30], ["Pinarello-Q.36.5 Pro Cycling Team", 175, "Damien Howson", "Australia", 33], ["Pinarello-Q.36.5 Pro Cycling Team", 176, "Xandro Meurisse", "Belgio", 34], ["Pinarello-Q.36.5 Pro Cycling Team", 177, "Brent van Moer", "Belgio", 28], ["Pinarello-Q.36.5 Pro Cycling Team", 178, "Fred Wright", "Gran Bretagna", 27], ["Tudor Pro Cycling Team", 191, "Julian Alaphilippe", "Francia", 34], ["Tudor Pro Cycling Team", 197, "Matteo Trentin", "Italia", 36], ["Tudor Pro Cycling Team", 196, "Michael Storer", "Australia", 29], ["Tudor Pro Cycling Team", 195, "Rick Pluimers", "Paesi Bassi", 25], ["Tudor Pro Cycling Team", 192, "Arvid De Kleijn", "Paesi Bassi", 32], ["Tudor Pro Cycling Team", 193, "Marco Haller", "Austria", 35], ["Tudor Pro Cycling Team", 194, "Marc Hirschi", "Svizzera", 27], ["Tudor Pro Cycling Team", 198, "Yannis Voisard", "Svizzera", 27], ["Cofidis (PRT)", 162, "Piet Allegaert", "Belgio", 31], ["Cofidis (PRT)", 164, "Jenthe Biermans", "Belgio", 30], ["Cofidis (PRT)", 165, "Milan Fretin", "Belgio", 25], ["Cofidis (PRT)", 166, "Alex Kirsch", "Lussemburgo", 34], ["Cofidis (PRT)", 167, "Hugo Page", "Francia", 24], ["Cofidis (PRT)", 163, "Alex Aranburu", "Spagna", 30], ["Cofidis (PRT)", 168, "Benjamin Thomas", "Francia", 30], ["Cofidis (PRT)", 161, "Ion Izagirre", "Spagna", 37], ["TotalEnergies (PRT)", 201, "Jordan Jegat", "Francia", 27], ["TotalEnergies (PRT)", 204, "Alexandre Delettre", "Francia", 28], ["TotalEnergies (PRT)", 207, "Anthony Turgis", "Francia", 32], ["TotalEnergies (PRT)", 208, "Mattéo Vercher", "Francia", 25], ["TotalEnergies (PRT)", 206, "Mathis Le Berre", "Francia", 25], ["TotalEnergies (PRT)", 202, "Nicolas Breuillard", "Francia", 26], ["TotalEnergies (PRT)", 203, "Joris Delbove", "Francia", 25], ["TotalEnergies (PRT)", 205, "Thibault Guernalec", "Francia", 28], ["Caja Rural-Seguros RGA", 224, "Alex Molenaar", "Paesi Bassi", 26], ["Caja Rural-Seguros RGA", 225, "Joel Nicolau", "Spagna", 28], ["Caja Rural-Seguros RGA", 222, "Abel Balderstone", "Spagna", 25], ["Caja Rural-Seguros RGA", 223, "Sebastian Berwick", "Australia", 26], ["Caja Rural-Seguros RGA", 221, "Fernando Gaviria", "Colombia", 31], ["Caja Rural-Seguros RGA", 226, "Stefano Oldani", "Italia", 28], ["Caja Rural-Seguros RGA", 227, "Jakub Otruba", "Cechia", 28], ["Caja Rural-Seguros RGA", 228, "José Félix Parra", "Spagna", 29]];
+
+let currentSort = { col: null, dir: 1 };
+let currentQuery = '';
+
+function render(rows){
+  const body = document.getElementById('tbody');
+  body.innerHTML = rows.map(r => `
+    <div class="row">
+      <div class="cell team">${r[0]}</div>
+      <div class="cell bib">${r[1]}</div>
+      <div class="cell">${r[2]}</div>
+      <div class="cell nat">${r[3]}</div>
+      <div class="cell age">${r[4]}</div>
+    </div>
+  `).join('');
+  document.getElementById('rowcount').textContent = rows.length;
+}
+
+function getFiltered(){
+  let rows = DATA;
+  if(currentQuery){
+    rows = rows.filter(r => r.some(v => String(v).toLowerCase().includes(currentQuery)));
+  }
+  if(currentSort.col !== null){
+    const numericCols = [1, 4];
+    rows = [...rows].sort((a,b) => {
+      if(numericCols.includes(currentSort.col)){
+        return (a[currentSort.col] - b[currentSort.col]) * currentSort.dir;
+      }
+      return a[currentSort.col].localeCompare(b[currentSort.col], 'it', {sensitivity:'base'}) * currentSort.dir;
+    });
+  }
+  return rows;
+}
+
+function sortBy(col){
+  if(currentSort.col === col){
+    currentSort.dir *= -1;
+  } else {
+    currentSort.col = col;
+    currentSort.dir = 1;
+  }
+  render(getFiltered());
+
+  document.querySelectorAll('.head-box .arrow').forEach((el, idx) => {
+    el.classList.toggle('active', idx === col);
+    el.classList.toggle('desc', idx === col && currentSort.dir === -1);
+    el.textContent = '▲';
+  });
+}
+
+document.querySelectorAll('.head-box').forEach(box => {
+  box.querySelector('button').addEventListener('click', () => sortBy(Number(box.dataset.col)));
+});
+
+document.getElementById('search').addEventListener('input', (e) => {
+  currentQuery = e.target.value.trim().toLowerCase();
+  render(getFiltered());
+});
+
+render(DATA);
+</script>
+</body>
+</html>
