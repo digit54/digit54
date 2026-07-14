@@ -6,6 +6,8 @@ const DATI = {
   ],
   "Farlocche": [
     { "nome": "Giochino_screenv02", "file": "Giochino_screenv02.html" },
+    { "nome": "Misura riflessi", "file": "Misura riflessi.html" },
+    { "nome": "Quanti quadrati vedi", "file": "Quanti quadrati vedi.html" },
     { "nome": "Simil salvaschermo", "file": "Simil salvaschermo.html" }
   ],
   "Giochi": [
@@ -33,7 +35,6 @@ const DATI = {
   ],
   "Utility": [
     { "nome": "Crea Gif Move V1.5", "file": "Crea Gif Move V1.5.html" },
-    { "nome": "Misura riflessi", "file": "Misura riflessi.html" },
     { "nome": "Percentualometro", "file": "Percentualometro.html" }
   ]
 };
