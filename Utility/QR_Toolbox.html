@@ -51,9 +51,19 @@
     display:flex;
     gap:8px;
     margin-bottom:14px;
+    background:var(--app-bg);
+    padding:5px;
+    border-radius:9px;
   }
   .tabs button{
     flex:1;
+    background:transparent;
+    color:var(--fg);
+    box-shadow:none;
+  }
+  .tabs button.active{
+    background:var(--btn-bg);
+    box-shadow:0 2px 6px rgba(16,32,48,0.15);
   }
   .view{ display:none; }
   .view.active{ display:block; }
@@ -79,6 +89,19 @@
     flex-wrap:wrap;
   }
   .row button{ flex:1; min-width:120px; }
+  .col{
+    flex:1;
+    min-width:120px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .col button{ flex:1; }
+  button.tall{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
   fieldset{
     border:1px solid #c8dde0;
     border-radius:8px;
@@ -134,16 +157,18 @@
   <h1>Generatore &amp; Lettore QR code</h1>
 
   <div class="tabs">
-    <button id="tab-reader-btn" onclick="showView('reader')">Lettore</button>
-    <button id="tab-generator-btn" onclick="showView('generator')">Generatore</button>
+    <button id="tab-reader-btn" class="active" onclick="showView('reader')">Lettore QR code</button>
+    <button id="tab-generator-btn" onclick="showView('generator')">Generatore QR code</button>
   </div>
 
   <!-- ============== READER VIEW ============== -->
   <div id="view-reader" class="view active">
     <div class="row">
-      <button id="btn-webcam" onclick="startWebcamScan()">Scanner Webcam</button>
-      <button id="btn-image" onclick="document.getElementById('file-input').click()">Apri Immagine…</button>
-      <button id="btn-stop" class="stop" onclick="stopWebcam()">Stop</button>
+      <div class="col">
+        <button id="btn-webcam" onclick="startWebcamScan()">Scanner Webcam</button>
+        <button id="btn-stop" class="stop" onclick="stopWebcam()" disabled>Stop Webcam</button>
+      </div>
+      <button id="btn-image" class="tall" onclick="document.getElementById('file-input').click()">Apri Immagine…</button>
     </div>
     <input type="file" id="file-input" accept="image/*" style="display:none" onchange="onImageChosen(event)">
 
@@ -10353,13 +10378,19 @@ function copyResults(){
 function showView(name){
   const reader = document.getElementById("view-reader");
   const generator = document.getElementById("view-generator");
+  const tabReader = document.getElementById("tab-reader-btn");
+  const tabGenerator = document.getElementById("tab-generator-btn");
   if (name === "reader"){
     reader.classList.add("active");
     generator.classList.remove("active");
+    tabReader.classList.add("active");
+    tabGenerator.classList.remove("active");
   } else {
     stopWebcam();
     generator.classList.add("active");
     reader.classList.remove("active");
+    tabGenerator.classList.add("active");
+    tabReader.classList.remove("active");
   }
 }
 
@@ -10402,6 +10433,8 @@ async function startWebcamScan(){
   await video.play();
 
   webcamRunning = true;
+  document.getElementById("btn-webcam").disabled = true;
+  document.getElementById("btn-stop").disabled = false;
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
@@ -10436,6 +10469,8 @@ function stopWebcam(){
   }
   const video = document.getElementById("webcam-video");
   video.srcObject = null;
+  document.getElementById("btn-webcam").disabled = false;
+  document.getElementById("btn-stop").disabled = true;
 }
 
 //----------------------------- GENERATORE -----------------------------

@@ -75,9 +75,15 @@ $rootHtml = @'
         justify-content: center;
         gap: 22px;
     }
-    .btn {
+    .btn-wrap {
+        position: relative;
         flex: 1 1 380px;
         max-width: 420px;
+        padding-bottom: 8px;
+    }
+    .btn {
+        display: block;
+        width: 100%;
         box-sizing: border-box;
         padding: 22px 20px;
         background-color: rgba(30, 41, 59, 0.8);
@@ -95,6 +101,48 @@ $rootHtml = @'
         box-shadow: 0 0 22px rgba(34,211,238,0.6);
         transform: translateY(-2px);
     }
+    .dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: rgba(15, 23, 42, 0.97);
+        border: 2px solid #22d3ee;
+        border-radius: 12px;
+        box-shadow: 0 0 22px rgba(34,211,238,0.5);
+        padding: 8px;
+        box-sizing: border-box;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-6px);
+        transition: opacity 0.18s ease, transform 0.18s ease;
+        z-index: 10;
+        text-align: left;
+    }
+    .dropdown.show {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+    }
+    .dropdown a {
+        display: block;
+        padding: 8px 10px;
+        color: #cffafe;
+        text-decoration: none;
+        font-size: 0.9em;
+        font-weight: 500;
+        border-radius: 8px;
+    }
+    .dropdown a:hover {
+        background-color: rgba(34,211,238,0.18);
+        color: #67e8f9;
+    }
+    .dropdown .empty {
+        padding: 8px 10px;
+        color: #64748b;
+        font-size: 0.85em;
+        font-style: italic;
+    }
 </style>
 </head>
 <body>
@@ -104,12 +152,50 @@ $rootHtml = @'
 </div>
 <script>
     const menu = document.getElementById("menu");
+    const HOVER_DELAY = 800;
+
     Object.keys(DATI).sort().forEach(function (cat) {
+        const wrap = document.createElement("div");
+        wrap.className = "btn-wrap";
+
+        const catPath = encodeURIComponent(cat) + "/";
+
         const a = document.createElement("a");
         a.className = "btn";
-        a.href = encodeURIComponent(cat) + "/index.html";
+        a.href = catPath + "index.html";
         a.textContent = cat.replace(/_/g, " ");
-        menu.appendChild(a);
+        wrap.appendChild(a);
+
+        const dropdown = document.createElement("div");
+        dropdown.className = "dropdown";
+        const programmi = DATI[cat];
+        if (programmi.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "empty";
+            empty.textContent = "Nessun programma";
+            dropdown.appendChild(empty);
+        } else {
+            programmi.forEach(function (p) {
+                const link = document.createElement("a");
+                link.href = catPath + encodeURIComponent(p.file);
+                link.textContent = p.nome;
+                dropdown.appendChild(link);
+            });
+        }
+        wrap.appendChild(dropdown);
+
+        let hoverTimer = null;
+        wrap.addEventListener("mouseenter", function () {
+            hoverTimer = setTimeout(function () {
+                dropdown.classList.add("show");
+            }, HOVER_DELAY);
+        });
+        wrap.addEventListener("mouseleave", function () {
+            clearTimeout(hoverTimer);
+            dropdown.classList.remove("show");
+        });
+
+        menu.appendChild(wrap);
     });
 </script>
 </body>
