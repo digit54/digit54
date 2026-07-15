@@ -35,7 +35,8 @@ const DATI = {
   ],
   "Utility": [
     { "nome": "Crea Gif Move V1.5", "file": "Crea Gif Move V1.5.html" },
-    { "nome": "Percentualometro", "file": "Percentualometro.html" }
+    { "nome": "Percentualometro", "file": "Percentualometro.html" },
+    { "nome": "QR_Toolbox", "file": "QR_Toolbox.html" }
   ]
 };
 
