@@ -81,20 +81,22 @@ $rootHtml = @'
         display: block;
         width: 100%;
         box-sizing: border-box;
-        padding: 22px 20px;
-        background-color: rgba(30, 41, 59, 0.8);
-        border: 2px solid #22d3ee;
-        border-radius: 14px;
-        color: #67e8f9;
-        font-size: 1.25em;
+        padding: 20px 22px;
+        background: linear-gradient(180deg, rgba(30,41,59,0.92), rgba(21,30,44,0.92));
+        border: 1px solid rgba(34,211,238,0.30);
+        border-radius: 12px;
+        color: #cffafe;
+        font-size: 1.15em;
         font-weight: 600;
+        letter-spacing: 0.2px;
         text-decoration: none;
-        box-shadow: 0 0 14px rgba(34,211,238,0.3);
-        transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
     }
     .btn:hover {
-        background-color: rgba(30, 41, 59, 0.95);
-        box-shadow: 0 0 22px rgba(34,211,238,0.6);
+        border-color: rgba(34,211,238,0.6);
+        background: linear-gradient(180deg, rgba(35,48,68,0.95), rgba(24,34,50,0.95));
+        box-shadow: 0 8px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(34,211,238,0.25);
         transform: translateY(-2px);
     }
     .dropdown {
@@ -102,10 +104,10 @@ $rootHtml = @'
         top: 100%;
         left: 0;
         right: 0;
-        background-color: rgba(15, 23, 42, 0.97);
-        border: 2px solid #22d3ee;
+        background-color: rgba(15, 23, 42, 0.98);
+        border: 1px solid rgba(148,163,184,0.25);
         border-radius: 12px;
-        box-shadow: 0 0 22px rgba(34,211,238,0.5);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.5);
         padding: 8px;
         box-sizing: border-box;
         opacity: 0;
@@ -130,8 +132,8 @@ $rootHtml = @'
         border-radius: 8px;
     }
     .dropdown a:hover {
-        background-color: rgba(34,211,238,0.18);
-        color: #67e8f9;
+        background-color: rgba(34,211,238,0.14);
+        color: #a5f3fc;
     }
     .dropdown .empty {
         padding: 8px 10px;
@@ -245,35 +247,43 @@ $catTemplate = @'
         flex: 1 1 380px;
         max-width: 420px;
         box-sizing: border-box;
-        padding: 22px 20px;
-        background-color: rgba(30, 41, 59, 0.8);
-        border: 2px solid #22d3ee;
-        border-radius: 14px;
-        color: #67e8f9;
-        font-size: 1.25em;
+        padding: 20px 22px;
+        background: linear-gradient(180deg, rgba(30,41,59,0.92), rgba(21,30,44,0.92));
+        border: 1px solid rgba(34,211,238,0.30);
+        border-radius: 12px;
+        color: #cffafe;
+        font-size: 1.15em;
         font-weight: 600;
+        letter-spacing: 0.2px;
         text-decoration: none;
-        box-shadow: 0 0 14px rgba(34,211,238,0.3);
-        transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
     }
     .btn:hover {
-        background-color: rgba(30, 41, 59, 0.95);
-        box-shadow: 0 0 22px rgba(34,211,238,0.6);
+        border-color: rgba(34,211,238,0.6);
+        background: linear-gradient(180deg, rgba(35,48,68,0.95), rgba(24,34,50,0.95));
+        box-shadow: 0 8px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(34,211,238,0.25);
         transform: translateY(-2px);
     }
     .back {
         display: inline-block;
-        padding: 12px 28px;
-        background-color: rgba(30, 41, 59, 0.8);
-        border: 2px solid #94a3b8;
+        padding: 11px 26px;
+        background: rgba(30, 41, 59, 0.85);
+        border: 1px solid rgba(148,163,184,0.3);
         border-radius: 10px;
         color: #cbd5e1;
-        font-size: 1em;
+        font-size: 0.95em;
         font-weight: 600;
+        letter-spacing: 0.2px;
         text-decoration: none;
-        transition: background-color 0.15s ease;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
     }
-    .back:hover { background-color: rgba(30, 41, 59, 0.95); }
+    .back:hover {
+        background-color: rgba(41, 55, 78, 0.95);
+        border-color: rgba(148,163,184,0.55);
+        transform: translateY(-1px);
+    }
     .vuoto { font-style: italic; color: #1e293b; }
 </style>
 </head>
