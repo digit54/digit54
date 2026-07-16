@@ -59,7 +59,7 @@ $rootHtml = @'
         text-align: center;
     }
     .logo {
-        width: 260px;
+        width: 65px;
         height: auto;
         margin: 0 auto 10px;
         display: block;
