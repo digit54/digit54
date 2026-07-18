@@ -14,7 +14,6 @@ const DATI = {
     { "nome": "Tombola", "file": "Tombola.html" }
   ],
   "Memoria": [
-    { "nome": "allena_la_memoria", "file": "allena_la_memoria.html" },
     { "nome": "Memoria Visiva", "file": "Memoria Visiva.html" }
   ],
   "Passatempo": [
