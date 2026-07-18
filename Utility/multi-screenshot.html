@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Screenshot Multiplo (HTML)</title>
+<style>
+  :root{
+    color-scheme: dark;
+  }
+  html,body{
+    margin:0; padding:0; width:100%; height:100%;
+    background:#0d0d17; color:#eee;
+    font-family: Arial, Helvetica, sans-serif;
+    overflow:hidden;
+  }
+
+  /* ---------- Landing screen ---------- */
+  #landing{
+    position:fixed; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:18px; text-align:center; padding:24px;
+  }
+  #landing h1{ margin:0; font-size:1.6em; }
+  #landing p{ max-width:560px; line-height:1.5; color:#ccc; margin:0; }
+  #landing p.small{ color:#888; font-size:0.85em; }
+  #startBtn{
+    padding:14px 28px; font-size:1.05em; font-weight:bold;
+    background:#4488FF; color:white; border:none; border-radius:8px;
+    cursor:pointer;
+  }
+  #startBtn:hover{ background:#5a97ff; }
+  #err{ color:#ff6b6b; max-width:560px; }
+
+  /* ---------- Capture stage ---------- */
+  #stageWrap{ position:fixed; inset:0; display:none; }
+  #stage{ position:absolute; top:0; left:0; background:black; cursor:crosshair; }
+
+  #hint{
+    position:fixed; top:34px; left:50%; transform:translateX(-50%);
+    background:#1a1a3e; border:2px solid #FFDD00; border-radius:6px;
+    padding:12px 22px; text-align:center; font-weight:bold; font-size:14px;
+    line-height:1.6; white-space:pre; pointer-events:none;
+  }
+
+  #counter{
+    position:fixed; bottom:12px; right:16px; color:#aaa; font-size:12px;
+    pointer-events:none;
+  }
+
+  #flash{
+    position:fixed; inset:0; background:white; opacity:0; pointer-events:none;
+    transition:opacity 120ms ease-out;
+  }
+</style>
+</head>
+<body>
+
+  <div id="landing">
+    <h1>Screenshot Multiplo</h1>
+    <p>
+      Trascina per selezionare l'area della finestra/schermo condiviso &rarr; screenshot automatico.<br>
+      Con area gi&agrave; definita: <b>INVIO</b> = nuovo screenshot della stessa area &nbsp;|&nbsp; <b>ESC</b> = esci.
+    </p>
+    <button id="startBtn">Avvia condivisione schermo</button>
+    <p id="err"></p>
+    <p class="small" id="modeHint">
+      Il browser chieder&agrave; una volta sola quale schermo/finestra/scheda condividere,<br>
+      poi in quale cartella salvare i PNG (se supportato, altrimenti verranno scaricati in Download).
+    </p>
+  </div>
+
+  <div id="stageWrap">
+    <canvas id="stage"></canvas>
+  </div>
+  <div id="hint" style="display:none"></div>
+  <div id="counter" style="display:none"></div>
+  <div id="flash"></div>
+
+<script>
+(() => {
+  const landing   = document.getElementById('landing');
+  const startBtn  = document.getElementById('startBtn');
+  const errBox    = document.getElementById('err');
+  const stageWrap = document.getElementById('stageWrap');
+  const canvas    = document.getElementById('stage');
+  const ctx       = canvas.getContext('2d');
+  const hint      = document.getElementById('hint');
+  const counterEl = document.getElementById('counter');
+  const flash     = document.getElementById('flash');
+
+  const video = document.createElement('video');
+  video.autoplay = true;
+  video.muted = true;
+
+  let screenshotCount = 0;
+  let dirHandle = null;        // FileSystemDirectoryHandle, if user picked one
+  let selectedArea = null;     // {x1,y1,x2,y2} in video-native pixel space
+  let dragStart = null;        // {x,y} in video-native space
+  let dragCurrent = null;
+  let dragging = false;
+  let scale = 1, offsetX = 0, offsetY = 0;
+  let rafId = null;
+
+  function updateHint() {
+    const dest = dirHandle ? `salva in: ${dirHandle.name}` : "salva in: cartella Download";
+    if (selectedArea) {
+      const w = Math.round(selectedArea.x2 - selectedArea.x1);
+      const h = Math.round(selectedArea.y2 - selectedArea.y1);
+      hint.textContent =
+        "Trascina per selezionare una nuova area\n" +
+        `INVIO  →  screenshot [${w} × ${h} px]  (${dest})\n` +
+        "ESC  →  esci";
+    } else {
+      hint.textContent =
+        "Trascina per selezionare l'area\n" +
+        `INVIO  →  screenshot (dopo aver selezionato)  (${dest})\n` +
+        "ESC  →  esci";
+    }
+  }
+
+  function updateCounter() {
+    counterEl.textContent = screenshotCount > 0
+      ? `Screenshot salvati: ${screenshotCount}` : '';
+  }
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    computeFit();
+  }
+
+  function computeFit() {
+    const vw = video.videoWidth, vh = video.videoHeight;
+    if (!vw || !vh) return;
+    scale = Math.min(canvas.width / vw, canvas.height / vh);
+    offsetX = (canvas.width - vw * scale) / 2;
+    offsetY = (canvas.height - vh * scale) / 2;
+  }
+
+  function toVideoCoords(clientX, clientY) {
+    const vw = video.videoWidth, vh = video.videoHeight;
+    let x = (clientX - offsetX) / scale;
+    let y = (clientY - offsetY) / scale;
+    x = Math.max(0, Math.min(vw, x));
+    y = Math.max(0, Math.min(vh, y));
+    return { x, y };
+  }
+
+  function toCanvasCoords(vx, vy) {
+    return { x: offsetX + vx * scale, y: offsetY + vy * scale };
+  }
+
+  function draw() {
+    rafId = requestAnimationFrame(draw);
+    if (video.videoWidth === 0) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(video, offsetX, offsetY, video.videoWidth * scale, video.videoHeight * scale);
+
+    // dim everything, then re-reveal the selection/drag rect
+    let rect = null;
+    if (dragging && dragStart && dragCurrent) {
+      rect = {
+        x1: Math.min(dragStart.x, dragCurrent.x), y1: Math.min(dragStart.y, dragCurrent.y),
+        x2: Math.max(dragStart.x, dragCurrent.x), y2: Math.max(dragStart.y, dragCurrent.y)
+      };
+    } else if (selectedArea) {
+      rect = selectedArea;
+    }
+
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    if (rect) {
+      const p1 = toCanvasCoords(rect.x1, rect.y1);
+      const p2 = toCanvasCoords(rect.x2, rect.y2);
+      const rx = p1.x, ry = p1.y, rw = p2.x - p1.x, rh = p2.y - p1.y;
+
+      // re-draw the bright video content inside the rect
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(rx, ry, rw, rh);
+      ctx.clip();
+      ctx.drawImage(video, offsetX, offsetY, video.videoWidth * scale, video.videoHeight * scale);
+      ctx.fillStyle = 'rgba(68,136,255,0.25)';
+      ctx.fillRect(rx, ry, rw, rh);
+      ctx.restore();
+
+      ctx.strokeStyle = '#FF4444';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(rx, ry, rw, rh);
+    }
+  }
+
+  function startDrag(clientX, clientY) {
+    dragging = true;
+    dragStart = toVideoCoords(clientX, clientY);
+    dragCurrent = dragStart;
+  }
+  function moveDrag(clientX, clientY) {
+    if (!dragging) return;
+    dragCurrent = toVideoCoords(clientX, clientY);
+  }
+  function endDrag() {
+    if (!dragging) return;
+    dragging = false;
+    const x1 = Math.min(dragStart.x, dragCurrent.x), y1 = Math.min(dragStart.y, dragCurrent.y);
+    const x2 = Math.max(dragStart.x, dragCurrent.x), y2 = Math.max(dragStart.y, dragCurrent.y);
+    if (x2 - x1 > 5 && y2 - y1 > 5) {
+      selectedArea = { x1, y1, x2, y2 };
+      updateHint();
+      takeScreenshot(selectedArea);
+    }
+  }
+
+  canvas.addEventListener('mousedown', e => startDrag(e.clientX, e.clientY));
+  canvas.addEventListener('mousemove', e => moveDrag(e.clientX, e.clientY));
+  window.addEventListener('mouseup', endDrag);
+
+  function pad(n, len) { return String(n).padStart(len, '0'); }
+
+  function timestamp() {
+    const d = new Date();
+    return `${d.getFullYear()}${pad(d.getMonth()+1,2)}${pad(d.getDate(),2)}_` +
+           `${pad(d.getHours(),2)}${pad(d.getMinutes(),2)}${pad(d.getSeconds(),2)}`;
+  }
+
+  function doFlash() {
+    flash.style.opacity = '0.55';
+    setTimeout(() => { flash.style.opacity = '0'; }, 120);
+  }
+
+  async function saveViaDirHandle(blob, filename) {
+    const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
+    const writable = await fileHandle.createWritable();
+    await writable.write(blob);
+    await writable.close();
+  }
+
+  function saveViaDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+
+  function takeScreenshot(area) {
+    const w = Math.round(area.x2 - area.x1);
+    const h = Math.round(area.y2 - area.y1);
+    if (w <= 0 || h <= 0) return;
+
+    const off = document.createElement('canvas');
+    off.width = w; off.height = h;
+    const octx = off.getContext('2d');
+    octx.drawImage(video, area.x1, area.y1, w, h, 0, 0, w, h);
+
+    screenshotCount++;
+    updateCounter();
+    doFlash();
+
+    const filename = `screen_${timestamp()}_${pad(screenshotCount,4)}.png`;
+
+    off.toBlob(async blob => {
+      try {
+        if (dirHandle) {
+          await saveViaDirHandle(blob, filename);
+        } else {
+          saveViaDownload(blob, filename);
+        }
+        console.log(`[${pad(screenshotCount,4)}] ${filename}`);
+      } catch (err) {
+        console.error('Salvataggio fallito, uso il download:', err);
+        saveViaDownload(blob, filename);
+      }
+    }, 'image/png');
+  }
+
+  function onKeyUp(e) {
+    if (e.key === 'Enter' && selectedArea) {
+      takeScreenshot(selectedArea);
+    }
+  }
+  function onKeyDown(e) {
+    if (e.key === 'Escape') {
+      stopSharing();
+    }
+  }
+
+  function stopSharing() {
+    window.removeEventListener('keydown', onKeyDown);
+    window.removeEventListener('keyup', onKeyUp);
+    window.removeEventListener('resize', resizeCanvas);
+    if (rafId) cancelAnimationFrame(rafId);
+    const stream = video.srcObject;
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    stageWrap.style.display = 'none';
+    hint.style.display = 'none';
+    counterEl.style.display = 'none';
+    landing.style.display = 'flex';
+    errBox.textContent = screenshotCount > 0
+      ? `Sessione terminata. Screenshot totali: ${screenshotCount}.`
+      : '';
+    errBox.style.color = '#8f8';
+    selectedArea = null;
+    screenshotCount = 0;
+    dirHandle = null;
+  }
+
+  async function startSharing() {
+    errBox.style.color = '#ff6b6b';
+    errBox.textContent = '';
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { cursor: 'always' },
+        audio: false
+      });
+      video.srcObject = stream;
+      await video.play();
+
+      stream.getVideoTracks()[0].addEventListener('ended', stopSharing);
+
+      if (window.showDirectoryPicker) {
+        try {
+          dirHandle = await window.showDirectoryPicker({
+            id: 'screenshot-multiplo',
+            mode: 'readwrite',
+            startIn: 'downloads'
+          });
+        } catch (pickErr) {
+          dirHandle = null; // annullato dall'utente: si torna al download semplice
+        }
+      }
+
+      landing.style.display = 'none';
+      stageWrap.style.display = 'block';
+      hint.style.display = 'block';
+      counterEl.style.display = 'block';
+
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+      window.addEventListener('keydown', onKeyDown);
+      window.addEventListener('keyup', onKeyUp);
+
+      updateHint();
+      updateCounter();
+      draw();
+    } catch (err) {
+      errBox.style.color = '#ff6b6b';
+      errBox.textContent = 'Condivisione annullata o non disponibile: ' + err.message;
+    }
+  }
+
+  startBtn.addEventListener('click', startSharing);
+})();
+</script>
+</body>
+</html>

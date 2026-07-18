@@ -34,6 +34,7 @@ const DATI = {
   ],
   "Utility": [
     { "nome": "Crea Gif Move V1.5", "file": "Crea Gif Move V1.5.html" },
+    { "nome": "multi-screenshot", "file": "multi-screenshot.html" },
     { "nome": "Percentualometro", "file": "Percentualometro.html" },
     { "nome": "QR_Toolbox", "file": "QR_Toolbox.html" },
     { "nome": "Trova File Doppi v. 2.6", "file": "Trova File Doppi v. 2.6.html" }
