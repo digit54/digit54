@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cerca File Doppi</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1e1e2e; color: #cdd6f4;
+      display: grid; grid-template-rows: auto 1fr auto auto;
+      padding: 14px; gap: 10px;
+    }
+
+    .app-header { display: flex; align-items: center; gap: 8px; }
+    h1 { font-size: 1.15rem; font-weight: 600; color: #89b4fa; letter-spacing: 0.4px; }
+
+    .help-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 13px; border-radius: 20px; border: 1px solid #f9e2af88;
+      background: #f9e2af22; color: #f9e2af; font-size: 0.8rem; font-weight: 700;
+      cursor: pointer; flex-shrink: 0; transition: background 0.15s, filter 0.15s;
+      animation: help-pulse 2.4s ease-in-out infinite;
+    }
+    .help-btn:hover { background: #f9e2af3d; filter: brightness(1.1); animation: none; }
+    @keyframes help-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 #f9e2af33; }
+      50%      { box-shadow: 0 0 0 5px #f9e2af00; }
+    }
+
+    /* ── Pannello unico ── */
+    #panels { display: grid; grid-template-columns: 1fr; min-height: 0; overflow: hidden; }
+
+    .panel { display: flex; flex-direction: column; gap: 7px; min-width: 0; min-height: 0; overflow: hidden; }
+
+    /* ── Header ── */
+    .panel-header { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
+    .panel-label  { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+    .panel-path   { font-size: 0.78rem; color: #a6e3a1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+
+    .lock-badge {
+      display: none; align-items: center; gap: 3px;
+      font-size: 0.7rem; font-weight: 700; padding: 2px 7px;
+      border-radius: 5px; flex-shrink: 0; transition: opacity 0.15s;
+    }
+    .lock-badge.can-del  { background: #a6e3a122; color: #a6e3a1; cursor: default; }
+    .lock-badge.no-del   { background: #f38ba822; color: #f38ba8; cursor: pointer; border: 1px dashed #f38ba855; }
+    .lock-badge.no-del:hover { background: #f38ba833; }
+
+    /* ── Toolbar ── */
+    .toolbar { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+
+    .btn-pick {
+      padding: 5px 13px; color: #1e1e2e; border: none; border-radius: 7px;
+      font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s; flex-shrink: 0;
+    }
+    .btn-pick:hover { filter: brightness(1.15); }
+
+    .search-box {
+      flex: 1; padding: 5px 10px; background: #181825;
+      border: 1px solid #45475a; border-radius: 7px;
+      color: #cdd6f4; font-size: 0.82rem; outline: none; transition: border-color 0.2s;
+    }
+    .search-box:focus { border-color: #89b4fa; }
+    .search-box::placeholder { color: #45475a; }
+
+    .ctrl-btn {
+      padding: 4px 9px; background: #313244; border: none; border-radius: 6px;
+      color: #a6adc8; font-size: 0.74rem; cursor: pointer; transition: background 0.2s; flex-shrink: 0;
+    }
+    .ctrl-btn:hover { background: #45475a; }
+
+    .stats { font-size: 0.76rem; color: #585b70; flex-shrink: 0; display: none; }
+    .stats b { color: #a6e3a1; }
+
+    /* ── Drop zone ── */
+    .drop-zone {
+      flex: 1; border: 2px dashed #45475a; border-radius: 12px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 6px; cursor: pointer; transition: border-color 0.2s, background 0.2s;
+      background: #181825; text-align: center; padding: 20px;
+    }
+    .drop-zone:hover, .panel.dragover .drop-zone { border-color: #89b4fa; background: #1e1e2e; }
+    .drop-zone .dz-icon { font-size: 2rem; }
+    .drop-zone .dz-text { color: #a6adc8; font-size: 0.86rem; }
+    .drop-zone .dz-hint { color: #585b70; font-size: 0.74rem; }
+    .file-input { display: none; }
+
+    /* ── Albero ── */
+    .tree-container { flex: 1; background: #181825; border-radius: 10px; padding: 10px; overflow: auto; display: none; }
+    .panel.dragover .tree-container { outline: 2px dashed #89b4fa; outline-offset: -2px; background: #1e1e2e; }
+    .tree-root { list-style: none; }
+    .tree-node { list-style: none; user-select: none; }
+
+    .node-row {
+      display: flex; align-items: center; gap: 5px; padding: 2px 5px;
+      border-radius: 5px; cursor: pointer; transition: background 0.12s; white-space: nowrap;
+    }
+    .node-row:hover    { background: #313244; }
+    .node-row.selected { background: #2a2b3d; outline: 1px solid #89b4fa55; border-left: 2px solid #89b4fa; padding-left: 3px; }
+
+    .toggle-btn {
+      width: 18px; height: 18px; display: inline-flex; align-items: center;
+      justify-content: center; font-size: 0.62rem; color: #6c7086; flex-shrink: 0;
+      transition: transform 0.15s; cursor: pointer; border-radius: 3px;
+    }
+    .toggle-btn:hover { color: #cdd6f4; background: #45475a; }
+    .toggle-btn.open { transform: rotate(90deg); }
+    .toggle-btn.leaf { visibility: hidden; cursor: default; }
+
+    .folder-icon, .file-icon { font-size: 0.9rem; flex-shrink: 0; }
+    .node-name   { font-size: 0.84rem; color: #cdd6f4; }
+    .node-name.match { color: #f9e2af; font-weight: 600; }
+    .node-name.dup-keep { color: #a6e3a1; font-weight: 600; }
+    .node-name.dup-del  { color: #fab387; font-weight: 600; }
+    .node-count  { font-size: 0.7rem; color: #585b70; margin-left: 3px; }
+    .node-size   { font-size: 0.7rem; color: #585b70; margin-left: 3px; flex-shrink: 0; }
+    .children    { padding-left: 16px; border-left: 1px solid #313244; margin-left: 12px; }
+    .children.hidden { display: none; }
+    .empty-msg   { text-align: center; color: #585b70; font-size: 0.85rem; padding: 28px; }
+
+    /* ── Context menu ── */
+    #ctx-menu {
+      position: fixed; background: #24273a; border: 1px solid #45475a;
+      border-radius: 10px; padding: 10px 0; z-index: 9999;
+      min-width: 220px; max-width: 380px; max-height: 440px;
+      display: flex; flex-direction: column; box-shadow: 0 8px 32px rgba(0,0,0,0.6); overflow: hidden;
+    }
+    #ctx-menu .ctx-title {
+      font-size: 0.77rem; font-weight: 700; color: #89b4fa;
+      padding: 0 14px 8px; border-bottom: 1px solid #313244; margin-bottom: 4px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0;
+    }
+    #ctx-menu .ctx-list { overflow-y: auto; flex: 1; }
+    #ctx-menu .ctx-item {
+      display: flex; align-items: center; gap: 7px; padding: 4px 14px;
+      font-size: 0.81rem; color: #cdd6f4; cursor: pointer;
+      transition: background 0.1s;
+    }
+    #ctx-menu .ctx-item:hover { background: #45475a; }
+    #ctx-menu .ctx-item:hover .ctx-copy { opacity: 1; }
+    #ctx-menu .ctx-fname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+    #ctx-menu .ctx-empty { padding: 8px 14px; font-size: 0.79rem; color: #585b70; }
+    #ctx-menu .ctx-ext   { font-size: 0.7rem; color: #a6adc8; flex-shrink: 0; margin-right: 4px; }
+    #ctx-menu .ctx-size  { font-size: 0.68rem; color: #a6e3a1; flex-shrink: 0; margin-right: 4px; min-width: 52px; text-align: right; }
+    #ctx-menu .ctx-copy  { font-size: 0.68rem; color: #89b4fa; opacity: 0; transition: opacity 0.15s; flex-shrink: 0; }
+
+    /* ── Modale istruzioni ── */
+    .info-modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.58);
+      display: flex; align-items: center; justify-content: center; z-index: 10000;
+    }
+    .info-modal {
+      background: #24273a; border: 1px solid #45475a; border-radius: 14px;
+      padding: 22px 26px; max-width: 440px; width: 90%; max-height: 82vh;
+      display: flex; flex-direction: column; gap: 14px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+    }
+    .info-modal-title { font-size: 0.97rem; font-weight: 700; color: #89b4fa; flex-shrink: 0; }
+    .info-modal-body  { font-size: 0.83rem; color: #cdd6f4; line-height: 1.65; overflow-y: auto; }
+    .info-modal-body b { color: #f9e2af; }
+    .info-modal-body .ok-text { color: #a6e3a1; }
+    .info-modal-btns  { display: flex; gap: 8px; justify-content: flex-end; flex-shrink: 0; }
+    .info-modal-ok {
+      padding: 6px 18px; background: #a6e3a1; color: #1e1e2e;
+      border: none; border-radius: 7px; font-size: 0.83rem; font-weight: 700; cursor: pointer;
+    }
+    .info-modal-ok:hover { filter: brightness(1.1); }
+    .info-modal-cancel {
+      padding: 6px 14px; background: #313244; color: #a6adc8;
+      border: none; border-radius: 7px; font-size: 0.83rem; cursor: pointer;
+    }
+    .info-modal-cancel:hover { background: #45475a; }
+
+    /* ── Pannello confronto file diretti ── */
+    #cmp-panel {
+      background: #181825; border-radius: 10px;
+      display: none; flex-direction: column; flex-shrink: 0; overflow: hidden;
+    }
+    #cmp-header {
+      display: flex; align-items: center; gap: 8px; padding: 9px 14px;
+      cursor: pointer; user-select: none; border-radius: 10px; transition: background 0.15s;
+    }
+    #cmp-header:hover { background: #1e1e2e; }
+    .cmp-toggle { font-size: 0.62rem; color: #6c7086; transition: transform 0.2s; flex-shrink: 0; }
+    .cmp-toggle.open { transform: rotate(90deg); }
+    #cmp-title { flex: 1; font-size: 0.8rem; }
+    #cmp-body {
+      display: none; grid-template-columns: 1fr 1px 1fr;
+      max-height: 260px; overflow: hidden; padding: 0 10px 10px;
+    }
+    #cmp-body.open { display: grid; }
+    .cmp-divider { background: #313244; margin: 0 6px; }
+    .cmp-col { overflow-y: auto; display: flex; flex-direction: column; gap: 1px; }
+    .cmp-section-lbl {
+      font-size: 0.63rem; color: #585b70; padding: 4px 5px 2px;
+      text-transform: uppercase; letter-spacing: 0.9px; flex-shrink: 0;
+      position: sticky; top: 0; background: #181825;
+    }
+    .cmp-section-sep { height: 1px; background: #313244; margin: 4px 2px; flex-shrink: 0; }
+    .cmp-folder-row { color: #89b4fa; }
+    .cmp-folder-row.unique { color: #45475a; }
+    .cmp-col-hdr {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.8px; padding: 3px 5px 5px; flex-shrink: 0; position: sticky; top: 0;
+      background: #181825;
+    }
+    .cmp-item {
+      display: flex; align-items: center; gap: 4px; padding: 2px 5px;
+      border-radius: 4px; font-size: 0.78rem;
+    }
+    .cmp-item.shared { background: #f9e2af0e; }
+    .cmp-item.shared .cmp-fname { color: #f9e2af; font-weight: 600; }
+    .cmp-item:not(.shared) .cmp-fname { color: #45475a; }
+    .cmp-fname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+    .cmp-size  { font-size: 0.67rem; color: #45475a; flex-shrink: 0; }
+    .cmp-item.shared .cmp-size { color: #585b70; }
+    .cmp-copy-btn {
+      padding: 1px 7px; border: none; border-radius: 4px;
+      font-size: 0.66rem; font-weight: 700; cursor: pointer;
+      transition: opacity 0.15s; flex-shrink: 0; margin-left: 2px;
+    }
+    .cmp-copy-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+    .cmp-copy-btn:not(:disabled):hover { opacity: 0.75; }
+    .cmp-copy-r { background: #89dceb; color: #1e1e2e; }
+    .cmp-copy-l { background: #cba6f7; color: #1e1e2e; }
+    .cmp-unlock-mini {
+      padding: 2px 9px; border: none; border-radius: 5px;
+      font-size: 0.7rem; font-weight: 700; cursor: pointer; flex-shrink: 0;
+      background: #f9e2af; color: #1e1e2e; transition: opacity 0.15s;
+    }
+    .cmp-unlock-mini:hover { opacity: 0.8; }
+
+    .cmp-sync-btn {
+      padding: 3px 12px; border: none; border-radius: 5px;
+      font-size: 0.73rem; font-weight: 700; cursor: pointer; flex-shrink: 0;
+      transition: opacity 0.15s;
+    }
+    .cmp-sync-r { background: #89dceb; color: #1e1e2e; }
+    .cmp-sync-l { background: #cba6f7; color: #1e1e2e; }
+    .cmp-sync-btn:hover:not(:disabled) { opacity: 0.8; }
+    .cmp-sync-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* ── Deep diff ── */
+    #cmp-deep {
+      display: none; border-top: 1px solid #313244;
+      padding: 6px 14px 10px; max-height: 180px; overflow-y: auto; flex-shrink: 0;
+    }
+    #cmp-deep.open { display: block; }
+    .deep-hdr {
+      font-size: 0.64rem; color: #585b70; text-transform: uppercase;
+      letter-spacing: 0.9px; padding: 5px 0 3px; font-weight: 700; position: sticky; top: 0; background: #181825;
+    }
+    .deep-item {
+      display: flex; align-items: center; gap: 5px; padding: 2px 3px;
+      border-radius: 3px; font-size: 0.76rem;
+    }
+    .deep-item:hover { background: #313244; }
+    .deep-rel {
+      font-size: 0.69rem; color: #585b70; flex: 1;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    /* ── Pannello duplicati ── */
+    #dup-panel {
+      background: #181825; border-radius: 10px; padding: 10px 14px;
+      display: none; flex-direction: column; gap: 8px; max-height: 220px; flex-shrink: 0;
+    }
+    #dup-header { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; flex-shrink: 0; flex-wrap: wrap; }
+
+    .unlock-btn {
+      padding: 3px 10px; border: none; border-radius: 5px;
+      font-size: 0.75rem; font-weight: 700; cursor: pointer; background: #f38ba8; color: #1e1e2e;
+      transition: opacity 0.15s; flex-shrink: 0;
+    }
+    .unlock-btn:hover { opacity: 0.8; }
+
+    #dup-list { display: flex; flex-wrap: wrap; gap: 6px; overflow-y: auto; flex: 1; align-content: flex-start; }
+
+    .dup-section-hdr {
+      width: 100%; font-size: 0.64rem; color: #585b70; text-transform: uppercase;
+      letter-spacing: 0.9px; padding: 8px 2px 3px; font-weight: 700;
+      border-bottom: 1px solid #313244;
+    }
+    .dup-item {
+      display: flex; flex-direction: column; gap: 3px;
+      background: #1e1e2e; border-radius: 7px; padding: 7px 9px;
+      min-width: 260px; max-width: 400px; border: 1px solid #313244;
+    }
+    .dup-item-hdr { display: flex; align-items: center; gap: 5px; min-width: 0; }
+    .dup-name { color: #cdd6f4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.82rem; flex: 1; }
+    .dup-warn { font-size: 0.67rem; color: #fab387; white-space: nowrap; flex-shrink: 0; }
+    .dup-occur { display: flex; align-items: center; gap: 5px; padding: 1px 0; }
+    .dup-path { flex: 1; font-size: 0.7rem; color: #6c7086; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .dup-sz { font-size: 0.66rem; color: #585b70; flex-shrink: 0; }
+    .dup-sz.mismatch { color: #fab387; font-weight: 700; }
+    .dup-del {
+      padding: 1px 7px; border: 1px solid #f38ba855; border-radius: 4px;
+      font-size: 0.69rem; font-weight: 700; cursor: pointer; flex-shrink: 0;
+      background: #f38ba822; color: #f38ba8; transition: background 0.15s;
+    }
+    .dup-del:disabled { opacity: 0.3; cursor: not-allowed; }
+    .dup-del:not(:disabled):hover { background: #f38ba844; }
+    #dup-empty { font-size: 0.83rem; color: #a6e3a1; padding: 4px 0; }
+
+    /* Compare panel: stesso file su entrambi i lati ma dimensioni diverse */
+    .cmp-size-warn { color: #fab387 !important; font-weight: 700; }
+  </style>
+</head>
+<body>
+
+  <div class="app-header">
+    <h1>&#128194; Cerca File Doppi</h1>
+    <button id="help-btn" class="help-btn" title="Guida rapida">❓ Guida</button>
+  </div>
+
+  <div id="panels">
+    <!-- SINISTRO -->
+    <div class="panel" id="panel-left">
+      <div class="panel-header">
+        <span class="panel-label" style="color:#89b4fa">&#9632; Cartella</span>
+        <span class="panel-path"></span>
+        <span class="lock-badge"></span>
+      </div>
+      <div class="toolbar">
+        <button class="btn-pick" style="background:#89b4fa">&#128193; Scegli cartella</button>
+        <input type="text" class="search-box" placeholder="&#128269; Cerca...">
+        <button class="ctrl-btn expand-btn"    title="Espandi tutto">&#9660;</button>
+        <button class="ctrl-btn collapse-btn"  title="Comprimi tutto">&#9654;</button>
+        <button class="ctrl-btn refresh-btn"   title="Aggiorna struttura (rilegge la cartella)" style="display:none">&#128260;</button>
+        <button class="ctrl-btn reset-btn"     title="Svuota pannello">&#10006;</button>
+      </div>
+      <div class="stats"></div>
+      <input type="file" class="file-input" webkitdirectory multiple>
+      <div class="drop-zone">
+        <div class="dz-icon">&#128193;</div>
+        <div class="dz-text">Trascina o clicca per scegliere una cartella</div>
+        <div class="dz-hint">Mostra solo le sottocartelle</div>
+      </div>
+      <div class="tree-container"><ul class="tree-root"></ul></div>
+    </div>
+
+  </div>
+
+  <!-- PANNELLO DUPLICATI -->
+  <div id="dup-panel">
+    <div id="dup-header">
+      <span id="dup-title"></span>
+      <button class="unlock-btn" id="unlock-l" style="display:none">&#128275; Sblocca per 🗑️ spostare nel Cestino</button>
+      <button id="dup-undo" style="display:none;padding:3px 11px;border:none;border-radius:5px;font-size:0.75rem;font-weight:700;cursor:pointer;background:#89dceb;color:#1e1e2e;transition:opacity 0.15s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">↩ Annulla ultima azione</button>
+      <button id="dup-clean-all" style="display:none;padding:3px 11px;border:none;border-radius:5px;font-size:0.75rem;font-weight:700;cursor:pointer;background:#f38ba8;color:#1e1e2e;transition:opacity 0.15s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">✕ Elimina tutti i doppi</button>
+      <button id="dup-abort" style="display:none;padding:3px 11px;border:none;border-radius:5px;font-size:0.75rem;font-weight:700;cursor:pointer;background:#fab387;color:#1e1e2e;transition:opacity 0.15s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">⛔ Annulla</button>
+      <label id="move-flag-label" style="display:inline-flex;align-items:center;gap:4px;font-size:0.72rem;color:#a6e3a1;cursor:pointer;user-select:none;margin-left:8px" title="Se attivo usa move() nativo (veloce). Se il browser non lo supporta ricade su copia+elimina.">
+        <input type="checkbox" id="move-flag" style="cursor:pointer;accent-color:#a6e3a1"> ⚡ Taglia-incolla
+      </label>
+    </div>
+    <div id="dup-list"></div>
+  </div>
+
+  <script>
+    // ── Icone estensione ───────────────────────────────────────────────────
+    function _fileIcon(ext) {
+      const m = {
+        JPG:'🖼️',JPEG:'🖼️',PNG:'🖼️',GIF:'🖼️',BMP:'🖼️',WEBP:'🖼️',SVG:'🖼️',ICO:'🖼️',
+        MP4:'🎬',AVI:'🎬',MKV:'🎬',MOV:'🎬',WMV:'🎬',
+        MP3:'🎵',WAV:'🎵',FLAC:'🎵',OGG:'🎵',AAC:'🎵',
+        PDF:'📄',DOC:'📝',DOCX:'📝',XLS:'📊',XLSX:'📊',PPT:'📊',PPTX:'📊',
+        ZIP:'🗜️',RAR:'🗜️','7Z':'🗜️',TAR:'🗜️',GZ:'🗜️',
+        EXE:'⚙️',MSI:'⚙️',BAT:'⚙️',CMD:'⚙️',SH:'⚙️',
+        JS:'💻',TS:'💻',PY:'💻',HTML:'💻',CSS:'💻',JSON:'💻',XML:'💻',PHP:'💻',
+        TXT:'📃',MD:'📃',LOG:'📃',CSV:'📃',
+      };
+      return m[ext] || '📄';
+    }
+
+    function _esc(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function _fmtSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+      if (bytes < 1073741824) return (bytes / 1048576).toFixed(1) + ' MB';
+      return (bytes / 1073741824).toFixed(2) + ' GB';
+    }
+
+    // Estensioni protette dalla rimozione automatica (file di configurazione)
+    const CONFIG_EXTENSIONS = new Set([
+      // Formati dati / config generici
+      'JSON','XML','YAML','YML','TOML','INI','CFG','CONF','CONFIG','ENV','ENVRC',
+      'PROPERTIES','SETTINGS','PLIST','MANIFEST','INFO','SPEC',
+      // Sistema operativo / registro
+      'REG','INF','RDP','POL',
+      // Git e VCS
+      'GITIGNORE','GITATTRIBUTES','GITMODULES','GITCONFIG',
+      // Node / JS toolchain
+      'NPMRC','NPMIGNORE','BABELRC','ESLINTRC','ESLINTIGNORE',
+      'PRETTIERRC','PRETTIERIGNORE','TSCONFIG','JSCONFIG','BROWSERSLISTRC',
+      'STYLELINTRC','NVMRC',
+      // .NET / Visual Studio / MSBuild
+      'CSPROJ','VBPROJ','FSPROJ','VCXPROJ','SLN','PROPS','TARGETS','VSCONFIG',
+      // Java / Gradle / Maven
+      'GRADLE','KTS','IML','GEMSPEC','PODSPEC',
+      // Web server
+      'HTACCESS','HTPASSWD',
+      // IDE / editor
+      'EDITORCONFIG','XCCONFIG','WORKSPACE',
+      // DevOps / Infrastruttura
+      'TFVARS','HCL','OVPN','DOCKERIGNORE',
+      // Certificati e chiavi (mai eliminare!)
+      'PEM','CRT','CER','KEY','P12','PFX','JKS','KEYSTORE','CSR',
+      // Backup / lock
+      'BAK','LOCK','ORIG','OLD',
+      // Claude
+      'CLAUDE',
+      // Netrc / credenziali
+      'NETRC',
+    ]);
+
+    // Nomi file completi protetti indipendentemente dall'estensione
+    const CONFIG_FILENAMES = new Set([
+      'claude.md','readme.md','changelog.md','license.md','contributing.md',
+      'makefile','dockerfile','vagrantfile','gemfile','rakefile',
+      'procfile','podfile','cartfile','brewfile','fastfile',
+      'jenkinsfile','gruntfile.js','gulpfile.js',
+      '.env','.env.local','.env.development','.env.production','.env.test',
+    ]);
+
+    // ── Modale HTML personalizzato (preserva user gesture) ────────────────
+    // onOk=null → solo bottone "Chiudi"; onOk=fn → "Annulla" + "Continua"
+    function showInfoModal(title, bodyHtml, onOk, onCancel) {
+      const overlay = document.createElement('div');
+      overlay.className = 'info-modal-overlay';
+      const cancelBtn = onOk
+        ? `<button class="info-modal-cancel">Annulla</button>`
+        : '';
+      const okLabel = onOk ? 'Continua &rarr;' : 'Chiudi';
+      overlay.innerHTML =
+        `<div class="info-modal">` +
+          `<div class="info-modal-title">${title}</div>` +
+          `<div class="info-modal-body">${bodyHtml}</div>` +
+          `<div class="info-modal-btns">${cancelBtn}<button class="info-modal-ok">${okLabel}</button></div>` +
+        `</div>`;
+      document.body.appendChild(overlay);
+      const close = () => overlay.remove();
+      overlay.querySelector('.info-modal-ok').addEventListener('click', () => {
+        close();
+        onOk?.();   // ← chiamato DIRETTAMENTE dal click: user gesture preservato ✓
+      });
+      overlay.querySelector('.info-modal-cancel')?.addEventListener('click', () => { close(); onCancel?.(); });
+      overlay.addEventListener('click', e => { if (e.target === overlay) { close(); onCancel?.(); } });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') { close(); onCancel?.(); } }, { once: true });
+    }
+
+
+    // ── Pannello duplicati ─────────────────────────────────────────────────
+    const dupPanel = document.getElementById('dup-panel');
+    const dupTitle = document.getElementById('dup-title');
+    const dupList  = document.getElementById('dup-list');
+    const unlockL    = document.getElementById('unlock-l');
+    const dupUndo     = document.getElementById('dup-undo');
+    const dupCleanAll = document.getElementById('dup-clean-all');
+    const dupAbort    = document.getElementById('dup-abort');
+    let   _abortDelete = false;
+
+    dupAbort.addEventListener('click', () => { _abortDelete = true; });
+
+    unlockL.addEventListener('click', async () => { if (await leftPanel?.enableDelete()) refreshDuplicates(); });
+
+    dupUndo.addEventListener('click', async () => {
+      dupUndo.disabled = true;
+      await leftPanel?.undoLastBatch();
+      dupUndo.disabled = false;
+    });
+
+    // Raccoglie TUTTI i file ricorsivamente sotto rootPath
+    // Ritorna Map: filename → [folderPath, ...]
+    function getAllFiles(panel, rootPath) {
+      const result = new Map();
+      for (const [path, files] of Object.entries(panel.fileMap)) {
+        if (path === rootPath || path.startsWith(rootPath + '/')) {
+          for (const fname of files) {
+            if (!result.has(fname)) result.set(fname, []);
+            result.get(fname).push(path);
+          }
+        }
+      }
+      return result;
+    }
+
+    // Percorso relativo alla cartella radice selezionata (per display)
+    function relPath(fullPath, rootPath) {
+      return fullPath === rootPath ? '.' : fullPath.slice(rootPath.length + 1);
+    }
+
+    function refreshDuplicates() {
+      // ── Ricerca duplicati INTRA-albero: stesso nome in 2+ posizioni dentro lo stesso pannello
+      const sections = [];
+      for (const { panel, color } of [
+        { panel: leftPanel, color: '#cba6f7' },
+      ]) {
+        if (!panel || !Object.keys(panel.fileMap).length) continue;
+
+        const idx = new Map(); // fname.toLowerCase()+':'+size → { fname, entries:[{path,size}] }
+        for (const [path, files] of Object.entries(panel.fileMap)) {
+          for (const fname of files) {
+            const size = panel.fileSizeMap[path + '/' + fname];
+            const key = fname.toLowerCase() + ':' + (size !== undefined ? size : '');
+            if (!idx.has(key)) idx.set(key, { fname, entries: [] });
+            idx.get(key).entries.push({ path, size });
+          }
+        }
+
+        const dups = [...idx.values()]
+          .filter(d => d.entries.length > 1)
+          .sort((a, b) => a.fname.localeCompare(b.fname, 'it', { sensitivity: 'base' }));
+
+        sections.push({ panel, color, dups });
+      }
+
+      const totalDups = sections.reduce((s, sec) => s + sec.dups.length, 0);
+      const hasData   = sections.length > 0;
+
+      dupPanel.style.display = hasData ? 'flex' : 'none';
+      if (!hasData) return;
+
+      // ── Titolo ──────────────────────────────────────────────────────────────
+      const col = totalDups ? '#f38ba8' : '#a6e3a1';
+      dupTitle.innerHTML =
+        sections.map(s => `<span style="color:${s.color}">📁 ${_esc(s.panel.pathEl.textContent)}</span>`)
+                .join(' <span style="color:#6c7086">·</span> ') +
+        `&nbsp;—&nbsp;<span style="color:${col};font-weight:700">${totalDups} duplicati interni</span>` +
+        `<span style="color:#585b70;font-size:0.7rem"> (stesso nome + dimensione)</span>`;
+
+      // ── Bottone sblocco ──────────────────────────────────────────────────────
+      const lDups = sections.find(s => s.panel === leftPanel)?.dups.length ?? 0;
+      unlockL.style.display = (lDups > 0 && !leftPanel.canDelete) ? '' : 'none';
+
+      // ── Bottone "Annulla ultima azione" ─────────────────────────────────────
+      const lastBatch = leftPanel.undoStack[leftPanel.undoStack.length - 1];
+      dupUndo.style.display = lastBatch ? '' : 'none';
+      if (lastBatch) dupUndo.textContent = `↩ Annulla ultima azione (${lastBatch.items.length} file)`;
+
+      // ── Bottone "Elimina tutti i doppi" ─────────────────────────────────────
+      // Strategia: per ogni gruppo mantieni la copia nella cartella più esterna
+      // (percorso più corto), elimina tutte le altre
+      const allCanDelete = sections.filter(s => s.dups.length > 0).every(s => s.panel.canDelete);
+      if (totalDups > 0 && allCanDelete) {
+        // Costruisci elenco delle copie da eliminare (tutte tranne la più esterna)
+        const toDelete = [];
+        for (const { panel, dups } of sections) {
+          for (const { fname, entries } of dups) {
+            const ext = fname.includes('.') ? fname.split('.').pop().toUpperCase() : '';
+            if (CONFIG_EXTENSIONS.has(ext) || CONFIG_FILENAMES.has(fname.toLowerCase())) continue;
+            const sorted = [...entries].sort((a, b) =>
+              a.path.split('/').length - b.path.split('/').length || a.path.localeCompare(b.path)
+            );
+            for (let i = 1; i < sorted.length; i++)
+              toDelete.push({ panel, fname, path: sorted[i].path });
+          }
+        }
+        dupCleanAll.style.display = '';
+        dupCleanAll.textContent = `🗑️ Cestino: sposta tutti i doppi (${toDelete.length} file)`;
+        dupCleanAll.onclick = async () => {
+          if (!confirm(`Verranno spostati ${toDelete.length} file duplicati nella cartella "_Cestino_Duplicati".\nPer ogni nome verrà mantenuta la copia nella cartella più esterna (stessa dimensione garantita).\n\nConfermi?`)) return;
+          _abortDelete = false;
+          dupCleanAll.disabled = true;
+          dupAbort.style.display = '';
+          let ok = 0;
+          const tot = toDelete.length;
+          const batchId = `bulk-${Date.now()}`;
+          for (const { panel, fname, path } of toDelete) {
+            if (_abortDelete) break;
+            if (await panel.deleteFile(path, fname, batchId)) {
+              ok++;
+              dupCleanAll.textContent = `⏳ ${ok} / ${tot} spostati…`;
+              refreshDuplicates();
+            }
+          }
+          dupAbort.style.display = 'none';
+          dupCleanAll.disabled = false;
+          _abortDelete = false;
+        };
+      } else {
+        dupCleanAll.style.display = 'none';
+      }
+
+      dupList.innerHTML = '';
+
+      if (totalDups === 0) {
+        dupList.innerHTML = '<span id="dup-empty">✓ Nessun file duplicato nell\'intero albero</span>';
+        return;
+      }
+
+      const multiSection = sections.filter(s => s.dups.length > 0).length > 1;
+
+      for (const { panel, color, dups } of sections) {
+        if (!dups.length) continue;
+
+        // Intestazione sezione (solo se entrambi i pannelli hanno duplicati)
+        if (multiSection) {
+          const secHdr = document.createElement('div');
+          secHdr.className = 'dup-section-hdr';
+          secHdr.innerHTML = `<span style="color:${color}">📁 ${_esc(panel.pathEl.textContent)}</span> — ${dups.length} doppi`;
+          dupList.appendChild(secHdr);
+        }
+
+        dups.forEach(({ fname, entries }) => {
+          const ext = fname.includes('.') ? fname.split('.').pop().toUpperCase() : '—';
+          const isProtected = CONFIG_EXTENSIONS.has(ext) || CONFIG_FILENAMES.has(fname.toLowerCase());
+          const sharedSize = entries[0]?.size;
+
+          const item = document.createElement('div');
+          item.className = 'dup-item';
+
+          // ── Riga intestazione: icona + nome + dimensione comune
+          const hdrRow = document.createElement('div');
+          hdrRow.className = 'dup-item-hdr';
+          hdrRow.innerHTML =
+            `<span style="font-size:0.82rem">${_fileIcon(ext)}</span>` +
+            `<span class="dup-name" title="${_esc(fname)}">${_esc(fname)}</span>` +
+            (sharedSize !== undefined ? `<span class="dup-warn" style="color:#a6adc8;font-weight:normal">${_fmtSize(sharedSize)}</span>` : '');
+          item.appendChild(hdrRow);
+
+          // ── Una riga per ogni occorrenza (percorso + bottone elimina)
+          entries.forEach(e => {
+            const row = document.createElement('div');
+            row.className = 'dup-occur';
+
+            const pathSpan = document.createElement('span');
+            pathSpan.className = 'dup-path';
+            pathSpan.textContent = e.path;
+            pathSpan.title = e.path;
+
+            const szSpan = document.createElement('span');
+            szSpan.className = 'dup-sz';
+            szSpan.textContent = '';
+
+            const btn = document.createElement('button');
+            btn.className = 'dup-del';
+            btn.textContent = isProtected ? '🔒' : '✕';
+            btn.title = isProtected
+              ? `File di configurazione (${ext}) — protetto dalla rimozione automatica`
+              : `Sposta nel Cestino questa copia da:\n${e.path}`;
+            btn.disabled = !panel.canDelete || isProtected;
+            btn.addEventListener('click', async () => {
+              if (confirm(`Spostare "${fname}" nel Cestino da:\n${e.path}?`)) {
+                if (await panel.deleteFile(e.path, fname)) refreshDuplicates();
+              }
+            });
+
+            row.append(pathSpan, szSpan, btn);
+            item.appendChild(row);
+          });
+
+          dupList.appendChild(item);
+        });
+      }
+    }
+
+    // ── Classe FolderPanel ─────────────────────────────────────────────────
+    class FolderPanel {
+      constructor(panelEl) {
+        this.el          = panelEl;
+        this.pathEl      = panelEl.querySelector('.panel-path');
+        this.fileInput   = panelEl.querySelector('.file-input');
+        this.dropZone    = panelEl.querySelector('.drop-zone');
+        this.treeWrap    = panelEl.querySelector('.tree-container');
+        this.treeEl      = panelEl.querySelector('.tree-root');
+        this.search      = panelEl.querySelector('.search-box');
+        this.statsEl     = panelEl.querySelector('.stats');
+        this.lockBadge   = panelEl.querySelector('.lock-badge');
+        this.fileMap     = {};   // path → [filenames]  popolato da webkitdirectory
+        this.fileSizeMap = {};   // "path/filename" → size in bytes
+        this.fileDataMap = {};   // "path/filename" → File object (per copia)
+        this.rootHandle  = null; // FileSystemDirectoryHandle solo per eliminazione
+        this.canDelete   = false;
+        this.selectedPath= null;
+        this.selectedRow = null;
+        this.dupStatus   = new Map(); // "path/filename" → 'keep' | 'del'
+        this.undoStack   = [];   // [{ id, items: [{folderPath, filename}] }] azioni annullabili
+        this._batchSeq   = 0;
+        this._bind();
+      }
+
+      _bind() {
+        // Pulsante: in Chrome/Edge usa showDirectoryPicker (lettura + scrittura in un solo dialog)
+        // In Firefox fallback su fileInput (sola lettura)
+        const btnPick = this.el.querySelector('.btn-pick');
+        btnPick.addEventListener('click', () => {
+          if ('showDirectoryPicker' in window) this._pickWithDirectoryPicker();
+          else this.fileInput.click();
+        });
+        this.el.querySelector('.expand-btn')   .addEventListener('click', () => this._expandAll());
+        this.el.querySelector('.collapse-btn') .addEventListener('click', () => this._collapseAll());
+        this.el.querySelector('.refresh-btn')  .addEventListener('click', () => this._refresh());
+        this.el.querySelector('.reset-btn')    .addEventListener('click', () => this._reset());
+        this.search.addEventListener('input',  () => this._filter(this.search.value));
+
+        // Drop zone: click → fileInput
+        this.dropZone.addEventListener('click', () => this.fileInput.click());
+
+        // Drag & drop sull'INTERO pannello: funziona sia prima del primo
+        // caricamento (drop-zone visibile) sia dopo, per sostituire la
+        // cartella corrente trascinandone una nuova sopra l'albero.
+        this.el.addEventListener('dragover', e => { e.preventDefault(); this.el.classList.add('dragover'); });
+        this.el.addEventListener('dragleave', e => { if (!this.el.contains(e.relatedTarget)) this.el.classList.remove('dragover'); });
+        this.el.addEventListener('drop', e => {
+          e.preventDefault(); this.el.classList.remove('dragover');
+          const entry = e.dataTransfer.items?.[0]?.webkitGetAsEntry();
+          if (entry?.isDirectory) {
+            if ('showDirectoryPicker' in window) {
+              // In Chrome/Edge la lettura ricorsiva via FileSystemEntry (drag&drop)
+              // su pagine file:// spesso torna vuota (0 file). showDirectoryPicker
+              // è affidabile e in più regala subito l'accesso in scrittura:
+              // basta riselezionare la STESSA cartella appena trascinata.
+              this._pickWithDirectoryPicker();
+            } else {
+              this.fileMap = {}; this.fileSizeMap = {}; this.fileDataMap = {}; this.undoStack = []; this.canDelete = false; this.rootHandle = null;
+              this._readDirEntry(entry, '').then(t => this._render(t, entry.name));
+            }
+          } else if (e.dataTransfer.files.length) {
+            this._fromFileList(e.dataTransfer.files);
+          }
+        });
+
+        this.fileInput.addEventListener('change', () => {
+          if (this.fileInput.files.length) {
+            this.canDelete = false; this.rootHandle = null;
+            this._fromFileList(this.fileInput.files);
+          }
+        });
+      }
+
+      // ── Apre showDirectoryPicker e carica la cartella scelta (lettura + scrittura) ──
+      async _pickWithDirectoryPicker() {
+        const btnPick = this.el.querySelector('.btn-pick');
+        try {
+          const h = await window.showDirectoryPicker({ mode: 'readwrite' });
+          this.fileMap = {}; this.fileSizeMap = {}; this.fileDataMap = {}; this.undoStack = [];
+          this.rootHandle = h; this.canDelete = true;
+          const orig = btnPick.textContent;
+          btnPick.disabled = true; btnPick.textContent = '⏳ Caricamento…';
+          const tree = await this._readFromHandle(h, '');
+          btnPick.disabled = false; btnPick.textContent = orig;
+          this._render(tree, h.name);
+        } catch(e) {
+          if (e.name !== 'AbortError') this.fileInput.click(); // fallback
+        }
+      }
+
+      // ── Sblocco scrittura: showDirectoryPicker → restituisce Promise<bool> ──
+      enableDelete() {
+        return new Promise(resolve => {
+          if (!('showDirectoryPicker' in window)) {
+            showInfoModal(
+              '⚠️ Browser non supportato',
+              'Firefox non supporta questa funzione.<br><br>' +
+              'Usa <b>Google Chrome</b> o <b>Microsoft Edge</b>.<br><br>' +
+              '<span class="ok-text">✓ Visualizzazione albero e ricerca duplicati funzionano in tutti i browser.</span>'
+            );
+            resolve(false); return;
+          }
+          const nome = this.pathEl.textContent || 'la cartella';
+          const self = this;
+          showInfoModal(
+            '🔓 Abilita scrittura',
+            `Nella finestra che si aprirà:<br><br>` +
+            `<span class="ok-text">→</span> seleziona la stessa cartella già caricata ` +
+            `(<b>${_esc(nome)}</b>)<br>` +
+            `<span class="ok-text">→</span> clicca <b>"Selezione cartella"</b><br>` +
+            `<span class="ok-text">→</span> poi clicca <b>"Consenti"</b> se il browser lo chiede`,
+            async () => {
+              // Chiamato dal click "Continua" → user gesture valido ✓
+              try {
+                const h = await window.showDirectoryPicker({ mode: 'readwrite' });
+                self.rootHandle = h;
+                self.canDelete  = true;
+                self._updateLockBadge();
+                resolve(true);
+              } catch(e) {
+                if (e.name !== 'AbortError') alert('Errore: ' + e.message);
+                resolve(false);
+              }
+            },
+            () => resolve(false)   // annulla modale
+          );
+        });
+      }
+
+      // ── Sposta file nel cestino (_Cestino_Duplicati) ─────────────────────
+      // batchId: se più chiamate condividono lo stesso id, "Annulla ultima
+      // azione" le ripristina tutte insieme (usato da "Elimina tutti i doppi")
+      async deleteFile(folderPath, filename, batchId = null) {
+        if (!this.canDelete || !this.rootHandle) return false;
+        try {
+          // Naviga da rootHandle fino alla cartella sorgente
+          // folderPath: "rootName/sub1/sub2" → skip rootName
+          const parts = folderPath.split('/').slice(1);
+          let dir = this.rootHandle;
+          for (const part of parts) dir = await dir.getDirectoryHandle(part);
+
+          // Crea _Cestino_Duplicati (con la stessa struttura di sottocartelle)
+          let trashDir = await this.rootHandle.getDirectoryHandle('_Cestino_Duplicati', { create: true });
+          for (const part of parts) trashDir = await trashDir.getDirectoryHandle(part, { create: true });
+
+          const srcHandle = await dir.getFileHandle(filename);
+          const useMoveFlag = document.getElementById('move-flag')?.checked;
+
+          if (useMoveFlag && typeof srcHandle.move === 'function') {
+            // ⚡ Taglia-incolla nativo: nessuna copia dei byte, molto più veloce
+            await srcHandle.move(trashDir, filename);
+          } else {
+            // Copia + elimina (fallback)
+            const file = await srcHandle.getFile();
+            const dstHandle = await trashDir.getFileHandle(filename, { create: true });
+            const writable = await dstHandle.createWritable();
+            await writable.write(file);
+            await writable.close();
+            await dir.removeEntry(filename);
+          }
+
+          const arr = this.fileMap[folderPath];
+          if (arr) { const i = arr.indexOf(filename); if (i >= 0) arr.splice(i, 1); }
+          delete this.fileSizeMap[folderPath + '/' + filename];
+          delete this.fileDataMap[folderPath + '/' + filename];
+
+          const id = batchId || `single-${++this._batchSeq}`;
+          let batch = this.undoStack.find(b => b.id === id);
+          if (!batch) { batch = { id, items: [] }; this.undoStack.push(batch); }
+          batch.items.push({ folderPath, filename });
+
+          this._syncTree();
+          return true;
+        } catch(e) {
+          return false; // file non trovato o non accessibile — si continua senza bloccare
+        }
+      }
+
+      // ── Ripristina un singolo file dal Cestino alla cartella originale ───
+      // Rifiuta il ripristino (senza sovrascrivere nulla) se nella cartella
+      // di destinazione esiste già un file con lo stesso nome.
+      async restoreFile(folderPath, filename) {
+        if (!this.canDelete || !this.rootHandle) return { ok: false, reason: 'no-access' };
+        try {
+          const parts = folderPath.split('/').slice(1);
+          let dir = this.rootHandle;
+          for (const part of parts) dir = await dir.getDirectoryHandle(part);
+
+          let trashDir = await this.rootHandle.getDirectoryHandle('_Cestino_Duplicati', { create: true });
+          for (const part of parts) trashDir = await trashDir.getDirectoryHandle(part, { create: true });
+
+          // Conflitto: esiste già un file con questo nome nella destinazione?
+          let conflict = false;
+          try { await dir.getFileHandle(filename); conflict = true; } catch(e) { /* non esiste, ok */ }
+          if (conflict) return { ok: false, reason: 'conflict' };
+
+          const srcHandle = await trashDir.getFileHandle(filename);
+          const useMoveFlag = document.getElementById('move-flag')?.checked;
+
+          if (useMoveFlag && typeof srcHandle.move === 'function') {
+            await srcHandle.move(dir, filename);
+          } else {
+            const file = await srcHandle.getFile();
+            const dstHandle = await dir.getFileHandle(filename, { create: true });
+            const writable = await dstHandle.createWritable();
+            await writable.write(file);
+            await writable.close();
+            await trashDir.removeEntry(filename);
+          }
+
+          if (!this.fileMap[folderPath]) this.fileMap[folderPath] = [];
+          this.fileMap[folderPath].push(filename);
+          const restoredHandle = await dir.getFileHandle(filename);
+          const restoredFile = await restoredHandle.getFile();
+          this.fileSizeMap[folderPath + '/' + filename] = restoredFile.size;
+          this.fileDataMap[folderPath + '/' + filename] = restoredFile;
+
+          return { ok: true };
+        } catch(e) {
+          return { ok: false, reason: 'error' };
+        }
+      }
+
+      // ── Annulla l'ultima azione (singola o batch da "Elimina tutti i doppi") ──
+      async undoLastBatch() {
+        const batch = this.undoStack.pop();
+        if (!batch) return;
+
+        let restored = 0;
+        const conflicts = [];
+        for (const { folderPath, filename } of batch.items) {
+          const res = await this.restoreFile(folderPath, filename);
+          if (res.ok) restored++;
+          else conflicts.push(`${filename}  (${folderPath})`);
+        }
+
+        this._syncTree();
+        refreshDuplicates();
+
+        if (conflicts.length) {
+          alert(
+            `Ripristinati ${restored}/${batch.items.length} file.\n\n` +
+            `Non ripristinati perché nella cartella di destinazione esiste già un file con lo stesso nome:\n` +
+            conflicts.join('\n')
+          );
+        }
+      }
+
+      // ── Lettura con <input webkitdirectory> (PRINCIPALE) ─────────────────
+      _fromFileList(files) {
+        const root = {}; let rootName = ''; this.fileMap = {}; this.fileSizeMap = {}; this.fileDataMap = {}; this.undoStack = [];
+        for (const f of files) {
+          const parts = f.webkitRelativePath.split('/');
+          if (parts.includes('_Cestino_Duplicati')) continue; // ignora cestino
+          if (!rootName) rootName = parts[0];
+          // Costruisce struttura cartelle
+          let node = root;
+          for (let i = 1; i < parts.length - 1; i++) {
+            node[parts[i]] = node[parts[i]] || {};
+            node = node[parts[i]];
+          }
+          // Aggiunge file alla mappa
+          const fp = parts.slice(0, parts.length - 1).join('/');
+          if (!this.fileMap[fp]) this.fileMap[fp] = [];
+          const fname = parts[parts.length - 1];
+          this.fileMap[fp].push(fname);
+          this.fileSizeMap[fp + '/' + fname] = f.size;
+          this.fileDataMap[fp + '/' + fname] = f;
+        }
+        this._render(root, rootName);
+      }
+
+      // ── Lettura con drag & drop (FileEntry API) ──────────────────────────
+      _readDirEntry(dirEntry, parentPath) {
+        return new Promise(resolve => {
+          const cur = parentPath ? `${parentPath}/${dirEntry.name}` : dirEntry.name;
+          if (!this.fileMap[cur]) this.fileMap[cur] = [];
+          const result = {}, reader = dirEntry.createReader();
+          const readNext = () => {
+            reader.readEntries(entries => {
+              if (!entries.length) return resolve(result);
+              const pending = [];
+              for (const e of entries) {
+                if (e.isDirectory) {
+                  if (e.name === '_Cestino_Duplicati') continue; // ignora cestino
+                  pending.push(
+                    this._readDirEntry(e, cur).then(sub => { result[e.name] = sub; })
+                  );
+                } else {
+                  this.fileMap[cur].push(e.name);
+                  const eName = e.name, eCur = cur;
+                  pending.push(new Promise(res => {
+                    e.file(f => {
+                      this.fileSizeMap[eCur + '/' + eName] = f.size;
+                      this.fileDataMap[eCur + '/' + eName] = f;
+                      res();
+                    }, () => res());
+                  }));
+                }
+              }
+              Promise.all(pending).then(readNext);
+            }, () => resolve(result));
+          };
+          readNext();
+        });
+      }
+
+      // ── Lettura ricorsiva con FileSystemDirectoryHandle (FileSystem Access API) ──
+      async _readFromHandle(dirHandle, parentPath) {
+        const cur = parentPath ? `${parentPath}/${dirHandle.name}` : dirHandle.name;
+        if (!this.fileMap[cur]) this.fileMap[cur] = [];
+        const children = {};
+        for await (const [name, handle] of dirHandle.entries()) {
+          if (name === '_Cestino_Duplicati') continue; // ignora cestino
+          if (handle.kind === 'directory') {
+            children[name] = await this._readFromHandle(handle, cur);
+          } else {
+            this.fileMap[cur].push(name);
+            try {
+              const file = await handle.getFile();
+              this.fileSizeMap[cur + '/' + name] = file.size;
+              this.fileDataMap[cur + '/' + name] = file;
+            } catch(e) { /* file non accessibile, skip */ }
+          }
+        }
+        return children;
+      }
+
+      // ── Utilities ─────────────────────────────────────────────────────────
+      _count(n) { let c = 0; for (const k of Object.keys(n)) c += 1 + this._count(n[k]); return c; }
+
+      _fmtSize(bytes) { return _fmtSize(bytes); }
+
+      // ── Calcola quali file (stesso nome + stessa dimensione, in 2+ punti
+      // dell'albero) verranno mantenuti (verde) e quali verranno spostati
+      // nel Cestino (arancione). I file protetti (CONFIG_EXTENSIONS /
+      // CONFIG_FILENAMES) non vengono mai cancellati, quindi restano verdi.
+      _computeDupStatus() {
+        const idx = new Map(); // fname.toLowerCase()+':'+size → { fname, entries:[{path}] }
+        for (const [path, files] of Object.entries(this.fileMap)) {
+          for (const fname of files) {
+            const size = this.fileSizeMap[path + '/' + fname];
+            const key = fname.toLowerCase() + ':' + (size !== undefined ? size : '');
+            if (!idx.has(key)) idx.set(key, { fname, entries: [] });
+            idx.get(key).entries.push({ path });
+          }
+        }
+
+        const status = new Map();
+        for (const { fname, entries } of idx.values()) {
+          if (entries.length < 2) continue;
+          const ext = fname.includes('.') ? fname.split('.').pop().toUpperCase() : '';
+          const isProtected = CONFIG_EXTENSIONS.has(ext) || CONFIG_FILENAMES.has(fname.toLowerCase());
+          if (isProtected) {
+            for (const e of entries) status.set(e.path + '/' + fname, 'keep');
+            continue;
+          }
+          const sorted = [...entries].sort((a, b) =>
+            a.path.split('/').length - b.path.split('/').length || a.path.localeCompare(b.path)
+          );
+          status.set(sorted[0].path + '/' + fname, 'keep');
+          for (let i = 1; i < sorted.length; i++) status.set(sorted[i].path + '/' + fname, 'del');
+        }
+        return status;
+      }
+
+      // ── Ricostruisce la struttura nidificata di sole sottocartelle a
+      // partire dai path presenti in fileMap (serve per ridisegnare l'albero
+      // senza dover rileggere il disco, es. dopo un'eliminazione).
+      _buildTreeFromPaths() {
+        const root = {};
+        for (const path of Object.keys(this.fileMap)) {
+          const parts = path.split('/').slice(1); // rimuove il nome della root
+          let node = root;
+          for (const part of parts) { node[part] = node[part] || {}; node = node[part]; }
+        }
+        return root;
+      }
+
+      // ── Ridisegna l'albero mantenendo selezione, scroll e cartelle aperte
+      // (usato dopo lo spostamento nel Cestino di uno o più duplicati) ──────
+      _syncTree() {
+        if (this.treeWrap.style.display === 'none') return;
+        const expanded = new Set();
+        this.treeEl.querySelectorAll('.node-row').forEach(row => {
+          const ul = row.nextElementSibling;
+          if (ul && ul.classList.contains('children') && !ul.classList.contains('hidden')) expanded.add(row.dataset.path);
+        });
+        const prevPath   = this.selectedPath;
+        const prevScroll = this.treeWrap.scrollTop;
+        this._render(this._buildTreeFromPaths(), this.pathEl.textContent, expanded);
+        if (prevPath) {
+          const row = this.treeEl.querySelector(`.node-row[data-path="${CSS.escape(prevPath)}"]`);
+          if (row) this._select(prevPath, row);
+        }
+        this.treeWrap.scrollTop = prevScroll;
+      }
+
+      // ── Copia file nella cartella di questo pannello ──────────────────────
+      async copyFileTo(sourceFile, targetFolderPath, filename) {
+        if (!this.canDelete || !this.rootHandle) return false;
+        try {
+          const parts = targetFolderPath.split('/').slice(1);
+          let dir = this.rootHandle;
+          for (const part of parts) dir = await dir.getDirectoryHandle(part, { create: true });
+          const fh = await dir.getFileHandle(filename, { create: true });
+          const writable = await fh.createWritable();
+          await writable.write(sourceFile);
+          await writable.close();
+          return true;
+        } catch (e) {
+          alert('Errore durante la copia:\n' + e.message);
+          return false;
+        }
+      }
+
+      _updateLockBadge() {
+        const b = this.lockBadge;
+        if (!b) return;
+        if (!this.pathEl.textContent) { b.style.display = 'none'; return; }
+        b.style.display = 'flex';
+        if (this.canDelete) {
+          b.className = 'lock-badge can-del';
+          b.textContent = '🔓 Scrittura attiva';
+          b.title = 'Accesso scrittura abilitato — puoi copiare e eliminare file';
+          b.onclick = null;
+        } else {
+          b.className = 'lock-badge no-del';
+          b.textContent = '🔒 Ricarica per copia / elimina';
+          b.title = 'Clicca per ricaricare con accesso scrittura (necessario sia per copiare che per eliminare file)';
+          b.onclick = () => this.enableDelete();
+        }
+      }
+
+      // ── Render albero ─────────────────────────────────────────────────────
+      _render(data, rootName, expandedPaths) {
+        this.treeEl.innerHTML = '';
+        this.selectedPath = null; this.selectedRow = null;
+        const total = this._count(data);
+
+        const totalFiles = Object.values(this.fileMap).reduce((s, a) => s + a.length, 0);
+        this.pathEl.textContent = rootName;
+        this.dupStatus = this._computeDupStatus();
+        const dupCount = [...this.dupStatus.values()].filter(s => s === 'del').length;
+        this.statsEl.innerHTML  = `<b>${total}</b> sottocartelle · <b>${totalFiles}</b> file` +
+          (dupCount > 0
+            ? ` · <span style="color:#a6e3a1">🟩 originale</span> <span style="color:#fab387">🟧 duplicato (${dupCount})</span>`
+            : '');
+        this.statsEl.style.display = 'block';
+        this.dropZone.style.display = 'none';
+        this.treeWrap.style.display = 'block';
+        this.el.querySelector('.refresh-btn').style.display = this.rootHandle ? '' : 'none';
+
+        this.treeEl.appendChild(this._node(rootName, data, true, '', expandedPaths));
+
+        this._updateLockBadge();
+        refreshDuplicates();
+      }
+
+      // ── Costruisce nodo file (foglia) ─────────────────────────────────────
+      _fileNode(fname, folderPath) {
+        const li  = document.createElement('li');
+        li.className = 'tree-node';
+        const row = document.createElement('div'); row.className = 'node-row';
+
+        const toggle = document.createElement('span');
+        toggle.className = 'toggle-btn leaf';
+        toggle.textContent = '▶';
+
+        const ext  = fname.includes('.') ? fname.split('.').pop().toUpperCase() : '';
+        const icon = document.createElement('span'); icon.className = 'file-icon'; icon.textContent = _fileIcon(ext);
+        const label = document.createElement('span'); label.className = 'node-name'; label.textContent = fname; label.dataset.name = fname.toLowerCase();
+
+        const key    = folderPath + '/' + fname;
+        const status = this.dupStatus.get(key);
+        if (status === 'keep') { label.classList.add('dup-keep'); row.title = '🟩 File che rimarrà (originale o protetto)'; }
+        else if (status === 'del') { label.classList.add('dup-del'); row.title = '🟧 Duplicato: verrà spostato nel Cestino_Duplicati'; }
+
+        const size = this.fileSizeMap[key];
+        const sizeSpan = document.createElement('span');
+        sizeSpan.className = 'node-size';
+        sizeSpan.textContent = size !== undefined ? this._fmtSize(size) : '';
+
+        row.append(toggle, icon, label, sizeSpan);
+        li.appendChild(row);
+        row.addEventListener('contextmenu', e => { e.preventDefault(); this._ctxMenu(e.clientX, e.clientY, folderPath.split('/').pop(), folderPath); });
+        return li;
+      }
+
+      // ── Costruisce nodo cartella ───────────────────────────────────────────
+      _node(name, children, isRoot, parentPath, expandedPaths) {
+        const li  = document.createElement('li');
+        li.className = 'tree-node';
+        const cur = parentPath ? `${parentPath}/${name}` : name;
+        const folderKeys = Object.keys(children).sort((a,b) => a.localeCompare(b,'it',{sensitivity:'base'}));
+        const fileNames  = (this.fileMap[cur] || []).slice().sort((a,b) => a.localeCompare(b,'it',{sensitivity:'base'}));
+        const hasKids = folderKeys.length > 0 || fileNames.length > 0;
+        const isOpen  = isRoot || !!expandedPaths?.has(cur);
+
+        const row    = document.createElement('div'); row.className = 'node-row'; row.dataset.path = cur;
+        const toggle = document.createElement('span');
+        toggle.className = 'toggle-btn' + (hasKids ? '' : ' leaf');
+        toggle.textContent = '▶';
+        if (isOpen) toggle.classList.add('open');
+
+        const icon  = document.createElement('span'); icon.className = 'folder-icon'; icon.textContent = isOpen ? '📂' : '📁';
+        const label = document.createElement('span'); label.className = 'node-name'; label.textContent = name; label.dataset.name = name.toLowerCase();
+
+        row.append(toggle, icon, label);
+
+        if (hasKids) {
+          const badge = document.createElement('span'); badge.className = 'node-count';
+          const bits = [];
+          if (folderKeys.length) bits.push(`${folderKeys.length}📁`);
+          if (fileNames.length)  bits.push(`${fileNames.length}📄`);
+          badge.textContent = `(${bits.join(' ')})`;
+          row.appendChild(badge);
+
+          const ul = document.createElement('ul'); ul.className = 'children' + (isOpen ? '' : ' hidden');
+          for (const k of folderKeys) ul.appendChild(this._node(k, children[k], false, cur, expandedPaths));
+          for (const f of fileNames)  ul.appendChild(this._fileNode(f, cur));
+          li.append(row, ul);
+
+          // ▶ : solo espandi / comprimi (non seleziona)
+          toggle.addEventListener('click', e => {
+            e.stopPropagation();
+            const wasOpen = !ul.classList.contains('hidden');
+            ul.classList.toggle('hidden', wasOpen);
+            toggle.classList.toggle('open', !wasOpen);
+            icon.textContent = wasOpen ? '📁' : '📂';
+          });
+
+          // Clic sulla riga: solo seleziona (non chiude la cartella)
+          row.addEventListener('click', () => this._select(cur, row));
+        } else {
+          li.appendChild(row);
+          row.addEventListener('click', () => this._select(cur, row));
+        }
+
+        // Click destro → elenco file
+        row.addEventListener('contextmenu', e => { e.preventDefault(); this._ctxMenu(e.clientX, e.clientY, name, cur); });
+        return li;
+      }
+
+      _select(path, rowEl) {
+        this.selectedRow?.classList.remove('selected');
+        this.selectedPath = path; this.selectedRow = rowEl;
+        rowEl.classList.add('selected');
+        refreshDuplicates();
+      }
+
+      // ── Context menu (click destro) ───────────────────────────────────────
+      _ctxMenu(x, y, folderName, folderPath) {
+        document.getElementById('ctx-menu')?.remove();
+        const files = (this.fileMap[folderPath] || []).slice()
+          .sort((a,b) => a.localeCompare(b,'it',{sensitivity:'base'}));
+
+        const menu  = document.createElement('div'); menu.id = 'ctx-menu';
+        const title = document.createElement('div'); title.className = 'ctx-title';
+        title.textContent = `📂 ${folderName}  —  ${files.length} file`;
+        menu.appendChild(title);
+
+        const list = document.createElement('div'); list.className = 'ctx-list';
+        if (!files.length) {
+          const e = document.createElement('div'); e.className = 'ctx-empty';
+          e.textContent = 'Nessun file direttamente in questa cartella'; list.appendChild(e);
+        } else {
+          files.forEach(fname => {
+            const ext  = fname.includes('.') ? fname.split('.').pop().toUpperCase() : '—';
+            const rawSize = this.fileSizeMap[folderPath + '/' + fname];
+            const sizeStr = rawSize !== undefined ? this._fmtSize(rawSize) : '';
+            const item = document.createElement('div'); item.className = 'ctx-item';
+            item.title = 'Clicca per copiare il nome';
+            item.innerHTML =
+              `<span>${_fileIcon(ext)}</span>` +
+              `<span class="ctx-fname">${_esc(fname)}</span>` +
+              `<span class="ctx-ext">${ext}</span>` +
+              (sizeStr ? `<span class="ctx-size">${sizeStr}</span>` : '') +
+              `<span class="ctx-copy">📋</span>`;
+            item.addEventListener('click', e => {
+              e.stopPropagation();
+              navigator.clipboard.writeText(fname).then(() => {
+                item.querySelector('.ctx-copy').textContent = '✓';
+                setTimeout(() => { item.querySelector('.ctx-copy').textContent = '📋'; }, 1200);
+              });
+            });
+            list.appendChild(item);
+          });
+        }
+        menu.appendChild(list);
+        document.body.appendChild(menu);
+
+        const vw = window.innerWidth, vh = window.innerHeight;
+        menu.style.left = (x + menu.offsetWidth  > vw ? vw - menu.offsetWidth  - 8 : x) + 'px';
+        menu.style.top  = (y + menu.offsetHeight > vh ? vh - menu.offsetHeight - 8 : y) + 'px';
+
+        const close = () => menu.remove();
+        setTimeout(() => {
+          document.addEventListener('click',       close, { once: true });
+          document.addEventListener('contextmenu', close, { once: true });
+          document.addEventListener('keydown',     close, { once: true });
+        }, 0);
+      }
+
+      // ── Espandi / Comprimi / Filtra / Reset ───────────────────────────────
+      _expandAll() {
+        this.treeEl.querySelectorAll('.children').forEach(e => e.classList.remove('hidden'));
+        this.treeEl.querySelectorAll('.toggle-btn:not(.leaf)').forEach(e => e.classList.add('open'));
+        this.treeEl.querySelectorAll('.folder-icon').forEach(e => e.textContent = '📂');
+      }
+      _collapseAll() {
+        this.treeEl.querySelectorAll('.children').forEach(e => e.classList.add('hidden'));
+        this.treeEl.querySelectorAll('.toggle-btn:not(.leaf)').forEach(e => e.classList.remove('open'));
+        this.treeEl.querySelectorAll('.folder-icon').forEach(e => e.textContent = '📁');
+        const root = this.treeEl.querySelector('.children');
+        if (root) {
+          root.classList.remove('hidden');
+          this.treeEl.querySelector('.toggle-btn')?.classList.add('open');
+          this.treeEl.querySelector('.folder-icon').textContent = '📂';
+        }
+      }
+      _filter(query) {
+        const q = query.trim().toLowerCase();
+        this.treeEl.querySelectorAll('.node-name').forEach(el => {
+          el.classList.remove('match');
+          if (q && el.dataset.name.includes(q)) {
+            el.classList.add('match');
+            let p = el.closest('.children');
+            while (p) {
+              p.classList.remove('hidden');
+              p.previousSibling?.querySelector?.('.toggle-btn')?.classList.add('open');
+              p = p.parentElement?.closest('.children');
+            }
+          }
+        });
+      }
+      async _refresh() {
+        if (!this.rootHandle) return;
+        const btn = this.el.querySelector('.refresh-btn');
+        btn.textContent = '⏳'; btn.disabled = true;
+        const prevPath = this.selectedPath;
+        this.fileMap = {}; this.fileSizeMap = {}; this.fileDataMap = {};
+        try {
+          const tree = await this._readFromHandle(this.rootHandle, '');
+          this._render(tree, this.rootHandle.name);
+          // Ripristina selezione precedente se il percorso esiste ancora
+          if (prevPath && this.fileMap[prevPath]) {
+            const row = this.treeEl.querySelector(`.node-row[data-path="${CSS.escape(prevPath)}"]`);
+            if (row) this._select(prevPath, row);
+          }
+        } catch(e) {
+          alert('Errore durante l\'aggiornamento:\n' + e.message);
+        }
+        btn.textContent = '🔄'; btn.disabled = false;
+      }
+
+      _reset() {
+        this.treeEl.innerHTML = '';
+        this.pathEl.textContent = '';
+        this.statsEl.style.display = 'none';
+        this.dropZone.style.display = '';
+        this.treeWrap.style.display = 'none';
+        this.search.value = '';
+        this.fileInput.value = '';
+        this.fileMap = {}; this.fileSizeMap = {}; this.fileDataMap = {}; this.rootHandle = null; this.canDelete = false;
+        this.undoStack = [];
+        this.selectedPath = null; this.selectedRow = null;
+        this.el.querySelector('.refresh-btn').style.display = 'none';
+        document.getElementById('ctx-menu')?.remove();
+        this._updateLockBadge();
+        refreshDuplicates();
+      }
+    }
+
+    // ── Guida rapida ───────────────────────────────────────────────────────
+    document.getElementById('help-btn').addEventListener('click', () => {
+      showInfoModal(
+        '❓ Guida rapida',
+        `<b>1. Carica una cartella</b><br>` +
+        `Trascinala nel riquadro, cliccaci sopra, oppure usa <b>"Scegli cartella"</b>. ` +
+        `In <b>Chrome/Edge</b> trascinare apre il selettore di sistema (riseleziona la stessa cartella): ` +
+        `garantisce lettura affidabile e attiva subito anche la scrittura. Firefox legge il contenuto trascinato direttamente, in sola lettura.<br><br>` +
+
+        `<b>2. Ricerca</b><br>` +
+        `Il campo 🔍 <b>evidenzia in giallo</b> cartelle e file il cui nome contiene il testo digitato, aprendo automaticamente i loro percorsi. ` +
+        `Non nasconde il resto dell'albero: filtra solo visivamente.<br><br>` +
+
+        `<b>3. Duplicati</b><br>` +
+        `Sono file con <b>stesso nome e stessa dimensione</b> presenti in 2 o più punti dell'albero. ` +
+        `Compaiono nel pannello in basso e, dentro l'albero, sono colorati:<br>` +
+        `<span class="ok-text">🟩 verde</span> → copia che rimarrebbe (la più esterna, o un file protetto)<br>` +
+        `<span style="color:#fab387">🟧 arancione</span> → copia duplicata che verrebbe spostata nel Cestino<br><br>` +
+
+        `<b>4. Cestino, non cancellazione</b><br>` +
+        `"✕" su un singolo file o <b>"Elimina tutti i doppi"</b> spostano le copie in ` +
+        `<b>_Cestino_Duplicati</b> (stessa struttura di sottocartelle) — non vengono mai cancellate per sempre.<br><br>` +
+
+        `<b>5. Annulla</b><br>` +
+        `Il bottone <b>"↩ Annulla ultima azione"</b> riporta indietro l'ultimo spostamento (o l'intero batch di ` +
+        `"Elimina tutti i doppi"). Funziona solo finché la pagina resta aperta.<br><br>` +
+
+        `<b>6. File protetti</b><br>` +
+        `File di configurazione (JSON, YAML, .env, .gitignore, ecc.) hanno l'icona 🔒 e non vengono mai proposti per la cancellazione automatica.<br><br>` +
+
+        `<b>7. Scrittura attiva</b><br>` +
+        `Il badge 🔓 in alto indica che l'app può spostare/copiare file nella cartella. Se manca (🔒), la cartella è in ` +
+        `sola lettura: clicca il badge per sbloccarla riselezionando la stessa cartella — richiede <b>Chrome o Edge</b>. ` +
+        `Firefox supporta solo visualizzazione e ricerca duplicati.`
+      );
+    });
+
+    // ── Init ────────────────────────────────────────────────────────────────
+    const leftPanel = new FolderPanel(document.getElementById('panel-left'));
+
+    // ── Avviso compatibilità browser ────────────────────────────────────────
+    if (!('showDirectoryPicker' in window)) {
+      const warn = document.createElement('div');
+      warn.style.cssText =
+        'position:fixed;bottom:10px;right:14px;background:#f38ba822;border:1px solid #f38ba855;' +
+        'color:#f38ba8;font-size:0.74rem;padding:6px 12px;border-radius:7px;z-index:8888;max-width:320px;line-height:1.4;';
+      warn.innerHTML =
+        '⚠️ <b>Firefox</b>: visualizzazione e ricerca duplicati ✓<br>' +
+        'Eliminazione file non disponibile — usa <b>Chrome</b> o <b>Edge</b>';
+      document.body.appendChild(warn);
+      setTimeout(() => warn.style.transition = 'opacity 1s', 5000);
+      setTimeout(() => warn.style.opacity   = '0', 8000);
+      setTimeout(() => warn.remove(), 9100);
+    }
+  </script>
+
+  <!-- Watermark versione -->
+  <div style="position:fixed;bottom:10px;right:14px;font-size:0.68rem;color:#585b70;opacity:0.45;pointer-events:none;user-select:none;letter-spacing:0.3px;z-index:9999">Digit 54 v. 2.6</div>
+
+</body>
+</html>
