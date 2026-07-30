@@ -26,6 +26,7 @@ const DATI = {
     { "nome": "chimica & Tavola periodica degli elementi v. 2.0", "file": "chimica & Tavola periodica degli elementi v. 2.0.html" }
   ],
   "Sport": [
+    { "nome": "timer", "file": "timer.html" },
     { "nome": "Tour de  France 2026", "file": "Tour de  France 2026.html" }
   ],
   "Tutto_Pdf": [
@@ -38,6 +39,9 @@ const DATI = {
     { "nome": "Percentualometro", "file": "Percentualometro.html" },
     { "nome": "QR_Toolbox", "file": "QR_Toolbox.html" },
     { "nome": "Trova File Doppi v. 2.6", "file": "Trova File Doppi v. 2.6.html" }
+  ],
+  "YT_Dowloder_Web": [
+    { "nome": "Scarica YT Downloader", "file": "Scarica YT Downloader.html" }
   ]
 };
 
