@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Screenshot Multiplo (HTML)</title>
+<style>
+  :root{
+    color-scheme: dark;
+  }
+  html,body{
+    margin:0; padding:0; width:100%; height:100%;
+    background:#0d0d17; color:#eee;
+    font-family: Arial, Helvetica, sans-serif;
+    overflow:hidden;
+  }
+
+  /* ---------- Landing screen ---------- */
+  #landing{
+    position:fixed; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:18px; text-align:center; padding:24px;
+  }
+  #landing h1{ margin:0; font-size:1.6em; }
+  #landing p{ max-width:560px; line-height:1.5; color:#ccc; margin:0; }
+  #landing p.small{ color:#888; font-size:0.85em; }
+  .modeBtn, #pickFolderBtn, #skipFolderBtn{
+    padding:14px 28px; font-size:1.05em; font-weight:bold;
+    background:#4488FF; color:white; border:none; border-radius:8px;
+    cursor:pointer;
+  }
+  .modeBtn:hover, #pickFolderBtn:hover{ background:#5a97ff; }
+  #err{ color:#ff6b6b; max-width:560px; }
+
+  #help{
+    display:flex; gap:16px; max-width:560px; text-align:left;
+  }
+  .help-col{
+    flex:1; background:#15152a; border:1px solid #2a2a4a; border-radius:8px;
+    padding:14px 16px; display:flex; flex-direction:column; gap:12px;
+  }
+  .help-col h3{ margin:0; font-size:0.95em; color:#8ab4ff; }
+  .help-col ol{ margin:0; padding-left:18px; color:#ccc; font-size:0.85em; line-height:1.6; }
+  .modeBtn{
+    padding:10px 14px; font-size:0.9em; align-self:stretch;
+  }
+
+  /* ---------- Capture stage ---------- */
+  #stageWrap{ position:fixed; inset:0; display:none; }
+  #stage{ position:absolute; top:0; left:0; background:black; cursor:crosshair; }
+
+  #hint{
+    position:fixed; top:34px; left:50%; transform:translateX(-50%);
+    background:#1a1a3e; border:2px solid #FFDD00; border-radius:6px;
+    padding:12px 22px; text-align:center; font-weight:bold; font-size:14px;
+    line-height:1.6; white-space:pre; pointer-events:none;
+  }
+
+  #counter{
+    position:fixed; bottom:12px; right:16px; color:#aaa; font-size:12px;
+    pointer-events:none;
+  }
+
+  #flash{
+    position:fixed; inset:0; background:white; opacity:0; pointer-events:none;
+    transition:opacity 120ms ease-out;
+  }
+
+  #watermark{
+    position:fixed; bottom:6px; left:10px; color:#444; font-size:10px;
+    opacity:0.7; pointer-events:none; z-index:1;
+  }
+</style>
+</head>
+<body>
+
+  <div id="landing">
+    <h1>Screenshot Multiplo</h1>
+    <p>
+      Trascina per selezionare l'area della finestra/scheda condivisa, poi <b>INVIO</b> = scatta screenshot dell'area
+      (ripetibile quante volte vuoi) &nbsp;|&nbsp; <b>ESC</b> = esci.
+    </p>
+    <div id="folderStep" style="display:none; flex-direction:column; gap:10px; align-items:center;">
+      <button id="pickFolderBtn">Scegli cartella di salvataggio</button>
+      <button id="skipFolderBtn" style="background:#444;">Salta, usa cartella Download</button>
+    </div>
+    <p id="err"></p>
+
+    <div id="help">
+      <div class="help-col">
+        <h3>Modalit&agrave; Finestra</h3>
+        <ol>
+          <li>Clicca "Avvia in modalit&agrave; Finestra"</li>
+          <li>Nella finestra di Chrome la scheda <b>"Finestra"</b> sar&agrave; gi&agrave; selezionata</li>
+          <li>Scegli la finestra del programma da catturare</li>
+          <li>Clicca "Condividi"</li>
+        </ol>
+        <button class="modeBtn" id="startWindowBtn">Avvia in modalit&agrave; Finestra</button>
+      </div>
+      <div class="help-col">
+        <h3>Modalit&agrave; Scheda</h3>
+        <ol>
+          <li>Clicca "Avvia in modalit&agrave; Scheda"</li>
+          <li>Nella finestra di Chrome la scheda <b>"Scheda Chrome"</b> sar&agrave; gi&agrave; selezionata</li>
+          <li>Scegli la scheda da catturare (es. YouTube)</li>
+          <li>Clicca "Condividi"</li>
+        </ol>
+        <button class="modeBtn" id="startTabBtn">Avvia in modalit&agrave; Scheda</button>
+      </div>
+    </div>
+    <p class="small" id="warnHint" style="color:#ffb84d;">
+      &#9888; Non selezionare questa pagina come sorgente da condividere, altrimenti si crea un effetto
+      "specchi contrapposti" (immagine che si ripete all'infinito).
+    </p>
+  </div>
+
+  <div id="watermark">Digit54 v. 1.2</div>
+
+  <div id="stageWrap">
+    <canvas id="stage"></canvas>
+  </div>
+  <div id="hint" style="display:none"></div>
+  <div id="counter" style="display:none"></div>
+  <div id="flash"></div>
+
+<script>
+(() => {
+  const landing       = document.getElementById('landing');
+  const startWindowBtn = document.getElementById('startWindowBtn');
+  const startTabBtn    = document.getElementById('startTabBtn');
+  const helpBox       = document.getElementById('help');
+  const folderStep    = document.getElementById('folderStep');
+  const pickFolderBtn = document.getElementById('pickFolderBtn');
+  const skipFolderBtn = document.getElementById('skipFolderBtn');
+  const errBox    = document.getElementById('err');
+  const stageWrap = document.getElementById('stageWrap');
+  const canvas    = document.getElementById('stage');
+  const ctx       = canvas.getContext('2d');
+  const hint      = document.getElementById('hint');
+  const counterEl = document.getElementById('counter');
+  const flash     = document.getElementById('flash');
+
+  const video = document.createElement('video');
+  video.autoplay = true;
+  video.muted = true;
+
+  let screenshotCount = 0;
+  let dirHandle = null;        // FileSystemDirectoryHandle, if user picked one
+  let selectedArea = null;     // {x1,y1,x2,y2} in video-native pixel space
+  let dragStart = null;        // {x,y} in video-native space
+  let dragCurrent = null;
+  let dragging = false;
+  let scale = 1, offsetX = 0, offsetY = 0;
+  let rafId = null;
+
+  function updateHint() {
+    const dest = dirHandle ? `salva in: ${dirHandle.name}` : "salva in: cartella Download";
+    if (selectedArea) {
+      const w = Math.round(selectedArea.x2 - selectedArea.x1);
+      const h = Math.round(selectedArea.y2 - selectedArea.y1);
+      hint.textContent =
+        "Trascina per selezionare una nuova area\n" +
+        `INVIO  →  screenshot [${w} × ${h} px]  (${dest})\n` +
+        "ESC  →  esci";
+    } else {
+      hint.textContent =
+        "Trascina per selezionare l'area\n" +
+        `INVIO  →  screenshot (dopo aver selezionato)  (${dest})\n` +
+        "ESC  →  esci";
+    }
+  }
+
+  function updateCounter() {
+    counterEl.textContent = screenshotCount > 0
+      ? `Screenshot salvati: ${screenshotCount}` : '';
+  }
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    computeFit();
+  }
+
+  function computeFit() {
+    const vw = video.videoWidth, vh = video.videoHeight;
+    if (!vw || !vh) return;
+    scale = Math.min(canvas.width / vw, canvas.height / vh);
+    offsetX = (canvas.width - vw * scale) / 2;
+    offsetY = (canvas.height - vh * scale) / 2;
+  }
+
+  function toVideoCoords(clientX, clientY) {
+    const vw = video.videoWidth, vh = video.videoHeight;
+    let x = (clientX - offsetX) / scale;
+    let y = (clientY - offsetY) / scale;
+    x = Math.max(0, Math.min(vw, x));
+    y = Math.max(0, Math.min(vh, y));
+    return { x, y };
+  }
+
+  function toCanvasCoords(vx, vy) {
+    return { x: offsetX + vx * scale, y: offsetY + vy * scale };
+  }
+
+  function draw() {
+    rafId = requestAnimationFrame(draw);
+    if (video.videoWidth === 0) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(video, offsetX, offsetY, video.videoWidth * scale, video.videoHeight * scale);
+
+    // dim everything, then re-reveal the selection/drag rect
+    let rect = null;
+    if (dragging && dragStart && dragCurrent) {
+      rect = {
+        x1: Math.min(dragStart.x, dragCurrent.x), y1: Math.min(dragStart.y, dragCurrent.y),
+        x2: Math.max(dragStart.x, dragCurrent.x), y2: Math.max(dragStart.y, dragCurrent.y)
+      };
+    } else if (selectedArea) {
+      rect = selectedArea;
+    }
+
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    if (rect) {
+      const p1 = toCanvasCoords(rect.x1, rect.y1);
+      const p2 = toCanvasCoords(rect.x2, rect.y2);
+      const rx = p1.x, ry = p1.y, rw = p2.x - p1.x, rh = p2.y - p1.y;
+
+      // re-draw the bright video content inside the rect
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(rx, ry, rw, rh);
+      ctx.clip();
+      ctx.drawImage(video, offsetX, offsetY, video.videoWidth * scale, video.videoHeight * scale);
+      ctx.fillStyle = 'rgba(68,136,255,0.25)';
+      ctx.fillRect(rx, ry, rw, rh);
+      ctx.restore();
+
+      ctx.strokeStyle = '#FF4444';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(rx, ry, rw, rh);
+    }
+  }
+
+  function startDrag(clientX, clientY) {
+    dragging = true;
+    dragStart = toVideoCoords(clientX, clientY);
+    dragCurrent = dragStart;
+  }
+  function moveDrag(clientX, clientY) {
+    if (!dragging) return;
+    dragCurrent = toVideoCoords(clientX, clientY);
+  }
+  function endDrag() {
+    if (!dragging) return;
+    dragging = false;
+    const x1 = Math.min(dragStart.x, dragCurrent.x), y1 = Math.min(dragStart.y, dragCurrent.y);
+    const x2 = Math.max(dragStart.x, dragCurrent.x), y2 = Math.max(dragStart.y, dragCurrent.y);
+    if (x2 - x1 > 5 && y2 - y1 > 5) {
+      selectedArea = { x1, y1, x2, y2 };
+      updateHint();
+    }
+  }
+
+  canvas.addEventListener('mousedown', e => startDrag(e.clientX, e.clientY));
+  canvas.addEventListener('mousemove', e => moveDrag(e.clientX, e.clientY));
+  window.addEventListener('mouseup', endDrag);
+
+  function pad(n, len) { return String(n).padStart(len, '0'); }
+
+  function timestamp() {
+    const d = new Date();
+    return `${d.getFullYear()}${pad(d.getMonth()+1,2)}${pad(d.getDate(),2)}_` +
+           `${pad(d.getHours(),2)}${pad(d.getMinutes(),2)}${pad(d.getSeconds(),2)}`;
+  }
+
+  function doFlash() {
+    flash.style.opacity = '0.55';
+    setTimeout(() => { flash.style.opacity = '0'; }, 120);
+  }
+
+  async function saveViaDirHandle(blob, filename) {
+    const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
+    const writable = await fileHandle.createWritable();
+    await writable.write(blob);
+    await writable.close();
+  }
+
+  function saveViaDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+
+  function takeScreenshot(area) {
+    const w = Math.round(area.x2 - area.x1);
+    const h = Math.round(area.y2 - area.y1);
+    if (w <= 0 || h <= 0) return;
+
+    const off = document.createElement('canvas');
+    off.width = w; off.height = h;
+    const octx = off.getContext('2d');
+    octx.drawImage(video, area.x1, area.y1, w, h, 0, 0, w, h);
+
+    screenshotCount++;
+    updateCounter();
+    doFlash();
+
+    const filename = `screen_${timestamp()}_${pad(screenshotCount,4)}.png`;
+
+    off.toBlob(async blob => {
+      try {
+        if (dirHandle) {
+          await saveViaDirHandle(blob, filename);
+        } else {
+          saveViaDownload(blob, filename);
+        }
+        console.log(`[${pad(screenshotCount,4)}] ${filename}`);
+      } catch (err) {
+        console.error('Salvataggio fallito, uso il download:', err);
+        saveViaDownload(blob, filename);
+      }
+    }, 'image/png');
+  }
+
+  function onKeyUp(e) {
+    if (e.key === 'Enter' && selectedArea) {
+      takeScreenshot(selectedArea);
+    }
+  }
+  function onKeyDown(e) {
+    if (e.key === 'Escape') {
+      stopSharing();
+    }
+  }
+
+  function stopSharing() {
+    window.removeEventListener('keydown', onKeyDown);
+    window.removeEventListener('keyup', onKeyUp);
+    window.removeEventListener('resize', resizeCanvas);
+    if (rafId) cancelAnimationFrame(rafId);
+    const stream = video.srcObject;
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    stageWrap.style.display = 'none';
+    hint.style.display = 'none';
+    counterEl.style.display = 'none';
+    landing.style.display = 'flex';
+    errBox.textContent = screenshotCount > 0
+      ? `Sessione terminata. Screenshot totali: ${screenshotCount}.`
+      : '';
+    errBox.style.color = '#8f8';
+    selectedArea = null;
+    screenshotCount = 0;
+    dirHandle = null;
+  }
+
+  function enterCaptureStage() {
+    landing.style.display = 'none';
+    stageWrap.style.display = 'block';
+    hint.style.display = 'block';
+    counterEl.style.display = 'block';
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+
+    updateHint();
+    updateCounter();
+    draw();
+  }
+
+  async function startSharing(surface) {
+    errBox.style.color = '#ff6b6b';
+    errBox.textContent = '';
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { cursor: 'always', displaySurface: surface },
+        audio: false
+      });
+
+      const track = stream.getVideoTracks()[0];
+      if (track.getSettings().displaySurface === 'monitor') {
+        track.stop();
+        errBox.textContent = 'Hai selezionato "Schermo intero", non supportato: riprova scegliendo "Finestra" o "Scheda Chrome".';
+        return;
+      }
+
+      video.srcObject = stream;
+      await video.play();
+
+      track.addEventListener('ended', stopSharing);
+
+      if (window.showDirectoryPicker) {
+        // Passo separato: un click esplicito dell'utente serve perché
+        // showDirectoryPicker richiede un gesto "fresco", che sarebbe già
+        // scaduto se richiamato subito dopo l'attesa di getDisplayMedia.
+        helpBox.style.display = 'none';
+        folderStep.style.display = 'flex';
+      } else {
+        enterCaptureStage();
+      }
+    } catch (err) {
+      errBox.style.color = '#ff6b6b';
+      errBox.textContent = 'Condivisione annullata o non disponibile: ' + err.message;
+    }
+  }
+
+  async function pickFolder() {
+    errBox.textContent = '';
+    try {
+      dirHandle = await window.showDirectoryPicker({
+        id: 'screenshot-multiplo',
+        mode: 'readwrite',
+        startIn: 'downloads'
+      });
+    } catch (pickErr) {
+      dirHandle = null; // annullato dall'utente: si torna al download semplice
+    }
+    folderStep.style.display = 'none';
+    helpBox.style.display = '';
+    enterCaptureStage();
+  }
+
+  function skipFolder() {
+    dirHandle = null;
+    folderStep.style.display = 'none';
+    helpBox.style.display = '';
+    enterCaptureStage();
+  }
+
+  startWindowBtn.addEventListener('click', () => startSharing('window'));
+  startTabBtn.addEventListener('click', () => startSharing('browser'));
+  pickFolderBtn.addEventListener('click', pickFolder);
+  skipFolderBtn.addEventListener('click', skipFolder);
+})();
+</script>
+</body>
+</html>
