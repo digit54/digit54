@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tour de France Femmes 2026 – Startlist</title>
+<style>
+  body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; margin: 20px; background: #fff; color: #000; }
+  table { border-collapse: collapse; width: auto; }
+  th, td { border: 1px solid #bfbfbf; padding: 3px 8px; white-space: nowrap; }
+  th { background: #4472c4; color: #fff; font-weight: bold; text-align: center; cursor: pointer; user-select: none; position: sticky; top: 0; z-index: 1; }
+  th:hover { background: #2f5597; }
+  th .arrow { margin-left: 5px; font-size: 9pt; opacity: 0.6; }
+  th.asc .arrow::after { content: '▲'; opacity: 1; }
+  th.desc .arrow::after { content: '▼'; opacity: 1; }
+  th:not(.asc):not(.desc) .arrow::after { content: '⇅'; }
+  tr:nth-child(even) { background: #dce6f1; }
+  tr:nth-child(odd) { background: #fff; }
+  td:first-child { text-align: center; }
+  .search-box { position: relative; display: inline-block; margin-bottom: 10px; }
+  .search-box input { font-family: Calibri, Arial, sans-serif; font-size: 11pt; padding: 5px 26px 5px 8px; border: 1px solid #bfbfbf; border-radius: 4px; width: 260px; }
+  .search-box .clear-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); border: none; background: none; cursor: pointer; font-size: 13pt; line-height: 1; color: #888; padding: 2px 4px; display: none; }
+  .search-box .clear-btn:hover { color: #333; }
+</style>
+</head>
+<body>
+<div class="search-box">
+  <input type="text" id="search" placeholder="Cerca..." oninput="filterTable()">
+  <button type="button" class="clear-btn" id="clearSearch" onclick="clearSearch()">&times;</button>
+</div>
+<table id="t">
+  <thead>
+    <tr>
+      <th onclick="sortTable(0)" data-col="0">Pettorale<span class="arrow"></span></th>
+      <th onclick="sortTable(1)" data-col="1">Ciclista<span class="arrow"></span></th>
+      <th onclick="sortTable(2)" data-col="2">Squadra<span class="arrow"></span></th>
+      <th onclick="sortTable(3)" data-col="3">Naz.<span class="arrow"></span></th>
+      <th onclick="sortTable(4)" data-col="4">Età<span class="arrow"></span></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>FERRAND-PRÉVOT Pauline</td><td>Team Visma | Lease a Bike</td><td>FRA</td><td>34</td></tr>
+    <tr><td>2</td><td>BUNEL Marion</td><td>Team Visma | Lease a Bike</td><td>FRA</td><td>21</td></tr>
+    <tr><td>3</td><td>DE VRIES Femke</td><td>Team Visma | Lease a Bike</td><td>NED</td><td>32</td></tr>
+    <tr><td>4</td><td>HENGEVELD Daniek</td><td>Team Visma | Lease a Bike</td><td>NED</td><td>23</td></tr>
+    <tr><td>5</td><td>NOOIJEN Lieke</td><td>Team Visma | Lease a Bike</td><td>NED</td><td>25</td></tr>
+    <tr><td>6</td><td>VAN DAM Sarah</td><td>Team Visma | Lease a Bike</td><td>CAN</td><td>24</td></tr>
+    <tr><td>7</td><td>VOS Marianne</td><td>Team Visma | Lease a Bike</td><td>NED</td><td>39</td></tr>
+    <tr><td>11</td><td>VOLLERING Demi</td><td>FDJ United – Suez</td><td>NED</td><td>29</td></tr>
+    <tr><td>12</td><td>BERTHET Juliette</td><td>FDJ United – Suez</td><td>FRA</td><td>27</td></tr>
+    <tr><td>13</td><td>GERY Célia</td><td>FDJ United – Suez</td><td>FRA</td><td>20</td></tr>
+    <tr><td>14</td><td>KOCH Franziska</td><td>FDJ United – Suez</td><td>GER</td><td>26</td></tr>
+    <tr><td>15</td><td>KRAAK Amber</td><td>FDJ United – Suez</td><td>NED</td><td>32</td></tr>
+    <tr><td>16</td><td>LE NET Marie</td><td>FDJ United – Suez</td><td>FRA</td><td>26</td></tr>
+    <tr><td>17</td><td>MUZIC Évita</td><td>FDJ United – Suez</td><td>FRA</td><td>27</td></tr>
+    <tr><td>21</td><td>NIEWIADOMA-PHINNEY Katarzyna</td><td>Canyon//SRAM</td><td>POL</td><td>31</td></tr>
+    <tr><td>22</td><td>BÄCKSTEDT Zoe</td><td>Canyon//SRAM</td><td>GBR</td><td>21</td></tr>
+    <tr><td>23</td><td>CONSONNI Chiara</td><td>Canyon//SRAM</td><td>ITA</td><td>27</td></tr>
+    <tr><td>24</td><td>KLÖSER Rosa</td><td>Canyon//SRAM</td><td>GER</td><td>30</td></tr>
+    <tr><td>25</td><td>NIEDERMAIER Antonia</td><td>Canyon//SRAM</td><td>GER</td><td>23</td></tr>
+    <tr><td>26</td><td>PALADIN Soraya</td><td>Canyon//SRAM</td><td>ITA</td><td>33</td></tr>
+    <tr><td>27</td><td>SKALNIAK-SÓJKA Agnieszka</td><td>Canyon//SRAM</td><td>POL</td><td>29</td></tr>
+    <tr><td>31</td><td>WŁODARCZYK Dominika</td><td>UAE Team L'Imad</td><td>POL</td><td>25</td></tr>
+    <tr><td>32</td><td>BLASI Paula</td><td>UAE Team L'Imad</td><td>ESP</td><td>23</td></tr>
+    <tr><td>33</td><td>CHAPMAN Brodie</td><td>UAE Team L'Imad</td><td>AUS</td><td>35</td></tr>
+    <tr><td>34</td><td>GARCÍA Mavi</td><td>UAE Team L'Imad</td><td>ESP</td><td>42</td></tr>
+    <tr><td>35</td><td>LONGO BORGHINI Elisa</td><td>UAE Team L'Imad</td><td>ITA</td><td>34</td></tr>
+    <tr><td>36</td><td>PERSICO Silvia</td><td>UAE Team L'Imad</td><td>ITA</td><td>29</td></tr>
+    <tr><td>37</td><td>SQUIBAN Maëva</td><td>UAE Team L'Imad</td><td>FRA</td><td>24</td></tr>
+    <tr><td>41</td><td>VAN DER BREGGEN Anna</td><td>Team SD Worx – Protime</td><td>NED</td><td>36</td></tr>
+    <tr><td>42</td><td>BREDEWOLD Mischa</td><td>Team SD Worx – Protime</td><td>NED</td><td>26</td></tr>
+    <tr><td>43</td><td>CAVALLAR Valentina</td><td>Team SD Worx – Protime</td><td>AUT</td><td>25</td></tr>
+    <tr><td>44</td><td>CECCHINI Elena</td><td>Team SD Worx – Protime</td><td>ITA</td><td>34</td></tr>
+    <tr><td>45</td><td>KOPECKY Lotte</td><td>Team SD Worx – Protime</td><td>BEL</td><td>30</td></tr>
+    <tr><td>46</td><td>VINKE Nienke</td><td>Team SD Worx – Protime</td><td>NED</td><td>22</td></tr>
+    <tr><td>47</td><td>WIEBES Lorena</td><td>Team SD Worx – Protime</td><td>NED</td><td>27</td></tr>
+    <tr><td>51</td><td>REUSSER Marlen</td><td>Movistar Team</td><td>SUI</td><td>34</td></tr>
+    <tr><td>52</td><td>BARALE Francesca</td><td>Movistar Team</td><td>ITA</td><td>23</td></tr>
+    <tr><td>53</td><td>MAGALHÃES Ana Vitória</td><td>Movistar Team</td><td>BRA</td><td>25</td></tr>
+    <tr><td>54</td><td>LIPPERT Liane</td><td>Movistar Team</td><td>GER</td><td>28</td></tr>
+    <tr><td>55</td><td>MARTÍN Sara</td><td>Movistar Team</td><td>ESP</td><td>27</td></tr>
+    <tr><td>56</td><td>OSTIZ Paula</td><td>Movistar Team</td><td>ESP</td><td>19</td></tr>
+    <tr><td>57</td><td>SIERRA Arlenis</td><td>Movistar Team</td><td>CUB</td><td>33</td></tr>
+    <tr><td>61</td><td>BALSAMO Elisa</td><td>Lidl – Trek</td><td>ITA</td><td>28</td></tr>
+    <tr><td>62</td><td>ADEGEEST Loes</td><td>Lidl – Trek</td><td>NED</td><td>29</td></tr>
+    <tr><td>63</td><td>BRAND Lucinda</td><td>Lidl – Trek</td><td>NED</td><td>37</td></tr>
+    <tr><td>64</td><td>FISHER-BLACK Niamh</td><td>Lidl – Trek</td><td>NZL</td><td>25</td></tr>
+    <tr><td>65</td><td>HOLMGREN Isabella</td><td>Lidl – Trek</td><td>CAN</td><td>21</td></tr>
+    <tr><td>66</td><td>MARKUS Riejanne</td><td>Lidl – Trek</td><td>NED</td><td>31</td></tr>
+    <tr><td>67</td><td>SPRATT Amanda</td><td>Lidl – Trek</td><td>AUS</td><td>38</td></tr>
+    <tr><td>71</td><td>LE COURT Kimberley</td><td>AG Insurance – Soudal</td><td>MRI</td><td>30</td></tr>
+    <tr><td>72</td><td>BENITO Mireia</td><td>AG Insurance – Soudal</td><td>ESP</td><td>29</td></tr>
+    <tr><td>73</td><td>BORGHESI Letizia</td><td>AG Insurance – Soudal</td><td>ITA</td><td>27</td></tr>
+    <tr><td>74</td><td>BOSSUYT Shari</td><td>AG Insurance – Soudal</td><td>BEL</td><td>25</td></tr>
+    <tr><td>75</td><td>DE SCHEPPER Lore</td><td>AG Insurance – Soudal</td><td>BEL</td><td>20</td></tr>
+    <tr><td>76</td><td>GHEKIERE Justine</td><td>AG Insurance – Soudal</td><td>BEL</td><td>30</td></tr>
+    <tr><td>77</td><td>ŽIGART Urška</td><td>AG Insurance – Soudal</td><td>SLO</td><td>29</td></tr>
+    <tr><td>81</td><td>VALLIERES Magdeleine</td><td>EF Education – Oatly</td><td>CAN</td><td>24</td></tr>
+    <tr><td>82</td><td>BERTON Nina</td><td>EF Education – Oatly</td><td>LUX</td><td>24</td></tr>
+    <tr><td>83</td><td>CHRISTIE Henrietta</td><td>EF Education – Oatly</td><td>NZL</td><td>24</td></tr>
+    <tr><td>84</td><td>FAULKNER Kristen</td><td>EF Education – Oatly</td><td>USA</td><td>33</td></tr>
+    <tr><td>85</td><td>KERBAOL Cédrine</td><td>EF Education – Oatly</td><td>FRA</td><td>25</td></tr>
+    <tr><td>86</td><td>RÜEGG Noemi</td><td>EF Education – Oatly</td><td>SUI</td><td>25</td></tr>
+    <tr><td>87</td><td>TOWERS Alice</td><td>EF Education – Oatly</td><td>GBR</td><td>23</td></tr>
+    <tr><td>91</td><td>PIETERSE Puck</td><td>Fenix-Premier Tech</td><td>NED</td><td>24</td></tr>
+    <tr><td>92</td><td>CASASOLA Sara</td><td>Fenix-Premier Tech</td><td>ITA</td><td>26</td></tr>
+    <tr><td>93</td><td>CLAES Lotte</td><td>Fenix-Premier Tech</td><td>BEL</td><td>33</td></tr>
+    <tr><td>94</td><td>COUZENS Millie</td><td>Fenix-Premier Tech</td><td>GBR</td><td>22</td></tr>
+    <tr><td>95</td><td>KASTELIJN Yara</td><td>Fenix-Premier Tech</td><td>NED</td><td>28</td></tr>
+    <tr><td>96</td><td>KOOL Charlotte</td><td>Fenix-Premier Tech</td><td>NED</td><td>27</td></tr>
+    <tr><td>97</td><td>SCHWEINBERGER Christina</td><td>Fenix-Premier Tech</td><td>AUT</td><td>29</td></tr>
+    <tr><td>101</td><td>RYO Titia</td><td>Human Powered Health</td><td>FRA</td><td>21</td></tr>
+    <tr><td>102</td><td>BUIJSMAN Nina</td><td>Human Powered Health</td><td>NED</td><td>28</td></tr>
+    <tr><td>103</td><td>CIPRESSI Carlotta</td><td>Human Powered Health</td><td>ITA</td><td>23</td></tr>
+    <tr><td>104</td><td>DE JONG Thalita</td><td>Human Powered Health</td><td>NED</td><td>32</td></tr>
+    <tr><td>105</td><td>MALCOTTI Barbara</td><td>Human Powered Health</td><td>ITA</td><td>26</td></tr>
+    <tr><td>106</td><td>RAAIJMAKERS Marit</td><td>Human Powered Health</td><td>NED</td><td>27</td></tr>
+    <tr><td>107</td><td>WILLIAMS Lily</td><td>Human Powered Health</td><td>USA</td><td>32</td></tr>
+    <tr><td>111</td><td>TRINCA COLONEL Monica</td><td>Liv-AlUla-Jayco</td><td>ITA</td><td>27</td></tr>
+    <tr><td>112</td><td>COUPLAND Mackenzie</td><td>Liv-AlUla-Jayco</td><td>AUS</td><td>20</td></tr>
+    <tr><td>113</td><td>GONTOVA Nadia</td><td>Liv-AlUla-Jayco</td><td>CAN</td><td>25</td></tr>
+    <tr><td>114</td><td>KOREVAAR Jeanne</td><td>Liv-AlUla-Jayco</td><td>NED</td><td>29</td></tr>
+    <tr><td>115</td><td>PATERNOSTER Letizia</td><td>Liv-AlUla-Jayco</td><td>ITA</td><td>27</td></tr>
+    <tr><td>116</td><td>ROSEMAN-GANNON Ruby</td><td>Liv-AlUla-Jayco</td><td>AUS</td><td>27</td></tr>
+    <tr><td>117</td><td>SMULDERS Silke</td><td>Liv-AlUla-Jayco</td><td>NED</td><td>25</td></tr>
+    <tr><td>121</td><td>CIABOCCO Eleonora</td><td>Team Picnic PostNL</td><td>ITA</td><td>22</td></tr>
+    <tr><td>122</td><td>CLAY Robyn</td><td>Team Picnic PostNL</td><td>GBR</td><td>22</td></tr>
+    <tr><td>123</td><td>FITYUS Lucie</td><td>Team Picnic PostNL</td><td>AUS</td><td>25</td></tr>
+    <tr><td>124</td><td>GEORGI Pfeiffer</td><td>Team Picnic PostNL</td><td>GBR</td><td>25</td></tr>
+    <tr><td>125</td><td>GRIFFIN Mia</td><td>Team Picnic PostNL</td><td>IRL</td><td>27</td></tr>
+    <tr><td>126</td><td>MASETTI Gaia</td><td>Team Picnic PostNL</td><td>ITA</td><td>24</td></tr>
+    <tr><td>127</td><td>NELSON Josie</td><td>Team Picnic PostNL</td><td>GBR</td><td>24</td></tr>
+    <tr><td>131</td><td>MORIER Émilie</td><td>St Michel – Preference Home – Auber93</td><td>FRA</td><td>29</td></tr>
+    <tr><td>132</td><td>FRANZ Heidi</td><td>St Michel – Preference Home – Auber93</td><td>USA</td><td>31</td></tr>
+    <tr><td>133</td><td>GONZÁLEZ BLANCO Alicia</td><td>St Michel – Preference Home – Auber93</td><td>ESP</td><td>31</td></tr>
+    <tr><td>134</td><td>GRANGIER India</td><td>St Michel – Preference Home – Auber93</td><td>FRA</td><td>26</td></tr>
+    <tr><td>135</td><td>JACKSON Alison</td><td>St Michel – Preference Home – Auber93</td><td>CAN</td><td>37</td></tr>
+    <tr><td>136</td><td>MULLER Solène</td><td>St Michel – Preference Home – Auber93</td><td>FRA</td><td>22</td></tr>
+    <tr><td>137</td><td>WRESZIN Caroline</td><td>St Michel – Preference Home – Auber93</td><td>USA</td><td>25</td></tr>
+    <tr><td>141</td><td>MUL Malwina</td><td>Cofidis</td><td>POL</td><td>22</td></tr>
+    <tr><td>142</td><td>BEGO Julie</td><td>Cofidis</td><td>FRA</td><td>21</td></tr>
+    <tr><td>143</td><td>COMTE Ema</td><td>Cofidis</td><td>FRA</td><td>21</td></tr>
+    <tr><td>144</td><td>DIDERIKSEN Amalie</td><td>Cofidis</td><td>DEN</td><td>30</td></tr>
+    <tr><td>145</td><td>GUILMAN Victorie</td><td>Cofidis</td><td>FRA</td><td>30</td></tr>
+    <tr><td>146</td><td>LUDWIG Hannah</td><td>Cofidis</td><td>GER</td><td>26</td></tr>
+    <tr><td>147</td><td>NOSKOVÁ Nikola</td><td>Cofidis</td><td>CZE</td><td>29</td></tr>
+    <tr><td>151</td><td>OSTOLAZA Usoa</td><td>Laboral Kutxa – Fundación Euskadi</td><td>ESP</td><td>28</td></tr>
+    <tr><td>152</td><td>AMONDARAIN Naia</td><td>Laboral Kutxa – Fundación Euskadi</td><td>ESP</td><td>25</td></tr>
+    <tr><td>153</td><td>BIRIUKOVA Yuliia</td><td>Laboral Kutxa – Fundación Euskadi</td><td>UKR</td><td>28</td></tr>
+    <tr><td>154</td><td>ERASO Idoia</td><td>Laboral Kutxa – Fundación Euskadi</td><td>ESP</td><td>24</td></tr>
+    <tr><td>155</td><td>FIDANZA Arianna</td><td>Laboral Kutxa – Fundación Euskadi</td><td>ITA</td><td>31</td></tr>
+    <tr><td>156</td><td>PATIÑO Paula</td><td>Laboral Kutxa – Fundación Euskadi</td><td>COL</td><td>29</td></tr>
+    <tr><td>157</td><td>SILVESTRI Debora</td><td>Laboral Kutxa – Fundación Euskadi</td><td>ITA</td><td>28</td></tr>
+    <tr><td>161</td><td>SCHOENS Quinty</td><td>VolkerWessels Women Cyclingteam</td><td>NED</td><td>27</td></tr>
+    <tr><td>162</td><td>DIJKSTRA Anneke</td><td>VolkerWessels Women Cyclingteam</td><td>NED</td><td>29</td></tr>
+    <tr><td>163</td><td>EISEN Malou</td><td>VolkerWessels Women Cyclingteam</td><td>NED</td><td>25</td></tr>
+    <tr><td>164</td><td>JANSEN Eline</td><td>VolkerWessels Women Cyclingteam</td><td>NED</td><td>24</td></tr>
+    <tr><td>165</td><td>MOLENAAR Laura</td><td>VolkerWessels Women Cyclingteam</td><td>NED</td><td>24</td></tr>
+    <tr><td>166</td><td>RIJNBEEK Maud</td><td>VolkerWessels Women Cyclingteam</td><td>NED</td><td>23</td></tr>
+    <tr><td>167</td><td>VON BERSWORDT Sophie</td><td>VolkerWessels Women Cyclingteam</td><td>NED</td><td>30</td></tr>
+    <tr><td>171</td><td>AALERUD Katrine</td><td>Uno-X Mobility</td><td>NOR</td><td>31</td></tr>
+    <tr><td>172</td><td>BEEKHUIS Teuntje</td><td>Uno-X Mobility</td><td>NED</td><td>30</td></tr>
+    <tr><td>173</td><td>EDSETH Marte Berg</td><td>Uno-X Mobility</td><td>NOR</td><td>27</td></tr>
+    <tr><td>174</td><td>HAUGSET Sigrid Ytterhus</td><td>Uno-X Mobility</td><td>NOR</td><td>27</td></tr>
+    <tr><td>175</td><td>KOSTER Anouska</td><td>Uno-X Mobility</td><td>NED</td><td>32</td></tr>
+    <tr><td>176</td><td>TOMASI Laura</td><td>Uno-X Mobility</td><td>ITA</td><td>27</td></tr>
+    <tr><td>177</td><td>VIGILIA Alessia</td><td>Uno-X Mobility</td><td>ITA</td><td>26</td></tr>
+    <tr><td>181</td><td>TAS Sandrine</td><td>Lotto – Intermarché Ladies</td><td>BEL</td><td>30</td></tr>
+    <tr><td>182</td><td>BOELS Dina</td><td>Lotto – Intermarché Ladies</td><td>BEL</td><td>21</td></tr>
+    <tr><td>183</td><td>EBRAS Elisabeth</td><td>Lotto – Intermarché Ladies</td><td>EST</td><td>22</td></tr>
+    <tr><td>184</td><td>HINOJOSA Romina</td><td>Lotto – Intermarché Ladies</td><td>MEX</td><td>23</td></tr>
+    <tr><td>185</td><td>MEERT Marieke</td><td>Lotto – Intermarché Ladies</td><td>BEL</td><td>26</td></tr>
+    <tr><td>186</td><td>RIEDMANN Linda</td><td>Lotto – Intermarché Ladies</td><td>GER</td><td>23</td></tr>
+    <tr><td>187</td><td>VERVLOET Sterre</td><td>Lotto – Intermarché Ladies</td><td>BEL</td><td>22</td></tr>
+    <tr><td>191</td><td>LATIMIER Clémence</td><td>Ma Petite Entreprise</td><td>FRA</td><td>22</td></tr>
+    <tr><td>192</td><td>ABGRALL Noémie</td><td>Ma Petite Entreprise</td><td>FRA</td><td>26</td></tr>
+    <tr><td>193</td><td>ASENCIO Laura</td><td>Ma Petite Entreprise</td><td>FRA</td><td>28</td></tr>
+    <tr><td>194</td><td>AVOINE Alison</td><td>Ma Petite Entreprise</td><td>FRA</td><td>26</td></tr>
+    <tr><td>195</td><td>COSTON Morgane</td><td>Ma Petite Entreprise</td><td>FRA</td><td>35</td></tr>
+    <tr><td>196</td><td>LE MOUËL Célia</td><td>Ma Petite Entreprise</td><td>FRA</td><td>26</td></tr>
+    <tr><td>197</td><td>MAHÉ Océane</td><td>Ma Petite Entreprise</td><td>FRA</td><td>24</td></tr>
+    <tr><td>201</td><td>PEREKITKO Karolina</td><td>Mayenne Monbana My Pie</td><td>POL</td><td>27</td></tr>
+    <tr><td>202</td><td>ALLIONE Marine</td><td>Mayenne Monbana My Pie</td><td>FRA</td><td>25</td></tr>
+    <tr><td>203</td><td>COUTINHO Alice</td><td>Mayenne Monbana My Pie</td><td>FRA</td><td>25</td></tr>
+    <tr><td>204</td><td>LYLYK Kiara</td><td>Mayenne Monbana My Pie</td><td>CAN</td><td>22</td></tr>
+    <tr><td>205</td><td>MANGAN Fiona</td><td>Mayenne Monbana My Pie</td><td>IRL</td><td>30</td></tr>
+    <tr><td>206</td><td>QUINN Natalie</td><td>Mayenne Monbana My Pie</td><td>USA</td><td>24</td></tr>
+    <tr><td>207</td><td>VALENTIN Constance</td><td>Mayenne Monbana My Pie</td><td>FRA</td><td>28</td></tr>
+  </tbody>
+</table>
+<script>
+function filterTable() {
+  var input = document.getElementById('search');
+  var filter = input.value.trim().toLowerCase();
+  document.getElementById('clearSearch').style.display = filter ? 'block' : 'none';
+  var rows = document.getElementById('t').tBodies[0].rows;
+  for (var i = 0; i < rows.length; i++) {
+    var text = rows[i].textContent.toLowerCase();
+    rows[i].style.display = text.indexOf(filter) !== -1 ? '' : 'none';
+  }
+}
+function clearSearch() {
+  var input = document.getElementById('search');
+  input.value = '';
+  input.focus();
+  filterTable();
+}
+var sortDir = [1, 1, 1, 1, 1];
+var lastCol = -1;
+function sortTable(col) {
+  var table = document.getElementById('t');
+  var tbody = table.tBodies[0];
+  var rows = Array.from(tbody.rows);
+  if (lastCol === col) { sortDir[col] *= -1; } else { sortDir[col] = 1; }
+  lastCol = col;
+  rows.sort(function(a, b) {
+    var va = a.cells[col].textContent.trim();
+    var vb = b.cells[col].textContent.trim();
+    if (col === 0 || col === 4) { return (parseInt(va) - parseInt(vb)) * sortDir[col]; }
+    return va.localeCompare(vb, 'it') * sortDir[col];
+  });
+  rows.forEach(function(r) { tbody.appendChild(r); });
+  var ths = table.querySelectorAll('th');
+  ths.forEach(function(th, i) {
+    th.classList.remove('asc', 'desc');
+    if (i === col) th.classList.add(sortDir[col] === 1 ? 'asc' : 'desc');
+  });
+}
+</script>
+</body>
+</html>

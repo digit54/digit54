@@ -26,7 +26,8 @@ const DATI = {
     { "nome": "chimica & Tavola periodica degli elementi v. 2.0", "file": "chimica & Tavola periodica degli elementi v. 2.0.html" }
   ],
   "Sport": [
-    { "nome": "Interval Timer Fitness", "file": "Interval Timer Fitness.html" }
+    { "nome": "Interval Timer Fitness", "file": "Interval Timer Fitness.html" },
+    { "nome": "Tour De France Femmes 2026 Startlist", "file": "Tour De France Femmes 2026 Startlist.html" }
   ],
   "Tutto_Pdf": [
     { "nome": "Estrae & Unisce file.Pdf v.2.4", "file": "Estrae & Unisce file.Pdf v.2.4.html" },
@@ -35,8 +36,8 @@ const DATI = {
   "Utility": [
     { "nome": "Crea Gif Move V1.5", "file": "Crea Gif Move V1.5.html" },
     { "nome": "Multi-Screenshot", "file": "Multi-Screenshot.html" },
-    { "nome": "Percentualometro", "file": "Percentualometro.html" },
     { "nome": "QR_Toolbox", "file": "QR_Toolbox.html" },
+    { "nome": "Suite Percentuali", "file": "Suite Percentuali.html" },
     { "nome": "Trova File Doppi v. 2.6", "file": "Trova File Doppi v. 2.6.html" }
   ]
 };
