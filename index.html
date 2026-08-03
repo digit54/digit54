@@ -233,6 +233,13 @@
     };
     const DEFAULT_STYLE = { emoji: "✨", c1: "#a8edea", c2: "#fed6e3" };
 
+    function tint(hex, ratio) {
+        const n = parseInt(hex.replace("#", ""), 16);
+        const mix = (ch) => Math.round(ch + (255 - ch) * ratio);
+        const r = mix((n >> 16) & 255), g = mix((n >> 8) & 255), b = mix(n & 255);
+        return "rgb(" + r + "," + g + "," + b + ")";
+    }
+
     Object.keys(DATI).sort().forEach(function (cat) {
         const style = STYLE[cat] || DEFAULT_STYLE;
 
@@ -261,6 +268,7 @@
         dropdown.className = "dropdown";
         dropdown.style.setProperty("--accent", style.c2);
         dropdown.style.setProperty("--accent-soft", style.c2 + "2e");
+        dropdown.style.background = "linear-gradient(135deg, " + tint(style.c1, 0.72) + ", " + tint(style.c2, 0.72) + ")";
         const programmi = DATI[cat];
         if (programmi.length === 0) {
             const empty = document.createElement("div");
