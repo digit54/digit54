@@ -4,117 +4,238 @@
 <meta charset="UTF-8">
 <title>Programmini seri ma non troppo</title>
 <script src="dati.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
+    * { box-sizing: border-box; }
+
     body {
         margin: 0;
         min-height: 100vh;
-        background: url("menu_sfondo.png") no-repeat center center fixed;
-        background-size: cover;
-        font-family: Arial, sans-serif;
+        font-family: 'Poppins', 'Baloo 2', Arial, sans-serif;
+        background: linear-gradient(120deg, #ff9a9e, #fecfef 20%, #a1c4fd 45%, #fbc2eb 70%, #fad0c4 100%);
+        background-size: 300% 300%;
+        animation: gradientShift 18s ease infinite;
+        overflow-x: hidden;
+        position: relative;
     }
+
+    @keyframes gradientShift {
+        0%   { background-position: 0% 50%; }
+        50%  { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    .blob {
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(2px);
+        opacity: 0.55;
+        pointer-events: none;
+        z-index: 0;
+        animation: float 9s ease-in-out infinite;
+    }
+    .blob.b1 { width: 90px;  top: 8%;  left: 6%;  font-size: 70px; animation-duration: 8s; }
+    .blob.b2 { width: 70px;  top: 70%; left: 10%; font-size: 55px; animation-duration: 10s; animation-delay: 1s; }
+    .blob.b3 { width: 80px;  top: 15%; left: 88%; font-size: 60px; animation-duration: 7.5s; animation-delay: 0.5s; }
+    .blob.b4 { width: 70px;  top: 78%; left: 90%; font-size: 55px; animation-duration: 9.5s; animation-delay: 1.5s; }
+    .blob.b5 { width: 60px;  top: 45%; left: 3%;  font-size: 45px; animation-duration: 11s; animation-delay: 2s; }
+    .blob.b6 { width: 60px;  top: 40%; left: 94%; font-size: 45px; animation-duration: 8.5s; animation-delay: 0.8s; }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-22px) rotate(12deg); }
+    }
+
     .container {
         width: 100%;
-        max-width: 960px;
+        max-width: 1000px;
         margin: 0 auto;
-        padding: 20px 24px;
+        padding: 36px 24px 60px;
         box-sizing: border-box;
         text-align: center;
+        position: relative;
+        z-index: 1;
     }
+
     .logo {
-        width: 65px;
+        width: 90px;
         height: auto;
-        margin: 0 auto 10px;
+        margin: 0 auto 6px;
         display: block;
-        filter: drop-shadow(0 0 18px rgba(34,211,238,0.5));
+        filter: drop-shadow(0 6px 16px rgba(255, 90, 160, 0.45));
+        animation: bounce 2.6s ease-in-out infinite;
     }
+
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0) rotate(-3deg); }
+        50% { transform: translateY(-10px) rotate(3deg); }
+    }
+
+    .title {
+        font-family: 'Baloo 2', 'Poppins', sans-serif;
+        font-weight: 800;
+        font-size: 2em;
+        margin: 4px 0 2px;
+        background: linear-gradient(90deg, #ff6b6b, #a18cd1, #4facfe, #43e97b);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        letter-spacing: 0.5px;
+    }
+
+    .subtitle {
+        font-size: 1em;
+        font-weight: 600;
+        color: #5b4b8a;
+        margin: 0 0 30px;
+        text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+    }
+
     .menu {
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
-        gap: 22px;
+        gap: 24px;
     }
+
     .btn-wrap {
         position: relative;
-        flex: 1 1 380px;
-        max-width: 420px;
+        flex: 1 1 340px;
+        max-width: 400px;
         padding-bottom: 8px;
     }
+
     .btn {
-        display: block;
+        display: flex;
+        align-items: center;
+        gap: 12px;
         width: 100%;
         box-sizing: border-box;
         padding: 20px 22px;
-        background: linear-gradient(180deg, rgba(30,41,59,0.92), rgba(21,30,44,0.92));
-        border: 1px solid rgba(34,211,238,0.30);
-        border-radius: 12px;
-        color: #cffafe;
-        font-size: 1.15em;
-        font-weight: 600;
+        border: 3px solid rgba(255,255,255,0.6);
+        border-radius: 20px;
+        color: #fff;
+        font-family: 'Baloo 2', 'Poppins', sans-serif;
+        font-size: 1.2em;
+        font-weight: 700;
         letter-spacing: 0.2px;
         text-decoration: none;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
-        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+        text-shadow: 0 1px 4px rgba(0,0,0,0.25);
+        box-shadow: 0 8px 0 rgba(0,0,0,0.08), 0 10px 18px rgba(0,0,0,0.15);
+        transition: transform 0.2s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .btn .emoji {
+        font-size: 1.5em;
+        line-height: 1;
+        filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
     }
     .btn:hover {
-        border-color: rgba(34,211,238,0.6);
-        background: linear-gradient(180deg, rgba(35,48,68,0.95), rgba(24,34,50,0.95));
-        box-shadow: 0 8px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(34,211,238,0.25);
-        transform: translateY(-2px);
+        border-color: rgba(255,255,255,0.95);
+        transform: translateY(-4px) rotate(-1deg) scale(1.03);
+        box-shadow: 0 4px 0 rgba(0,0,0,0.1), 0 16px 26px rgba(0,0,0,0.22);
     }
+    .btn:active {
+        transform: translateY(0) scale(0.99);
+    }
+
     .dropdown {
         position: absolute;
         top: 100%;
         left: 0;
         right: 0;
-        background-color: rgba(15, 23, 42, 0.98);
-        border: 1px solid rgba(148,163,184,0.25);
-        border-radius: 12px;
-        box-shadow: 0 12px 28px rgba(0,0,0,0.5);
+        background-color: rgba(255,255,255,0.98);
+        border: 3px solid rgba(255,255,255,0.9);
+        border-radius: 18px;
+        box-shadow: 0 14px 30px rgba(90,60,150,0.28);
         padding: 8px;
         box-sizing: border-box;
         opacity: 0;
         pointer-events: none;
-        transform: translateY(-6px);
-        transition: opacity 0.18s ease, transform 0.18s ease;
+        transform: translateY(-8px) scale(0.97);
+        transition: opacity 0.2s ease, transform 0.2s ease;
         z-index: 10;
         text-align: left;
     }
     .dropdown.show {
         opacity: 1;
         pointer-events: auto;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
     }
     .dropdown a {
-        display: block;
-        padding: 8px 10px;
-        color: #cffafe;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 12px;
+        color: #4b3b7a;
         text-decoration: none;
-        font-size: 0.9em;
-        font-weight: 500;
-        border-radius: 8px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.92em;
+        font-weight: 600;
+        border-radius: 10px;
+    }
+    .dropdown a::before {
+        content: "\1f517";
+        font-size: 0.85em;
+        opacity: 0.7;
     }
     .dropdown a:hover {
-        background-color: rgba(34,211,238,0.14);
-        color: #a5f3fc;
+        background-color: var(--accent-soft, rgba(161,140,209,0.18));
+        color: var(--accent, #7c5cbf);
+        transform: translateX(2px);
     }
     .dropdown .empty {
-        padding: 8px 10px;
-        color: #64748b;
-        font-size: 0.85em;
+        padding: 9px 12px;
+        color: #a9a0c4;
+        font-size: 0.88em;
         font-style: italic;
+    }
+
+    .footer-note {
+        margin-top: 40px;
+        font-size: 0.85em;
+        font-weight: 600;
+        color: #6b5a99;
+        opacity: 0.8;
     }
 </style>
 </head>
 <body>
+<span class="blob b1">&#127752;</span>
+<span class="blob b2">&#11088;</span>
+<span class="blob b3">&#127880;</span>
+<span class="blob b4">&#10024;</span>
+<span class="blob b5">&#127881;</span>
+<span class="blob b6">&#128640;</span>
+
 <div class="container">
     <img class="logo" src="Logo_full.png" alt="Programmini seri ma non troppo">
+    <div class="title">Programmini seri ma non troppo</div>
+    <div class="subtitle">&#10024; Scegli una categoria e parti alla scoperta! &#10024;</div>
     <div class="menu" id="menu"></div>
+    <div class="footer-note">Fatto con &#128156; per giocare, sperimentare e perdere un po' di tempo bene</div>
 </div>
 <script>
     const menu = document.getElementById("menu");
     const HOVER_DELAY = 800;
 
+    const STYLE = {
+        "Convertitori Audio Video Immagini": { emoji: "🎬", c1: "#ff9a56", c2: "#ff6b6b" },
+        "Farlocche":                          { emoji: "🤪", c1: "#f78ca0", c2: "#f9748f" },
+        "Giochi":                             { emoji: "🎮", c1: "#a18cd1", c2: "#fbc2eb" },
+        "Memoria":                            { emoji: "🧠", c1: "#43cbff", c2: "#9708cc" },
+        "Passatempo":                         { emoji: "🧩", c1: "#ffd452", c2: "#ffb347" },
+        "Prova":                              { emoji: "🧪", c1: "#84fab0", c2: "#8fd3f4" },
+        "Scienze":                            { emoji: "🔬", c1: "#0ba360", c2: "#3cba92" },
+        "Sport":                              { emoji: "🏆", c1: "#ff5858", c2: "#f857a6" },
+        "Tutto_Pdf":                          { emoji: "📄", c1: "#4facfe", c2: "#00f2fe" },
+        "Utility":                            { emoji: "🛠️", c1: "#38f9d7", c2: "#43e97b" }
+    };
+    const DEFAULT_STYLE = { emoji: "✨", c1: "#a8edea", c2: "#fed6e3" };
+
     Object.keys(DATI).sort().forEach(function (cat) {
+        const style = STYLE[cat] || DEFAULT_STYLE;
+
         const wrap = document.createElement("div");
         wrap.className = "btn-wrap";
 
@@ -123,16 +244,28 @@
         const a = document.createElement("a");
         a.className = "btn";
         a.href = catPath + "index.html";
-        a.textContent = cat.replace(/_/g, " ");
+        a.style.background = "linear-gradient(135deg, " + style.c1 + ", " + style.c2 + ")";
+
+        const emojiSpan = document.createElement("span");
+        emojiSpan.className = "emoji";
+        emojiSpan.textContent = style.emoji;
+        a.appendChild(emojiSpan);
+
+        const label = document.createElement("span");
+        label.textContent = cat.replace(/_/g, " ");
+        a.appendChild(label);
+
         wrap.appendChild(a);
 
         const dropdown = document.createElement("div");
         dropdown.className = "dropdown";
+        dropdown.style.setProperty("--accent", style.c2);
+        dropdown.style.setProperty("--accent-soft", style.c2 + "2e");
         const programmi = DATI[cat];
         if (programmi.length === 0) {
             const empty = document.createElement("div");
             empty.className = "empty";
-            empty.textContent = "Nessun programma";
+            empty.textContent = "Nessun programma qui... per ora! 🌱";
             dropdown.appendChild(empty);
         } else {
             programmi.forEach(function (p) {
