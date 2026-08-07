@@ -34,6 +34,7 @@ const DATI = {
     { "nome": "Tutto_Pdf", "file": "Tutto_Pdf.html" }
   ],
   "Utility": [
+    { "nome": "Calcola proporzioni", "file": "Calcola proporzioni.html" },
     { "nome": "Crea Gif Move V1.5", "file": "Crea Gif Move V1.5.html" },
     { "nome": "Multi-Screenshot", "file": "Multi-Screenshot.html" },
     { "nome": "QR_Toolbox", "file": "QR_Toolbox.html" },

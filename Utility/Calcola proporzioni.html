@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calcolo Proporzioni</title>
+<style>
+  :root {
+    --bg1: #fdf2ff;
+    --bg2: #eef4ff;
+    --bg3: #fff8ec;
+    --card: #ffffff;
+    --text: #2b2440;
+    --muted: #7a7391;
+    --primary: #8b5cf6;
+    --primary2: #ec4899;
+    --primary-dark: #7c3aed;
+    --border: #ece6fb;
+    --accent: #f3ebff;
+    --success: #16a34a;
+    --success-bg: #e8fbef;
+    --danger: #e0245e;
+    --danger-bg: #ffeef2;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: linear-gradient(120deg, var(--bg1), var(--bg2), var(--bg3), var(--bg1));
+    background-size: 300% 300%;
+    animation: gradientDrift 18s ease infinite;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 16px;
+  }
+  @keyframes gradientDrift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .wrap {
+    width: 100%;
+    max-width: 560px;
+  }
+  h1 {
+    font-size: 1.9rem;
+    margin: 0 0 6px;
+    text-align: center;
+    font-weight: 800;
+    background: linear-gradient(90deg, var(--primary), var(--primary2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    margin: 0 0 24px;
+    font-size: 0.95rem;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 26px;
+    box-shadow: 0 10px 28px rgba(139, 92, 246, 0.12);
+    margin-bottom: 20px;
+  }
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 11px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+    transition: transform .15s ease, box-shadow .15s ease, background .2s ease, color .2s ease;
+  }
+  .tab:hover:not(.disabled):not(.active) {
+    transform: translateY(-2px);
+    color: var(--primary-dark);
+  }
+  .tab.active {
+    background: linear-gradient(90deg, var(--primary), var(--primary2));
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 6px 14px rgba(139, 92, 246, 0.35);
+  }
+  .tab.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  .lock-check {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 0 0 18px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+  }
+  .lock-check input {
+    width: 17px;
+    height: 17px;
+    accent-color: var(--primary2);
+    cursor: pointer;
+  }
+  .hint {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin: 0 0 18px;
+  }
+  .proportion-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .field label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: .02em;
+  }
+  input[type="text"] {
+    width: 84px;
+    padding: 11px 8px;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    outline: none;
+    transition: border-color .15s ease, background .15s ease, box-shadow .15s ease, transform .1s ease;
+  }
+  input[type="text"]:focus {
+    border-color: var(--primary2);
+    box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.15);
+    transform: translateY(-1px);
+  }
+  input.solved {
+    background: var(--accent);
+    border-color: var(--primary);
+    font-weight: 800;
+    color: var(--primary-dark);
+    animation: popIn .35s ease;
+  }
+  @keyframes popIn {
+    0% { transform: scale(0.85); }
+    60% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+  }
+  .sep {
+    font-size: 1.3rem;
+    color: var(--primary2);
+    font-weight: 700;
+  }
+  .colon { font-weight: 800; }
+  .equals { font-weight: 800; font-size: 1.4rem; padding: 0 2px; color: var(--primary); }
+
+  .calc-btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(90deg, var(--primary), var(--primary2));
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    font-size: 1.02rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(139, 92, 246, 0.3);
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .calc-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 22px rgba(236, 72, 153, 0.35);
+  }
+  .calc-btn:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  .result {
+    margin-top: 18px;
+    padding: 16px;
+    border-radius: 16px;
+    background: var(--success-bg);
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--success);
+    display: none;
+  }
+  .result.show {
+    display: block;
+    animation: popIn .35s ease;
+  }
+  .result.error {
+    background: var(--danger-bg);
+    color: var(--danger);
+    font-size: 0.95rem;
+    font-weight: 600;
+    animation: shake .35s ease;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }
+  .steps {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--muted);
+  }
+
+  .info {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.6;
+    text-align: center;
+  }
+  .info strong {
+    color: var(--primary-dark);
+  }
+
+  .reset-link {
+    display: block;
+    text-align: center;
+    margin-top: 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--primary2);
+    cursor: pointer;
+  }
+  .reset-link:hover { text-decoration: underline; }
+
+  .footer-credit {
+    text-align: center;
+    margin: 4px 0 0;
+    font-size: 0.7rem;
+    color: var(--muted);
+    opacity: 0.55;
+    letter-spacing: .02em;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>✨ Calcolo delle Proporzioni</h1>
+  <p class="subtitle">Riempi 3 campi qualsiasi, lascia vuoto quello da trovare 🎯</p>
+
+  <div class="tabs">
+    <div class="tab active" data-mode="diretta">↗️ Diretta</div>
+    <div class="tab" data-mode="inversa">↘️ Inversa</div>
+    <div class="tab" data-mode="percentuale">% Percentuale</div>
+  </div>
+
+  <label class="lock-check">
+    <input type="checkbox" id="lockDiretta" checked>
+    Blocca modalità selezionata
+  </label>
+
+  <div class="card" id="propCard">
+    <p class="hint" id="modeHint">A : B = C : D — lascia vuoto il valore che vuoi calcolare</p>
+
+    <div class="proportion-row">
+      <div class="field">
+        <label for="a">A</label>
+        <input type="text" id="a" inputmode="decimal" placeholder="">
+      </div>
+      <span class="sep colon">:</span>
+      <div class="field">
+        <label for="b">B</label>
+        <input type="text" id="b" inputmode="decimal" placeholder="">
+      </div>
+      <span class="equals">=</span>
+      <div class="field">
+        <label for="c">C</label>
+        <input type="text" id="c" inputmode="decimal" placeholder="">
+      </div>
+      <span class="sep colon">:</span>
+      <div class="field">
+        <label for="d">D</label>
+        <input type="text" id="d" inputmode="decimal" placeholder="">
+      </div>
+    </div>
+
+    <button class="calc-btn" id="calcBtn">Calcola</button>
+
+    <div class="result" id="propResult"></div>
+    <span class="reset-link" id="resetLink">Svuota campi</span>
+  </div>
+
+  <div class="card" style="text-align:left;">
+    <p class="info" style="text-align:left; margin:0;">
+      <strong>↗️ Proporzione diretta:</strong> A : B = C : D → B × C = A × D (se una grandezza aumenta, aumenta anche l'altra).<br><br>
+      <strong>↘️ Proporzione inversa:</strong> A : B = D : C → A × B = C × D (se una grandezza aumenta, l'altra diminuisce).<br><br>
+      <strong>% Percentuale:</strong> Parte : Totale = % : 100.
+    </p>
+  </div>
+
+  <p class="footer-credit">Digit54 v. 1.0</p>
+</div>
+
+<script>
+let mode = 'diretta';
+
+const inputsRow = document.querySelector('.proportion-row');
+const modeHint = document.getElementById('modeHint');
+const resultEl0 = document.getElementById('propResult');
+let resultEl = resultEl0;
+
+const rowTemplates = {
+  diretta: `
+    <div class="field"><label for="a">A</label><input type="text" id="a" inputmode="decimal"></div>
+    <span class="sep colon">:</span>
+    <div class="field"><label for="b">B</label><input type="text" id="b" inputmode="decimal"></div>
+    <span class="equals">=</span>
+    <div class="field"><label for="c">C</label><input type="text" id="c" inputmode="decimal"></div>
+    <span class="sep colon">:</span>
+    <div class="field"><label for="d">D</label><input type="text" id="d" inputmode="decimal"></div>
+  `,
+  inversa: `
+    <div class="field"><label for="a">A</label><input type="text" id="a" inputmode="decimal"></div>
+    <span class="sep colon">:</span>
+    <div class="field"><label for="b">B</label><input type="text" id="b" inputmode="decimal"></div>
+    <span class="equals">=</span>
+    <div class="field"><label for="d">D</label><input type="text" id="d" inputmode="decimal"></div>
+    <span class="sep colon">:</span>
+    <div class="field"><label for="c">C</label><input type="text" id="c" inputmode="decimal"></div>
+  `,
+  percentuale: `
+    <div class="field"><label for="a">Parte</label><input type="text" id="a" inputmode="decimal"></div>
+    <span class="sep colon">:</span>
+    <div class="field"><label for="b">Totale</label><input type="text" id="b" inputmode="decimal"></div>
+    <span class="equals">=</span>
+    <div class="field"><label for="c">%</label><input type="text" id="c" inputmode="decimal"></div>
+    <span class="sep colon">:</span>
+    <div class="field"><label>&nbsp;</label><input type="text" id="d" value="100" disabled style="background:#f0f0f3; color:#9098a5;"></div>
+  `
+};
+
+const hints = {
+  diretta: 'A : B = C : D — lascia vuoto il valore che vuoi calcolare',
+  inversa: 'A : B = D : C — lascia vuoto il valore che vuoi calcolare',
+  percentuale: 'Parte : Totale = % : 100 — lascia vuoto il valore che vuoi calcolare'
+};
+
+function parseNum(str) {
+  if (str === undefined || str === null) return null;
+  const s = String(str).trim().replace(',', '.');
+  if (s === '') return null;
+  const n = Number(s);
+  return isNaN(n) ? null : n;
+}
+
+function showResult(el, ok, message, extra) {
+  el.classList.remove('error');
+  if (!ok) el.classList.add('error');
+  el.classList.add('show');
+  el.innerHTML = ok
+    ? `🎉 Risultato: <span>${message}</span>` + (extra ? `<div class="steps">${extra}</div>` : '')
+    : `⚠️ ${message}`;
+}
+
+function calcProportion() {
+  resultEl = document.getElementById('propResult');
+  const aEl = document.getElementById('a');
+  const bEl = document.getElementById('b');
+  const cEl = document.getElementById('c');
+  const dEl = document.getElementById('d');
+  [aEl, bEl, cEl, dEl].forEach(el => el.classList.remove('solved'));
+
+  const raw = { a: aEl.value, b: bEl.value, c: cEl.value, d: dEl.value };
+  const vals = { a: parseNum(raw.a), b: parseNum(raw.b), c: parseNum(raw.c), d: parseNum(raw.d) };
+
+  const empties = Object.keys(vals).filter(k => vals[k] === null);
+  const invalids = Object.keys(vals).filter(k => vals[k] === null && raw[k].trim() !== '');
+
+  if (invalids.length > 0) {
+    showResult(resultEl, false, 'Controlla i valori inseriti: contengono caratteri non numerici.');
+    return;
+  }
+  if (empties.length === 0) {
+    showResult(resultEl, false, 'Lascia vuoto il campo che vuoi calcolare (compila solo gli altri tre).');
+    return;
+  }
+  if (empties.length > 1) {
+    showResult(resultEl, false, 'Compila 3 campi e lascia vuoto solo quello da calcolare.');
+    return;
+  }
+
+  const target = empties[0];
+  const { a, b, c, d } = vals;
+  let result = null;
+  let steps = '';
+  let divZero = false;
+
+  if (mode === 'diretta') {
+    if (target === 'a') { if (d === 0) divZero = true; else { result = (b * c) / d; steps = `A = (B × C) / D = (${b} × ${c}) / ${d}`; } }
+    if (target === 'b') { if (c === 0) divZero = true; else { result = (a * d) / c; steps = `B = (A × D) / C = (${a} × ${d}) / ${c}`; } }
+    if (target === 'c') { if (b === 0) divZero = true; else { result = (a * d) / b; steps = `C = (A × D) / B = (${a} × ${d}) / ${b}`; } }
+    if (target === 'd') { if (a === 0) divZero = true; else { result = (b * c) / a; steps = `D = (B × C) / A = (${b} × ${c}) / ${a}`; } }
+  } else if (mode === 'inversa') {
+    // A : B = D : C  ->  A*B = C*D
+    if (target === 'a') { if (b === 0) divZero = true; else { result = (c * d) / b; steps = `A = (C × D) / B = (${c} × ${d}) / ${b}`; } }
+    if (target === 'b') { if (a === 0) divZero = true; else { result = (c * d) / a; steps = `B = (C × D) / A = (${c} × ${d}) / ${a}`; } }
+    if (target === 'c') { if (d === 0) divZero = true; else { result = (a * b) / d; steps = `C = (A × B) / D = (${a} × ${b}) / ${d}`; } }
+    if (target === 'd') { if (c === 0) divZero = true; else { result = (a * b) / c; steps = `D = (A × B) / C = (${a} × ${b}) / ${c}`; } }
+  } else if (mode === 'percentuale') {
+    // a = Parte, b = Totale, c = %, d = 100 (fixed)
+    if (target === 'a') { result = (b * c) / 100; steps = `Parte = (Totale × %) / 100 = (${b} × ${c}) / 100`; }
+    else if (target === 'b') { if (c === 0) divZero = true; else { result = (a * 100) / c; steps = `Totale = (Parte × 100) / % = (${a} × 100) / ${c}`; } }
+    else if (target === 'c') { if (b === 0) divZero = true; else { result = (a * 100) / b; steps = `% = (Parte × 100) / Totale = (${a} × 100) / ${b}`; } }
+    else if (target === 'd') { showResult(resultEl, false, 'Il valore 100 è fisso e non può essere calcolato.'); return; }
+  }
+
+  if (divZero) {
+    showResult(resultEl, false, 'Impossibile calcolare: divisione per zero. Controlla i valori inseriti.');
+    return;
+  }
+
+  const rounded = Math.round(result * 1e6) / 1e6;
+  showResult(resultEl, true, rounded, steps);
+
+  const targetEl = document.getElementById(target);
+  targetEl.value = rounded;
+  targetEl.classList.add('solved');
+  lastSolvedId = target;
+}
+
+let lastSolvedId = null;
+
+function bindInputClearing() {
+  ['a', 'b', 'c', 'd'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el || el.disabled) return;
+    el.addEventListener('input', () => {
+      if (lastSolvedId && lastSolvedId !== id) {
+        const solvedEl = document.getElementById(lastSolvedId);
+        if (solvedEl) {
+          solvedEl.value = '';
+          solvedEl.classList.remove('solved');
+        }
+        lastSolvedId = null;
+        const r = document.getElementById('propResult');
+        r.classList.remove('show', 'error');
+      }
+    });
+    el.addEventListener('focus', () => el.select());
+  });
+}
+
+function bindEnterNavigation() {
+  const order = ['a', 'b', 'c', 'd'];
+  order.forEach((id, idx) => {
+    const el = document.getElementById(id);
+    if (!el || el.disabled) return;
+    el.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+
+      const vals = {};
+      order.forEach(k => { vals[k] = parseNum(document.getElementById(k).value); });
+      const others = order.filter(k => k !== id);
+      const currentEmpty = vals[id] === null;
+      const othersFilled = others.every(k => vals[k] !== null);
+      if (currentEmpty && othersFilled) {
+        calcProportion();
+        return;
+      }
+
+      for (let i = 1; i <= order.length; i++) {
+        const nextEl = document.getElementById(order[(idx + i) % order.length]);
+        if (nextEl && !nextEl.disabled) {
+          nextEl.focus();
+          nextEl.select();
+          break;
+        }
+      }
+    });
+  });
+}
+
+function bindCalcAndReset() {
+  document.getElementById('calcBtn').addEventListener('click', calcProportion);
+  document.getElementById('resetLink').addEventListener('click', () => {
+    ['a', 'b', 'c', 'd'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.disabled) el.value = '';
+      if (el) el.classList.remove('solved');
+    });
+    lastSolvedId = null;
+    const r = document.getElementById('propResult');
+    r.classList.remove('show', 'error');
+  });
+  bindInputClearing();
+  bindEnterNavigation();
+}
+
+function switchMode(newMode) {
+  mode = newMode;
+  inputsRow.innerHTML = rowTemplates[mode];
+  modeHint.textContent = hints[mode];
+  lastSolvedId = null;
+  const r = document.getElementById('propResult');
+  r.classList.remove('show', 'error');
+  bindInputClearing();
+  bindEnterNavigation();
+}
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    switchMode(tab.dataset.mode);
+  });
+});
+
+function applyLock(locked) {
+  const activeTab = document.querySelector('.tab.active');
+  document.querySelectorAll('.tab').forEach(t => {
+    if (t === activeTab) {
+      t.classList.remove('disabled');
+    } else {
+      t.classList.toggle('disabled', locked);
+    }
+  });
+}
+
+const lockCheckbox = document.getElementById('lockDiretta');
+lockCheckbox.addEventListener('change', () => applyLock(lockCheckbox.checked));
+applyLock(lockCheckbox.checked);
+
+bindCalcAndReset();
+</script>
+</body>
+</html>
