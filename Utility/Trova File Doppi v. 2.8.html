@@ -516,6 +516,7 @@
 
         const idx = new Map(); // fname.toLowerCase()+':'+size → { fname, entries:[{path,size}] }
         for (const [path, files] of Object.entries(panel.fileMap)) {
+          if (path.split('/').includes('_Cestino_Duplicati')) continue; // esclude il Cestino dal calcolo duplicati
           for (const fname of files) {
             const size = panel.fileSizeMap[path + '/' + fname];
             const key = fname.toLowerCase() + ':' + (size !== undefined ? size : '');
