@@ -39,7 +39,7 @@ const DATI = {
     { "nome": "Multi-Screenshot", "file": "Multi-Screenshot.html" },
     { "nome": "QR_Toolbox", "file": "QR_Toolbox.html" },
     { "nome": "Suite Percentuali", "file": "Suite Percentuali.html" },
-    { "nome": "Trova File Doppi v. 2.7", "file": "Trova File Doppi v. 2.7.html" }
+    { "nome": "Trova File Doppi v. 2.8", "file": "Trova File Doppi v. 2.8.html" }
   ]
 };
 
