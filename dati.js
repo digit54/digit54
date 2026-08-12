@@ -31,6 +31,7 @@ const DATI = {
   ],
   "Tutto_Pdf": [
     { "nome": "Estrae & Unisce file.Pdf v.2.4", "file": "Estrae & Unisce file.Pdf v.2.4.html" },
+    { "nome": "Jpg to Pdf", "file": "Jpg to Pdf.html" },
     { "nome": "Tutto_Pdf", "file": "Tutto_Pdf.html" }
   ],
   "Utility": [
