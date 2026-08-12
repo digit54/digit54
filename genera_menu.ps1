@@ -40,6 +40,7 @@ $rootHtml = @'
 <html lang="it">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Programmini seri ma non troppo</title>
 <script src="dati.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -144,6 +145,12 @@ $rootHtml = @'
         padding-bottom: 8px;
     }
 
+    @media (max-width: 720px) {
+        .btn-wrap {
+            flex-basis: 100%;
+        }
+    }
+
     .btn {
         display: flex;
         align-items: center;
@@ -236,6 +243,14 @@ $rootHtml = @'
         color: #6b5a99;
         opacity: 0.8;
     }
+
+    .version-note {
+        margin-top: 8px;
+        font-size: 0.7em;
+        font-weight: 500;
+        color: #6b5a99;
+        opacity: 0.45;
+    }
 </style>
 </head>
 <body>
@@ -252,6 +267,7 @@ $rootHtml = @'
     <div class="subtitle">&#10024; Scegli una categoria e parti alla scoperta! &#10024;</div>
     <div class="menu" id="menu"></div>
     <div class="footer-note">Fatto con &#128156; per giocare, sperimentare e perdere un po' di tempo bene</div>
+    <div class="version-note">Digit54 v.1.5</div>
 </div>
 <script>
     const menu = document.getElementById("menu");
