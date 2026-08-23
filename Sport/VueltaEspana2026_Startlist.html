@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vuelta a España 2026 – Startlist</title>
+<style>
+  body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; margin: 20px; background: #fff; color: #000; }
+  table { border-collapse: collapse; width: auto; }
+  th, td { border: 1px solid #bfbfbf; padding: 3px 8px; white-space: nowrap; }
+  th { background: #4472c4; color: #fff; font-weight: bold; text-align: center; cursor: pointer; user-select: none; position: sticky; top: 48px; z-index: 1; }
+  th:hover { background: #2f5597; }
+  th .arrow { margin-left: 5px; font-size: 9pt; opacity: 0.6; }
+  th.asc .arrow::after { content: '▲'; opacity: 1; }
+  th.desc .arrow::after { content: '▼'; opacity: 1; }
+  th:not(.asc):not(.desc) .arrow::after { content: '⇅'; }
+  tr:nth-child(even) { background: #dce6f1; }
+  tr:nth-child(odd) { background: #fff; }
+  td:first-child { text-align: center; }
+  .search-box { position: sticky; top: 0; z-index: 2; display: inline-block; background: #fff; padding: 10px 0; margin-bottom: 0; width: 100%; }
+  .search-box input { font-family: Calibri, Arial, sans-serif; font-size: 11pt; padding: 5px 26px 5px 8px; border: 1px solid #bfbfbf; border-radius: 4px; width: 260px; }
+  .search-box .clear-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); border: none; background: none; cursor: pointer; font-size: 13pt; line-height: 1; color: #888; padding: 2px 4px; display: none; }
+  .search-box .clear-btn:hover { color: #333; }
+</style>
+</head>
+<body>
+<div class="search-box">
+  <input type="text" id="search" placeholder="Cerca..." oninput="filterTable()">
+  <button type="button" class="clear-btn" id="clearSearch" onclick="clearSearch()">&times;</button>
+</div>
+<table id="t">
+  <thead>
+    <tr>
+      <th onclick="sortTable(0)" data-col="0">Pettorale<span class="arrow"></span></th>
+      <th onclick="sortTable(1)" data-col="1">Ciclista<span class="arrow"></span></th>
+      <th onclick="sortTable(2)" data-col="2">Squadra<span class="arrow"></span></th>
+      <th onclick="sortTable(3)" data-col="3">Naz.<span class="arrow"></span></th>
+      <th onclick="sortTable(4)" data-col="4">Età<span class="arrow"></span></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>ROGLIČ Primož</td><td>Red Bull – BORA – hansgrohe</td><td>SLO</td><td>36</td></tr>
+    <tr><td>2</td><td>FISHER-BLACK Finn</td><td>Red Bull – BORA – hansgrohe</td><td>NZL</td><td>24</td></tr>
+    <tr><td>3</td><td>MEEUS Jordi</td><td>Red Bull – BORA – hansgrohe</td><td>BEL</td><td>28</td></tr>
+    <tr><td>4</td><td>MOSCON Gianni</td><td>Red Bull – BORA – hansgrohe</td><td>ITA</td><td>32</td></tr>
+    <tr><td>5</td><td>THORNLEY Callum</td><td>Red Bull – BORA – hansgrohe</td><td>GBR</td><td>23</td></tr>
+    <tr><td>6</td><td>TUCKWELL Luke</td><td>Red Bull – BORA – hansgrohe</td><td>AUS</td><td>22</td></tr>
+    <tr><td>7</td><td>VERMEERSCH Gianni</td><td>Red Bull – BORA – hansgrohe</td><td>BEL</td><td>33</td></tr>
+    <tr><td>8</td><td>WANDAHL Frederik</td><td>Red Bull – BORA – hansgrohe</td><td>DEN</td><td>25</td></tr>
+    <tr><td>11</td><td>POGAČAR Tadej</td><td>UAE Team Emirates XRG</td><td>SLO</td><td>27</td></tr>
+    <tr><td>12</td><td>ALMEIDA João</td><td>UAE Team Emirates XRG</td><td>POR</td><td>28</td></tr>
+    <tr><td>13</td><td>NOVAK Domen</td><td>UAE Team Emirates XRG</td><td>SLO</td><td>31</td></tr>
+    <tr><td>14</td><td>OLIVEIRA Ivo</td><td>UAE Team Emirates XRG</td><td>POR</td><td>29</td></tr>
+    <tr><td>15</td><td>SIVAKOV Pavel</td><td>UAE Team Emirates XRG</td><td>FRA</td><td>29</td></tr>
+    <tr><td>16</td><td>TORRES Pablo</td><td>UAE Team Emirates XRG</td><td>ESP</td><td>20</td></tr>
+    <tr><td>17</td><td>VERMAERKE Kevin</td><td>UAE Team Emirates XRG</td><td>USA</td><td>25</td></tr>
+    <tr><td>18</td><td>VINE Jay</td><td>UAE Team Emirates XRG</td><td>AUS</td><td>30</td></tr>
+    <tr><td>21</td><td>MAS Enric</td><td>Movistar Team</td><td>ESP</td><td>31</td></tr>
+    <tr><td>22</td><td>ARCAS Jorge</td><td>Movistar Team</td><td>ESP</td><td>34</td></tr>
+    <tr><td>23</td><td>AULAR Orluis</td><td>Movistar Team</td><td>VEN</td><td>29</td></tr>
+    <tr><td>24</td><td>CANAL Carlos</td><td>Movistar Team</td><td>ESP</td><td>25</td></tr>
+    <tr><td>25</td><td>CASTRILLO Pablo</td><td>Movistar Team</td><td>ESP</td><td>25</td></tr>
+    <tr><td>26</td><td>GARCÍA PIERNA Raúl</td><td>Movistar Team</td><td>ESP</td><td>25</td></tr>
+    <tr><td>27</td><td>ROMEO Iván</td><td>Movistar Team</td><td>ESP</td><td>23</td></tr>
+    <tr><td>28</td><td>UIJTDEBROEKS Cian</td><td>Movistar Team</td><td>BEL</td><td>23</td></tr>
+    <tr><td>31</td><td>VAN AERT Wout</td><td>Team Visma | Lease a Bike</td><td>BEL</td><td>31</td></tr>
+    <tr><td>32</td><td>ARMIRAIL Bruno</td><td>Team Visma | Lease a Bike</td><td>FRA</td><td>32</td></tr>
+    <tr><td>33</td><td>BRENNAN Matthew</td><td>Team Visma | Lease a Bike</td><td>GBR</td><td>21</td></tr>
+    <tr><td>34</td><td>KRUIJSWIJK Steven</td><td>Team Visma | Lease a Bike</td><td>NED</td><td>39</td></tr>
+    <tr><td>35</td><td>KUSS Sepp</td><td>Team Visma | Lease a Bike</td><td>USA</td><td>31</td></tr>
+    <tr><td>36</td><td>LAPORTE Christophe</td><td>Team Visma | Lease a Bike</td><td>FRA</td><td>33</td></tr>
+    <tr><td>37</td><td>NORDHAGEN Jørgen</td><td>Team Visma | Lease a Bike</td><td>NOR</td><td>21</td></tr>
+    <tr><td>38</td><td>TULETT Ben</td><td>Team Visma | Lease a Bike</td><td>GBR</td><td>24</td></tr>
+    <tr><td>41</td><td>GALL Felix</td><td>Decathlon CMA CGM Team</td><td>AUT</td><td>28</td></tr>
+    <tr><td>42</td><td>BISIAUX Léo</td><td>Decathlon CMA CGM Team</td><td>FRA</td><td>21</td></tr>
+    <tr><td>43</td><td>CHAMBERLAIN Oscar</td><td>Decathlon CMA CGM Team</td><td>AUS</td><td>21</td></tr>
+    <tr><td>44</td><td>DE PESTEL Sander</td><td>Decathlon CMA CGM Team</td><td>BEL</td><td>27</td></tr>
+    <tr><td>45</td><td>LABROSSE Jordan</td><td>Decathlon CMA CGM Team</td><td>FRA</td><td>23</td></tr>
+    <tr><td>46</td><td>MÜHLBERGER Gregor</td><td>Decathlon CMA CGM Team</td><td>AUT</td><td>32</td></tr>
+    <tr><td>47</td><td>RICCITELLO Matthew</td><td>Decathlon CMA CGM Team</td><td>USA</td><td>24</td></tr>
+    <tr><td>48</td><td>SCOTSON Callum</td><td>Decathlon CMA CGM Team</td><td>AUS</td><td>30</td></tr>
+    <tr><td>51</td><td>DE LA CRUZ David</td><td>Pinarello – Q36.5 Pro Cycling Team</td><td>ESP</td><td>37</td></tr>
+    <tr><td>52</td><td>AZPARREN Xabier Mikel</td><td>Pinarello – Q36.5 Pro Cycling Team</td><td>ESP</td><td>27</td></tr>
+    <tr><td>53</td><td>CALZONI Walter</td><td>Pinarello – Q36.5 Pro Cycling Team</td><td>ITA</td><td>25</td></tr>
+    <tr><td>54</td><td>CAMPRUBÍ Marcel</td><td>Pinarello – Q36.5 Pro Cycling Team</td><td>ESP</td><td>24</td></tr>
+    <tr><td>55</td><td>DUNBAR Eddie</td><td>Pinarello – Q36.5 Pro Cycling Team</td><td>IRL</td><td>29</td></tr>
+    <tr><td>56</td><td>GLOAG Thomas</td><td>Pinarello – Q36.5 Pro Cycling Team</td><td>GBR</td><td>24</td></tr>
+    <tr><td>57</td><td>GONZÁLEZ David</td><td>Pinarello – Q36.5 Pro Cycling Team</td><td>ESP</td><td>30</td></tr>
+    <tr><td>58</td><td>VADER Milan</td><td>Pinarello – Q36.5 Pro Cycling Team</td><td>NED</td><td>30</td></tr>
+    <tr><td>61</td><td>ONLEY Oscar</td><td>Netcompany – INEOS Grenadiers</td><td>GBR</td><td>23</td></tr>
+    <tr><td>62</td><td>HAIG Jack</td><td>Netcompany – INEOS Grenadiers</td><td>AUS</td><td>32</td></tr>
+    <tr><td>63</td><td>HAMILTON Lucas</td><td>Netcompany – INEOS Grenadiers</td><td>AUS</td><td>30</td></tr>
+    <tr><td>64</td><td>LAURANCE Axel</td><td>Netcompany – INEOS Grenadiers</td><td>FRA</td><td>25</td></tr>
+    <tr><td>65</td><td>RODRÍGUEZ Carlos</td><td>Netcompany – INEOS Grenadiers</td><td>ESP</td><td>25</td></tr>
+    <tr><td>66</td><td>SVESTAD-BÅRDSENG Embret</td><td>Netcompany – INEOS Grenadiers</td><td>NOR</td><td>23</td></tr>
+    <tr><td>67</td><td>TARLING Joshua</td><td>Netcompany – INEOS Grenadiers</td><td>GBR</td><td>22</td></tr>
+    <tr><td>68</td><td>TURNER Ben</td><td>Netcompany – INEOS Grenadiers</td><td>GBR</td><td>27</td></tr>
+    <tr><td>71</td><td>BILBAO Pello</td><td>Team Bahrain Victorious</td><td>ESP</td><td>36</td></tr>
+    <tr><td>72</td><td>BUITRAGO Santiago</td><td>Team Bahrain Victorious</td><td>COL</td><td>26</td></tr>
+    <tr><td>73</td><td>ERMAKOV Roman</td><td>Team Bahrain Victorious</td><td>SLO</td><td>21</td></tr>
+    <tr><td>74</td><td>GOVEKAR Matevž</td><td>Team Bahrain Victorious</td><td>SLO</td><td>26</td></tr>
+    <tr><td>75</td><td>MIQUEL Pau</td><td>Team Bahrain Victorious</td><td>ESP</td><td>26</td></tr>
+    <tr><td>76</td><td>OMRZEL Jakob</td><td>Team Bahrain Victorious</td><td>SLO</td><td>20</td></tr>
+    <tr><td>77</td><td>PAASSCHENS Mathijs</td><td>Team Bahrain Victorious</td><td>NED</td><td>30</td></tr>
+    <tr><td>78</td><td>VALTER Attila</td><td>Team Bahrain Victorious</td><td>HUN</td><td>28</td></tr>
+    <tr><td>81</td><td>SKJELMOSE Mattias</td><td>Lidl – Trek</td><td>DEN</td><td>25</td></tr>
+    <tr><td>82</td><td>BERNARD Julien</td><td>Lidl – Trek</td><td>FRA</td><td>34</td></tr>
+    <tr><td>83</td><td>KÄMNA Lennard</td><td>Lidl – Trek</td><td>GER</td><td>29</td></tr>
+    <tr><td>84</td><td>KONRAD Patrick</td><td>Lidl – Trek</td><td>AUT</td><td>34</td></tr>
+    <tr><td>85</td><td>MOSCA Jacopo</td><td>Lidl – Trek</td><td>ITA</td><td>32</td></tr>
+    <tr><td>86</td><td>NORSGAARD Mathias</td><td>Lidl – Trek</td><td>DEN</td><td>29</td></tr>
+    <tr><td>87</td><td>NYS Thibau</td><td>Lidl – Trek</td><td>BEL</td><td>23</td></tr>
+    <tr><td>88</td><td>PEDERSEN Mads</td><td>Lidl – Trek</td><td>DEN</td><td>30</td></tr>
+    <tr><td>91</td><td>BERTHET Clément</td><td>Groupama – FDJ United</td><td>FRA</td><td>29</td></tr>
+    <tr><td>92</td><td>LE GAC Olivier</td><td>Groupama – FDJ United</td><td>FRA</td><td>32</td></tr>
+    <tr><td>93</td><td>MADOUAS Valentin</td><td>Groupama – FDJ United</td><td>FRA</td><td>30</td></tr>
+    <tr><td>94</td><td>MARTIN Guillaume</td><td>Groupama – FDJ United</td><td>FRA</td><td>33</td></tr>
+    <tr><td>95</td><td>MOLARD Rudy</td><td>Groupama – FDJ United</td><td>FRA</td><td>36</td></tr>
+    <tr><td>96</td><td>PALENI Enzo</td><td>Groupama – FDJ United</td><td>FRA</td><td>24</td></tr>
+    <tr><td>97</td><td>ROCHAS Rémy</td><td>Groupama – FDJ United</td><td>FRA</td><td>30</td></tr>
+    <tr><td>98</td><td>TRONCHON Bastien</td><td>Groupama – FDJ United</td><td>FRA</td><td>24</td></tr>
+    <tr><td>101</td><td>GROVES Kaden</td><td>Alpecin – Premier Tech</td><td>AUS</td><td>27</td></tr>
+    <tr><td>102</td><td>BUSATTO Francesco</td><td>Alpecin – Premier Tech</td><td>ITA</td><td>23</td></tr>
+    <tr><td>103</td><td>DE VYLDER Lindsay</td><td>Alpecin – Premier Tech</td><td>BEL</td><td>31</td></tr>
+    <tr><td>104</td><td>DEBRUYNE Ramses</td><td>Alpecin – Premier Tech</td><td>BEL</td><td>23</td></tr>
+    <tr><td>105</td><td>GLIVAR Gal</td><td>Alpecin – Premier Tech</td><td>SLO</td><td>24</td></tr>
+    <tr><td>106</td><td>GOGL Michael</td><td>Alpecin – Premier Tech</td><td>AUT</td><td>32</td></tr>
+    <tr><td>107</td><td>HOULE Hugo</td><td>Alpecin – Premier Tech</td><td>CAN</td><td>35</td></tr>
+    <tr><td>108</td><td>SENTJENS Sente</td><td>Alpecin – Premier Tech</td><td>BEL</td><td>20</td></tr>
+    <tr><td>111</td><td>LUTSENKO Alexey</td><td>NSN Cycling Team</td><td>KAZ</td><td>33</td></tr>
+    <tr><td>112</td><td>BENNETT George</td><td>NSN Cycling Team</td><td>NZL</td><td>36</td></tr>
+    <tr><td>113</td><td>HIRT Jan</td><td>NSN Cycling Team</td><td>CZE</td><td>35</td></tr>
+    <tr><td>114</td><td>HOFSTETTER Hugo</td><td>NSN Cycling Team</td><td>FRA</td><td>32</td></tr>
+    <tr><td>115</td><td>KRETSCHY Moritz</td><td>NSN Cycling Team</td><td>GER</td><td>24</td></tr>
+    <tr><td>116</td><td>MARTÍ Pau</td><td>NSN Cycling Team</td><td>ESP</td><td>21</td></tr>
+    <tr><td>117</td><td>SCHULTZ Nick</td><td>NSN Cycling Team</td><td>AUS</td><td>31</td></tr>
+    <tr><td>118</td><td>VAN TRICHT Floris</td><td>NSN Cycling Team</td><td>BEL</td><td>25</td></tr>
+    <tr><td>121</td><td>LANDA Mikel</td><td>Soudal – Quick-Step</td><td>ESP</td><td>36</td></tr>
+    <tr><td>122</td><td>DAINESE Alberto</td><td>Soudal – Quick-Step</td><td>ITA</td><td>28</td></tr>
+    <tr><td>123</td><td>GAROFOLI Gianmarco</td><td>Soudal – Quick-Step</td><td>ITA</td><td>23</td></tr>
+    <tr><td>124</td><td>HAYTER Ethan</td><td>Soudal – Quick-Step</td><td>GBR</td><td>27</td></tr>
+    <tr><td>125</td><td>PARET-PEINTRE Valentin</td><td>Soudal – Quick-Step</td><td>FRA</td><td>25</td></tr>
+    <tr><td>126</td><td>VAN DEN BOSSCHE Fabio</td><td>Soudal – Quick-Step</td><td>BEL</td><td>25</td></tr>
+    <tr><td>127</td><td>VANSEVENANT Mauri</td><td>Soudal – Quick-Step</td><td>BEL</td><td>27</td></tr>
+    <tr><td>128</td><td>ZANA Filippo</td><td>Soudal – Quick-Step</td><td>ITA</td><td>27</td></tr>
+    <tr><td>131</td><td>CORT Magnus</td><td>Uno-X Mobility</td><td>DEN</td><td>33</td></tr>
+    <tr><td>132</td><td>DALBY Simon</td><td>Uno-X Mobility</td><td>DEN</td><td>23</td></tr>
+    <tr><td>133</td><td>DVERSNES Fredrik</td><td>Uno-X Mobility</td><td>NOR</td><td>29</td></tr>
+    <tr><td>134</td><td>JOHANNESSEN Tobias Halland</td><td>Uno-X Mobility</td><td>NOR</td><td>26</td></tr>
+    <tr><td>135</td><td>KRON Andreas</td><td>Uno-X Mobility</td><td>DEN</td><td>28</td></tr>
+    <tr><td>136</td><td>LEKNESSUND Andreas</td><td>Uno-X Mobility</td><td>NOR</td><td>27</td></tr>
+    <tr><td>137</td><td>TILLER Rasmus</td><td>Uno-X Mobility</td><td>NOR</td><td>30</td></tr>
+    <tr><td>138</td><td>TJØTTA Martin</td><td>Uno-X Mobility</td><td>NOR</td><td>25</td></tr>
+    <tr><td>141</td><td>BUCHMANN Emanuel</td><td>Cofidis</td><td>GER</td><td>33</td></tr>
+    <tr><td>142</td><td>COQUARD Bryan</td><td>Cofidis</td><td>FRA</td><td>34</td></tr>
+    <tr><td>143</td><td>KIRSCH Alex</td><td>Cofidis</td><td>LUX</td><td>34</td></tr>
+    <tr><td>144</td><td>MONIQUET Sylvain</td><td>Cofidis</td><td>BEL</td><td>28</td></tr>
+    <tr><td>145</td><td>OURSELIN Paul</td><td>Cofidis</td><td>FRA</td><td>32</td></tr>
+    <tr><td>146</td><td>RENARD Alexis</td><td>Cofidis</td><td>FRA</td><td>27</td></tr>
+    <tr><td>147</td><td>ROULAND Louis</td><td>Cofidis</td><td>FRA</td><td>23</td></tr>
+    <tr><td>148</td><td>SAMITIER Sergio</td><td>Cofidis</td><td>ESP</td><td>30</td></tr>
+    <tr><td>151</td><td>COVI Alessandro</td><td>Team Jayco AlUla</td><td>ITA</td><td>27</td></tr>
+    <tr><td>152</td><td>BOUWMAN Koen</td><td>Team Jayco AlUla</td><td>NED</td><td>32</td></tr>
+    <tr><td>153</td><td>DOUBLE Paul</td><td>Team Jayco AlUla</td><td>GBR</td><td>30</td></tr>
+    <tr><td>154</td><td>HELLEMOSE Asbjørn</td><td>Team Jayco AlUla</td><td>DEN</td><td>27</td></tr>
+    <tr><td>155</td><td>MCKENZIE Hamish</td><td>Team Jayco AlUla</td><td>AUS</td><td>21</td></tr>
+    <tr><td>156</td><td>PICKERING Finlay</td><td>Team Jayco AlUla</td><td>GBR</td><td>23</td></tr>
+    <tr><td>157</td><td>PORTER Rudy</td><td>Team Jayco AlUla</td><td>AUS</td><td>25</td></tr>
+    <tr><td>158</td><td>SÜTTERLIN Jasha</td><td>Team Jayco AlUla</td><td>GER</td><td>33</td></tr>
+    <tr><td>161</td><td>CARAPAZ Richard</td><td>EF Education – EasyPost</td><td>ECU</td><td>33</td></tr>
+    <tr><td>162</td><td>ALBANESE Vincenzo</td><td>EF Education – EasyPost</td><td>ITA</td><td>29</td></tr>
+    <tr><td>163</td><td>BELOKI Markel</td><td>EF Education – EasyPost</td><td>ESP</td><td>21</td></tr>
+    <tr><td>164</td><td>MACKELLAR Alastair</td><td>EF Education – EasyPost</td><td>AUS</td><td>24</td></tr>
+    <tr><td>165</td><td>RAFFERTY Darren</td><td>EF Education – EasyPost</td><td>IRL</td><td>23</td></tr>
+    <tr><td>166</td><td>RODRÍGUEZ Juan Felipe</td><td>EF Education – EasyPost</td><td>COL</td><td>22</td></tr>
+    <tr><td>167</td><td>SHAW James</td><td>EF Education – EasyPost</td><td>GBR</td><td>30</td></tr>
+    <tr><td>168</td><td>STEINHAUSER Georg</td><td>EF Education – EasyPost</td><td>GER</td><td>24</td></tr>
+    <tr><td>171</td><td>BRENNER Marco</td><td>Tudor Pro Cycling Team</td><td>GER</td><td>23</td></tr>
+    <tr><td>172</td><td>BARTA Will</td><td>Tudor Pro Cycling Team</td><td>USA</td><td>30</td></tr>
+    <tr><td>173</td><td>KLUCKERS Arthur</td><td>Tudor Pro Cycling Team</td><td>LUX</td><td>26</td></tr>
+    <tr><td>174</td><td>KÜNG Stefan</td><td>Tudor Pro Cycling Team</td><td>SUI</td><td>32</td></tr>
+    <tr><td>175</td><td>THALMANN Roland</td><td>Tudor Pro Cycling Team</td><td>SUI</td><td>33</td></tr>
+    <tr><td>176</td><td>WARBASSE Larry</td><td>Tudor Pro Cycling Team</td><td>USA</td><td>36</td></tr>
+    <tr><td>177</td><td>WEISS Fabian</td><td>Tudor Pro Cycling Team</td><td>SUI</td><td>24</td></tr>
+    <tr><td>178</td><td>WILKSCH Hannes</td><td>Tudor Pro Cycling Team</td><td>GER</td><td>24</td></tr>
+    <tr><td>181</td><td>TEJADA Harold</td><td>XDS Astana Team</td><td>COL</td><td>29</td></tr>
+    <tr><td>182</td><td>FEDOROV Yevgeniy</td><td>XDS Astana Team</td><td>KAZ</td><td>26</td></tr>
+    <tr><td>183</td><td>FORTUNATO Lorenzo</td><td>XDS Astana Team</td><td>ITA</td><td>30</td></tr>
+    <tr><td>184</td><td>LANGELLOTTI Victor</td><td>XDS Astana Team</td><td>MON</td><td>31</td></tr>
+    <tr><td>185</td><td>MULUBRHAN Henok</td><td>XDS Astana Team</td><td>ERI</td><td>26</td></tr>
+    <tr><td>186</td><td>RODRÍGUEZ Cristián</td><td>XDS Astana Team</td><td>ESP</td><td>31</td></tr>
+    <tr><td>187</td><td>ROMELE Alessandro</td><td>XDS Astana Team</td><td>ITA</td><td>22</td></tr>
+    <tr><td>188</td><td>VAN BEKKUM Darren</td><td>XDS Astana Team</td><td>NED</td><td>24</td></tr>
+    <tr><td>191</td><td>HERRADA Jesús</td><td>Burgos Burpellet BH</td><td>ESP</td><td>36</td></tr>
+    <tr><td>192</td><td>ALLENO Clément</td><td>Burgos Burpellet BH</td><td>FRA</td><td>25</td></tr>
+    <tr><td>193</td><td>APARICIO Mario</td><td>Burgos Burpellet BH</td><td>ESP</td><td>26</td></tr>
+    <tr><td>194</td><td>CHUMIL Sergio</td><td>Burgos Burpellet BH</td><td>GUA</td><td>25</td></tr>
+    <tr><td>195</td><td>DÍAZ José Manuel</td><td>Burgos Burpellet BH</td><td>ESP</td><td>31</td></tr>
+    <tr><td>196</td><td>FAURA José Luis</td><td>Burgos Burpellet BH</td><td>ESP</td><td>25</td></tr>
+    <tr><td>197</td><td>FERNÁNDEZ Sinuhé</td><td>Burgos Burpellet BH</td><td>ESP</td><td>26</td></tr>
+    <tr><td>198</td><td>MACÍAS César</td><td>Burgos Burpellet BH</td><td>MEX</td><td>22</td></tr>
+    <tr><td>201</td><td>WIDAR Jarno</td><td>Lotto – Intermarché</td><td>BEL</td><td>20</td></tr>
+    <tr><td>202</td><td>BRAET Vito</td><td>Lotto – Intermarché</td><td>BEL</td><td>25</td></tr>
+    <tr><td>203</td><td>CRAPS Lars</td><td>Lotto – Intermarché</td><td>BEL</td><td>24</td></tr>
+    <tr><td>204</td><td>DE SCHUYTENEER Steffen</td><td>Lotto – Intermarché</td><td>BEL</td><td>21</td></tr>
+    <tr><td>205</td><td>ROTA Lorenzo</td><td>Lotto – Intermarché</td><td>ITA</td><td>31</td></tr>
+    <tr><td>206</td><td>THOMPSON Reuben</td><td>Lotto – Intermarché</td><td>NZL</td><td>25</td></tr>
+    <tr><td>207</td><td>VAN BOVEN Luca</td><td>Lotto – Intermarché</td><td>BEL</td><td>26</td></tr>
+    <tr><td>208</td><td>VAN SINTMAARTENSDIJK Roel</td><td>Lotto – Intermarché</td><td>NED</td><td>25</td></tr>
+    <tr><td>211</td><td>HAMILTON Chris</td><td>Team Picnic PostNL</td><td>AUS</td><td>31</td></tr>
+    <tr><td>212</td><td>DE JONG Timo</td><td>Team Picnic PostNL</td><td>NED</td><td>27</td></tr>
+    <tr><td>213</td><td>GAFFURI Mattia</td><td>Team Picnic PostNL</td><td>ITA</td><td>27</td></tr>
+    <tr><td>214</td><td>LEEMREIZE Gijs</td><td>Team Picnic PostNL</td><td>NED</td><td>26</td></tr>
+    <tr><td>215</td><td>MARTÍNEZ Juan Guillermo</td><td>Team Picnic PostNL</td><td>COL</td><td>21</td></tr>
+    <tr><td>216</td><td>PEACE Oliver</td><td>Team Picnic PostNL</td><td>GBR</td><td>21</td></tr>
+    <tr><td>217</td><td>RENARD-HAQUIN Henri-François</td><td>Team Picnic PostNL</td><td>FRA</td><td>23</td></tr>
+    <tr><td>218</td><td>ROOSEN Timo</td><td>Team Picnic PostNL</td><td>NED</td><td>33</td></tr>
+    <tr><td>221</td><td>BERRADE Urko</td><td>Equipo Kern Pharma</td><td>ESP</td><td>28</td></tr>
+    <tr><td>222</td><td>BRUSTENGA Marc</td><td>Equipo Kern Pharma</td><td>ESP</td><td>26</td></tr>
+    <tr><td>223</td><td>COBO Iván</td><td>Equipo Kern Pharma</td><td>ESP</td><td>26</td></tr>
+    <tr><td>224</td><td>ELOSEGUI Iñigo</td><td>Equipo Kern Pharma</td><td>ESP</td><td>28</td></tr>
+    <tr><td>225</td><td>RUIZ Ibon</td><td>Equipo Kern Pharma</td><td>ESP</td><td>27</td></tr>
+    <tr><td>226</td><td>SOSA Iván</td><td>Equipo Kern Pharma</td><td>COL</td><td>28</td></tr>
+    <tr><td>227</td><td>URIARTE Diego</td><td>Equipo Kern Pharma</td><td>ESP</td><td>24</td></tr>
+    <tr><td>228</td><td>WENZEL Mats</td><td>Equipo Kern Pharma</td><td>LUX</td><td>23</td></tr>
+  </tbody>
+</table>
+<script>
+function filterTable() {
+  var input = document.getElementById('search');
+  var filter = input.value.trim().toLowerCase();
+  document.getElementById('clearSearch').style.display = filter ? 'block' : 'none';
+  var rows = document.getElementById('t').tBodies[0].rows;
+  for (var i = 0; i < rows.length; i++) {
+    var text = rows[i].textContent.toLowerCase();
+    rows[i].style.display = text.indexOf(filter) !== -1 ? '' : 'none';
+  }
+}
+function clearSearch() {
+  var input = document.getElementById('search');
+  input.value = '';
+  input.focus();
+  filterTable();
+}
+var sortDir = [1, 1, 1, 1, 1];
+var lastCol = -1;
+function sortTable(col) {
+  var table = document.getElementById('t');
+  var tbody = table.tBodies[0];
+  var rows = Array.from(tbody.rows);
+  if (lastCol === col) { sortDir[col] *= -1; } else { sortDir[col] = 1; }
+  lastCol = col;
+  rows.sort(function(a, b) {
+    var va = a.cells[col].textContent.trim();
+    var vb = b.cells[col].textContent.trim();
+    if (col === 0 || col === 4) { return (parseInt(va) - parseInt(vb)) * sortDir[col]; }
+    return va.localeCompare(vb, 'it') * sortDir[col];
+  });
+  rows.forEach(function(r) { tbody.appendChild(r); });
+  var ths = table.querySelectorAll('th');
+  ths.forEach(function(th, i) {
+    th.classList.remove('asc', 'desc');
+    if (i === col) th.classList.add(sortDir[col] === 1 ? 'asc' : 'desc');
+  });
+}
+</script>
+</body>
+</html>

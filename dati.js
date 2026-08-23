@@ -27,7 +27,7 @@ const DATI = {
   ],
   "Sport": [
     { "nome": "Interval Timer Fitness", "file": "Interval Timer Fitness.html" },
-    { "nome": "Tour De France Femmes 2026 Startlist", "file": "Tour De France Femmes 2026 Startlist.html" }
+    { "nome": "VueltaEspana2026_Startlist", "file": "VueltaEspana2026_Startlist.html" }
   ],
   "Tutto_Pdf": [
     { "nome": "Estrae & Unisce file.Pdf v.2.4", "file": "Estrae & Unisce file.Pdf v.2.4.html" },
