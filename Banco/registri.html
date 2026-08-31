@@ -126,6 +126,37 @@
 </style>
 </head>
 <body>
+  <div id="pwGate" style="position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px;">
+    <form id="pwForm" style="background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:32px 28px;max-width:320px;width:100%;text-align:center;box-shadow:0 4px 18px rgba(0,0,0,0.12);">
+      <h2 style="margin:0 0 6px 0;font-size:1.1rem;color:var(--accent-dark);">Accesso riservato</h2>
+      <p style="margin:0 0 18px 0;font-size:0.85rem;color:var(--text-muted);">Inserisci la password per continuare</p>
+      <input type="password" id="pwInput" autocomplete="off" style="width:100%;padding:10px 12px;font-size:0.95rem;border:1px solid var(--border);border-radius:6px;margin-bottom:10px;box-sizing:border-box;">
+      <button type="submit" style="width:100%;padding:10px 12px;font-size:0.95rem;border:none;border-radius:6px;background:var(--accent);color:#fff;cursor:pointer;">Entra</button>
+      <p id="pwError" style="display:none;color:var(--accent);font-size:0.8rem;margin:10px 0 0 0;">Password errata, riprova.</p>
+    </form>
+  </div>
+  <script>
+  (function(){
+    var GATE_KEY = 'banco2026_unlocked';
+    var PASSWORD = 'pippo';
+    var gate = document.getElementById('pwGate');
+    if (localStorage.getItem(GATE_KEY) === '1') {
+      gate.style.display = 'none';
+    }
+    document.getElementById('pwForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      var val = document.getElementById('pwInput').value;
+      if (val === PASSWORD) {
+        localStorage.setItem(GATE_KEY, '1');
+        gate.style.display = 'none';
+      } else {
+        document.getElementById('pwError').style.display = 'block';
+        document.getElementById('pwInput').value = '';
+        document.getElementById('pwInput').focus();
+      }
+    });
+  })();
+  </script>
   <h1>99&#170; Festa dell'Uva 2026 &mdash; Banco di Beneficienza</h1>
   <p class="subtitle">Registro premi &middot; ricerca libera e ordinamento per Fornitore, Descrizione e N&#176; Biglietto</p>
 
