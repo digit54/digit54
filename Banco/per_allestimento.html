@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>99&#170; Festa dell'Uva 2026 - Per Allestimento</title>
+<style>
+  :root {
+    --bg: #f5f3ef;
+    --panel: #ffffff;
+    --border: #ddd6cb;
+    --text: #2b241b;
+    --text-muted: #7a7264;
+    --accent: #8b2e2e;
+    --accent-dark: #6e2323;
+    --row-alt: #faf8f4;
+    --row-hover: #f1e9dd;
+    --divider: #e9e2d4;
+    --header-bg: #8b2e2e;
+    --header-text: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+  }
+  h1 {
+    font-size: 1.4rem;
+    margin: 0 0 4px 0;
+    color: var(--accent-dark);
+  }
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0 0 20px 0;
+  }
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 14px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+  }
+  #search {
+    flex: 1 1 280px;
+    padding: 9px 12px;
+    font-size: 0.95rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--text);
+  }
+  #search:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(139,46,46,0.15);
+  }
+  .count {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .table-wrap {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: auto;
+    max-height: 78vh;
+  }
+  table {
+    border-collapse: collapse;
+    width: auto;
+    font-size: 0.9rem;
+  }
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--header-bg);
+    color: var(--header-text);
+    text-align: center;
+    padding: 10px 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    border-bottom: 2px solid var(--accent-dark);
+    z-index: 1;
+  }
+  thead th.sortable { cursor: pointer; user-select: none; }
+  thead th.sortable:hover { background: var(--accent-dark); }
+  thead th .arrow { margin-left: 6px; opacity: 0.6; font-size: 0.75em; }
+  thead th.sorted .arrow { opacity: 1; }
+  thead th.divider, td.divider {
+    width: 14px;
+    padding: 10px 0;
+    text-align: center;
+    color: var(--divider);
+    background: var(--header-bg);
+  }
+  td.divider { color: var(--border); background: transparent; }
+  tbody td {
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--divider);
+    white-space: nowrap;
+    text-align: center;
+  }
+  tbody tr:nth-child(even) { background: var(--row-alt); }
+  tbody tr:hover { background: var(--row-hover); }
+  td.num { font-variant-numeric: tabular-nums; }
+  .empty-msg {
+    padding: 24px;
+    text-align: center;
+    color: var(--text-muted);
+  }
+  footer {
+    margin-top: 12px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <h1>99&#170; Festa dell'Uva 2026 &mdash; Per Allestimento</h1>
+  <p class="subtitle">Registro premi &middot; ricerca libera e ordinamento per Fornitore, Descrizione e N&#176; Biglietto</p>
+
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="Cerca per scatola, quantit&#224;, fornitore, descrizione o numero biglietto&#8230;" autocomplete="off">
+    <span class="count" id="count"></span>
+  </div>
+
+  <div class="table-wrap">
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th data-key="scat" data-type="num" class="sortable">Scat.<span class="arrow"></span></th>
+          <th data-key="quant" data-type="num" class="sortable">QUANT.<span class="arrow"></span></th>
+          <th class="divider">|</th>
+          <th data-key="forn" data-type="text" class="sortable">FORNITORE<span class="arrow"></span></th>
+          <th data-key="desc" data-type="text" class="sortable">DESCRIZIONE PREMIO<span class="arrow"></span></th>
+          <th class="divider">|</th>
+          <th data-key="big" data-type="num" class="sortable">N&#176; BIGLIETTO<span class="arrow"></span></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <footer>Generato da "registri per html.xlsm" (foglio Banco) &middot; <span id="totalCount"></span> righe totali</footer>
+
+<script>
+const DATA = [{"scat": 2, "quant": 3, "forn": "Old 2025", "desc": "VASSOIO VETRO GILDA", "big": 1}, {"scat": 1, "quant": 1, "forn": "Old 2025", "desc": "AMBURGHERMANIA", "big": 4}, {"scat": 1, "quant": 2, "forn": "Old 2025", "desc": "BORSA FRIGO", "big": 5}, {"scat": 1, "quant": 1, "forn": "Old 2025", "desc": "CORNICE", "big": 7}, {"scat": 1, "quant": 1, "forn": "Old 2025", "desc": "PADELLA", "big": 8}, {"scat": 1, "quant": 1, "forn": "Old 2025", "desc": "PUZZLE DORY", "big": 9}, {"scat": null, "quant": 2, "forn": "Old 2025", "desc": "SCOLAPIATTI GIOCO", "big": 10}, {"scat": 1, "quant": 1, "forn": "Old 2025", "desc": "SCIOGLI RAPIDO", "big": 12}, {"scat": null, "quant": 2, "forn": "Old 2025", "desc": "VALIGETTA CITY BEAT", "big": 13}, {"scat": 1, "quant": 1, "forn": "Old 2025", "desc": "BORRACCIA METALLO", "big": 15}, {"scat": null, "quant": 25, "forn": "BOLAMPERTI", "desc": "PALLONE", "big": 16}, {"scat": null, "quant": 10, "forn": "REGALO", "desc": "TRIS BICCHIERI", "big": 41}, {"scat": null, "quant": 10, "forn": "REGALO", "desc": "TRIS BICCHIERI", "big": 51}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "CORNICE 30X40", "big": 61}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "PORTA BOTTIGLIE", "big": 73}, {"scat": null, "quant": 7, "forn": "REGALO", "desc": "CONTENITORE JUNIOR", "big": 85}, {"scat": null, "quant": 8, "forn": "BOLAMPERTI", "desc": "HULA HOOP", "big": 92}, {"scat": null, "quant": 1, "forn": "OLD 2025", "desc": "FERRO DA STIRO", "big": 100}, {"scat": null, "quant": 7, "forn": "BOLAMPERTI", "desc": "HULA HOOP", "big": 101}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "ORDINELLO", "big": 108}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "PORTA FORMAGGIO", "big": 120}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "SAPONELLO", "big": 132}, {"scat": "ESTERNO", "quant": 7, "forn": "Old 2025", "desc": "PIATTO BIANCO BLU", "big": 144}, {"scat": "ESTERNO", "quant": 13, "forn": "Old 2025", "desc": "PIATTO BIANCO BLU", "big": 151}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "TORTIERA CERNIERA", "big": 164}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "BIS BORSA", "big": 176}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "SGABELLO", "big": 188}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "CANE PELUCHES", "big": 200}, {"scat": null, "quant": 3, "forn": "REGALO", "desc": "SGABELLO", "big": 201}, {"scat": "ESTERNO", "quant": 13, "forn": "Old 2025", "desc": "CESTO METALLO GIALLO VERDE", "big": 204}, {"scat": 11, "quant": 2, "forn": "Old 2025", "desc": "PIROFILA PIZZA", "big": 217}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "THERMOS", "big": 219}, {"scat": "ESTERNO", "quant": 2, "forn": "Old 2025", "desc": "SGABELLO", "big": 231}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "GIOCO SOCIETA'", "big": 233}, {"scat": "ESTERNO", "quant": 1, "forn": "Old 2025", "desc": "BIDONE 30 L", "big": 245}, {"scat": 11, "quant": 5, "forn": "Old 2025", "desc": "TAGLIERE MEDIO", "big": 246}, {"scat": 11, "quant": 3, "forn": "Old 2025", "desc": "TAGLIERE MEDIO", "big": 251}, {"scat": 6, "quant": 7, "forn": "Old 2025", "desc": "CESTO COLORATO", "big": 254}, {"scat": null, "quant": 2, "forn": "REGALO", "desc": "LANTERNA BAMBU'", "big": 261}, {"scat": null, "quant": 37, "forn": "Old 2025", "desc": "VARIE 1", "big": 263}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "CANE PELUCHES", "big": 300}, {"scat": null, "quant": 28, "forn": "Old 2025", "desc": "VARIE 1", "big": 301}, {"scat": null, "quant": 22, "forn": "ROSI", "desc": "MOLLETTE LEGNO", "big": 329}, {"scat": null, "quant": 2, "forn": "ROSI", "desc": "MOLLETTE LEGNO", "big": 351}, {"scat": null, "quant": 47, "forn": "REGALO", "desc": "CONFEZ. BIRO", "big": 353}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "CANE PELUCHES", "big": 400}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "CONFEZ. BIRO", "big": 401}, {"scat": null, "quant": 47, "forn": "REGALO", "desc": "CONFEZ. BIRO", "big": 451}, {"scat": null, "quant": 2, "forn": "REGALO", "desc": "INCENSI AROMI", "big": 498}, {"scat": null, "quant": 1, "forn": "UNIEURO", "desc": "FRIGGITRICE AD ARIA", "big": 500}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "INCENSI AROMI", "big": 501}, {"scat": null, "quant": 44, "forn": "REGALO", "desc": "INCENSI AROMI", "big": 551}, {"scat": null, "quant": 5, "forn": "REGALO", "desc": "LEVA PELUCCHI", "big": 595}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "CANE PELUCHES", "big": 600}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "LEVA PELUCCHI", "big": 601}, {"scat": null, "quant": 49, "forn": "REGALO", "desc": "LEVA PELUCCHI", "big": 651}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "SKATEBORD", "big": 700}, {"scat": null, "quant": 40, "forn": "REGALO", "desc": "LEVA PELUCCHI", "big": 701}, {"scat": null, "quant": 10, "forn": "REGALO", "desc": "SOLETTE", "big": 741}, {"scat": null, "quant": 49, "forn": "REGALO", "desc": "SOLETTE", "big": 751}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "SKATEBORD", "big": 800}, {"scat": null, "quant": 31, "forn": "REGALO", "desc": "SOLETTE", "big": 801}, {"scat": null, "quant": 19, "forn": "REGALO", "desc": "TRIS PENNARELLI", "big": 832}, {"scat": null, "quant": 49, "forn": "REGALO", "desc": "TRIS PENNARELLI", "big": 851}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "SKATEBORD", "big": 900}, {"scat": null, "quant": 4, "forn": "REGALO", "desc": "TRIS PENNARELLI", "big": 901}, {"scat": null, "quant": 46, "forn": "REGALO", "desc": "TAPPI", "big": 905}, {"scat": null, "quant": 49, "forn": "REGALO", "desc": "TAPPI", "big": 951}, {"scat": null, "quant": 1, "forn": "BARALE", "desc": "BICICLETTA", "big": 1000}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "TAPPI", "big": 1001}, {"scat": null, "quant": 49, "forn": "REGALO", "desc": "ELASTICI", "big": 1002}, {"scat": null, "quant": 47, "forn": "REGALO", "desc": "ELASTICI", "big": 1051}, {"scat": null, "quant": 2, "forn": "REGALO", "desc": "FORMA GHIACCIO", "big": 1098}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "SKATEBORD", "big": 1100}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "FORMA GHIACCIO", "big": 1101}, {"scat": null, "quant": 8, "forn": "REGALO", "desc": "FORMA GHIACCIO", "big": 1151}, {"scat": null, "quant": 41, "forn": "REGALO", "desc": "CARTE DA GIOCO", "big": 1159}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "CESTO BELLO", "big": 1200}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "CARTE DA GIOCO", "big": 1201}, {"scat": null, "quant": 9, "forn": "REGALO", "desc": "CARTE DA GIOCO", "big": 1251}, {"scat": null, "quant": 40, "forn": "REGALO", "desc": "BLOCK NOTES", "big": 1260}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "CESTO BELLO", "big": 1300}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "BLOCK NOTES", "big": 1301}, {"scat": null, "quant": 10, "forn": "REGALO", "desc": "BLOCK NOTES", "big": 1351}, {"scat": null, "quant": 39, "forn": "REGALO", "desc": "TAGLIERE PICCOLO", "big": 1361}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "CESTO BELLO", "big": 1400}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "TAGLIERE PICCOLO", "big": 1401}, {"scat": null, "quant": 11, "forn": "REGALO", "desc": "TAGLIERE PICCOLO", "big": 1451}, {"scat": null, "quant": 38, "forn": "REGALO", "desc": "FORBICE", "big": 1462}, {"scat": null, "quant": 1, "forn": "Old 2025", "desc": "PORTA PROSCIUTTO", "big": 1500}, {"scat": null, "quant": 34, "forn": "REGALO", "desc": "FORBICE", "big": 1501}, {"scat": null, "quant": 16, "forn": "REGALO", "desc": "CESTINO PORTA MOLLETTE", "big": 1535}, {"scat": null, "quant": 49, "forn": "REGALO", "desc": "CESTINO PORTA MOLLETTE", "big": 1551}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "CESTO BELLO", "big": 1600}, {"scat": null, "quant": 7, "forn": "REGALO", "desc": "CESTINO PORTA MOLLETTE", "big": 1601}, {"scat": null, "quant": 43, "forn": "REGALO", "desc": "QUADERNI", "big": 1608}, {"scat": null, "quant": 49, "forn": "REGALO", "desc": "QUADERNI", "big": 1651}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "CESTO BELLO", "big": 1700}, {"scat": null, "quant": 28, "forn": "REGALO", "desc": "QUADERNI", "big": 1701}, {"scat": null, "quant": 22, "forn": "REGALO", "desc": "TOVAGLIETTE", "big": 1729}, {"scat": null, "quant": 49, "forn": "REGALO", "desc": "TOVAGLIETTE", "big": 1751}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "CESTO BELLO", "big": 1800}, {"scat": null, "quant": 5, "forn": "REGALO", "desc": "TOVAGLIETTE", "big": 1801}, {"scat": null, "quant": 45, "forn": "REGALO", "desc": "SPATOLA MARISA", "big": 1806}, {"scat": null, "quant": 27, "forn": "REGALO", "desc": "SPATOLA MARISA", "big": 1851}, {"scat": null, "quant": 22, "forn": "REGALO", "desc": "CANDELE MERCURY", "big": 1878}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "CONTENITORE JUNIOR", "big": 1900}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "CANDELE MERCURY", "big": 1901}, {"scat": null, "quant": 3, "forn": "REGALO", "desc": "CANDELE MERCURY", "big": 1951}, {"scat": null, "quant": 1, "forn": "UNIEURO", "desc": "VALIGETTA RIGIDA", "big": 1954}, {"scat": null, "quant": 5, "forn": "REGALO", "desc": "CANDELE MERCURY", "big": 1955}, {"scat": null, "quant": 40, "forn": "REGALO", "desc": "CUCCHIAIO LEGNO", "big": 1960}, {"scat": null, "quant": 1, "forn": "UNIEURO", "desc": "TV 32 \"", "big": 2000}, {"scat": null, "quant": 10, "forn": "REGALO", "desc": "LANTERNA BAMBU'", "big": 2001}, {"scat": null, "quant": 15, "forn": "BOLAMPERTI", "desc": "PALLONE", "big": 2011}, {"scat": null, "quant": 1, "forn": "UNIEURO", "desc": "FRIGGITRICE AD ARIA", "big": 2026}, {"scat": null, "quant": 10, "forn": "BOLAMPERTI", "desc": "PALLONE", "big": 2027}, {"scat": null, "quant": 1, "forn": "Old 2025", "desc": "INSALATTIERA VERDE", "big": 2037}, {"scat": null, "quant": 1, "forn": "Old 2025", "desc": "VASINO BIMBO", "big": 2038}, {"scat": "ESTERNO", "quant": 12, "forn": "Old 2025", "desc": "PIATTO BIANCO BLU", "big": 2039}, {"scat": null, "quant": 8, "forn": "Old 2025", "desc": "PIATTO BIANCO BLU", "big": 2051}, {"scat": null, "quant": 10, "forn": "BOLAMPERTI", "desc": "HULA HOOP", "big": 2059}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "LANTERNA TRAFORATA", "big": 2069}, {"scat": 6, "quant": 1, "forn": "Old 2025", "desc": "LANTERNA BAMBU'", "big": 2081}, {"scat": null, "quant": 15, "forn": "REGALO", "desc": "SEDIA", "big": 2082}, {"scat": 8, "quant": 1, "forn": "Old 2025", "desc": "PORTA FORMAGGIO", "big": 2097}, {"scat": 6, "quant": 1, "forn": "Old 2025", "desc": "VASO ALTO", "big": 2098}, {"scat": 6, "quant": 1, "forn": "Old 2025", "desc": "OLIO ACETO MUTFAK", "big": 2099}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "CONTENITORE JUNIOR", "big": 2100}, {"scat": 3, "quant": 1, "forn": "Old 2025", "desc": "CAMION GIOCO BIMBO", "big": 2101}, {"scat": 3, "quant": 2, "forn": "Old 2025", "desc": "CENTRIFUGA", "big": 2102}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "DARDO FRECCETTE", "big": 2104}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "SET TAZZINE", "big": 2116}, {"scat": "ESTERNO", "quant": 13, "forn": "Old 2025", "desc": "CESTO METALLO GIALLO VERDE", "big": 2128}, {"scat": null, "quant": 10, "forn": "REGALO", "desc": "OROLOGIO DA PARETE", "big": 2141}, {"scat": 3, "quant": 1, "forn": "Old 2025", "desc": "LAMPADA TIRA E ACCENDI", "big": 2151}, {"scat": null, "quant": 20, "forn": "REGALO", "desc": "TRIS BICCHIERI", "big": 2152}, {"scat": null, "quant": 10, "forn": "REGALO", "desc": "PUZZLE", "big": 2172}, {"scat": "ESTERNO", "quant": 18, "forn": "Old 2025", "desc": "PIATTO BIANCO BLU", "big": 2182}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "CONTENITORE JUNIOR", "big": 2200}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "LAMPADA TIRA", "big": 2201}, {"scat": 3, "quant": 1, "forn": "Old 2025", "desc": "PORTATORTA", "big": 2213}, {"scat": 3, "quant": 2, "forn": "Old 2025", "desc": "TAZZINE CAFFE'", "big": 2214}, {"scat": null, "quant": 1, "forn": "Old 2025", "desc": "LAMPADA BRANDANI APPLIQUE", "big": 2216}, {"scat": null, "quant": 8, "forn": "REGALO", "desc": "ARTISTA GIOCO", "big": 2217}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "GIOCO SOCIETA'", "big": 2225}, {"scat": null, "quant": 14, "forn": "REGALO", "desc": "12 QUADERNI", "big": 2237}, {"scat": null, "quant": 6, "forn": "REGALO", "desc": "12 QUADERNI", "big": 2251}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "TRIS BARATTOLO LIMONI", "big": 2257}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "CENTRIFUGA INSALATA", "big": 2269}, {"scat": null, "quant": 30, "forn": "REGALO", "desc": "CUCCHIAIO LEGNO", "big": 2270}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "CONTENITORE JUNIOR", "big": 2300}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "CUCCHIAIO LEGNO", "big": 2301}, {"scat": null, "quant": 24, "forn": "REGALO", "desc": "CUCCHIAIO LEGNO", "big": 2351}, {"scat": null, "quant": 25, "forn": "REGALO", "desc": "FRUSTA", "big": 2375}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "CONTENITORE JUNIOR", "big": 2400}, {"scat": null, "quant": 23, "forn": "REGALO", "desc": "FRUSTA", "big": 2401}, {"scat": null, "quant": 27, "forn": "REGALO", "desc": "CARTELLETTA CON ANELLI", "big": 2424}, {"scat": null, "quant": 33, "forn": "REGALO", "desc": "CARTELLETTA CON ANELLI", "big": 2451}, {"scat": null, "quant": 16, "forn": "REGALO", "desc": "COPERTINA ANELLI", "big": 2484}, {"scat": null, "quant": 1, "forn": "UNIEURO", "desc": "VALIGETTA RIGIDA", "big": 2500}, {"scat": null, "quant": 4, "forn": "REGALO", "desc": "COPERTINA ANELLI", "big": 2501}, {"scat": null, "quant": 46, "forn": "REGALO", "desc": "SPIEDONI", "big": 2505}, {"scat": null, "quant": 49, "forn": "REGALO", "desc": "SPIEDONI", "big": 2551}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "SKATEBORD", "big": 2600}, {"scat": null, "quant": 49, "forn": "REGALO", "desc": "SPIEDONI", "big": 2601}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "CONF. PENNELLI CUCINA", "big": 2650}, {"scat": null, "quant": 49, "forn": "REGALO", "desc": "CONF. PENNELLI CUCINA", "big": 2651}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "SKATEBORD", "big": 2700}, {"scat": null, "quant": 22, "forn": "REGALO", "desc": "CONF. PENNELLI CUCINA", "big": 2701}, {"scat": null, "quant": 28, "forn": "REGALO", "desc": "GIOCO MOLLE", "big": 2723}, {"scat": null, "quant": 32, "forn": "REGALO", "desc": "GIOCO MOLLE", "big": 2751}, {"scat": null, "quant": 17, "forn": "REGALO", "desc": "MOLLETTE", "big": 2783}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "SKATEBORD", "big": 2800}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "MOLLETTE", "big": 2801}, {"scat": null, "quant": 29, "forn": "REGALO", "desc": "MOLLETTE", "big": 2851}, {"scat": null, "quant": 20, "forn": "REGALO", "desc": "CARTELLETTA CON ANELLI", "big": 2880}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "SKATEBORD", "big": 2900}, {"scat": null, "quant": 20, "forn": "REGALO", "desc": "CARTELLETTA CON ANELLI", "big": 2901}, {"scat": null, "quant": 30, "forn": "REGALO", "desc": "SALE PEPE", "big": 2921}, {"scat": null, "quant": 49, "forn": "REGALO", "desc": "SALE PEPE", "big": 2951}, {"scat": null, "quant": 1, "forn": "BARALE", "desc": "BICICLETTA", "big": 3000}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "SALE PEPE", "big": 3001}, {"scat": null, "quant": 15, "forn": "REGALO", "desc": "SALE PEPE", "big": 3051}, {"scat": null, "quant": 34, "forn": "REGALO", "desc": "COPERTIA ANELLI", "big": 3066}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "PORTA OMBRELLI", "big": 3100}, {"scat": null, "quant": 6, "forn": "REGALO", "desc": "COPERTIA ANELLI", "big": 3101}, {"scat": null, "quant": 44, "forn": "REGALO", "desc": "FORBICINE BIMBO", "big": 3107}, {"scat": null, "quant": 49, "forn": "REGALO", "desc": "FORBICINE BIMBO", "big": 3151}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "PORTA OMBRELLI", "big": 3200}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "FORBICINE BIMBO", "big": 3201}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "FORBICINE BIMBO", "big": 3251}, {"scat": null, "quant": 48, "forn": "REGALO", "desc": "2 BOLLE DI SAPONE", "big": 3252}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "PORTA OMBRELLI", "big": 3300}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "2 BOLLE DI SAPONE", "big": 3301}, {"scat": null, "quant": 10, "forn": "REGALO", "desc": "2 BOLLE DI SAPONE", "big": 3351}, {"scat": null, "quant": 39, "forn": "REGALO", "desc": "TAZZA CIOCCOLATA", "big": 3361}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "PORTA OMBRELLI", "big": 3400}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "TAZZA CIOCCOLATA", "big": 3401}, {"scat": null, "quant": 19, "forn": "REGALO", "desc": "TAZZA CIOCCOLATA", "big": 3451}, {"scat": null, "quant": 30, "forn": "REGALO", "desc": "SPREMI AGRUMI", "big": 3470}, {"scat": null, "quant": 1, "forn": "OLD 2025", "desc": "STAMPANTE EPSON", "big": 3500}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "SPREMI AGRUMI", "big": 3501}, {"scat": null, "quant": 16, "forn": "REGALO", "desc": "SPREMI AGRUMI", "big": 3551}, {"scat": null, "quant": 33, "forn": "REGALO", "desc": "BACCHETTA MAGIE", "big": 3567}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "PORTA OMBRELLI", "big": 3600}, {"scat": null, "quant": 7, "forn": "REGALO", "desc": "BACCHETTA MAGIE", "big": 3601}, {"scat": null, "quant": 43, "forn": "REGALO", "desc": "NASTRO ADESIVO", "big": 3608}, {"scat": null, "quant": 49, "forn": "REGALO", "desc": "NASTRO ADESIVO", "big": 3651}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "PORTA OMBRELLI", "big": 3700}, {"scat": null, "quant": 4, "forn": "REGALO", "desc": "NASTRO ADESIVO", "big": 3701}, {"scat": null, "quant": 46, "forn": "REGALO", "desc": "COLORI", "big": 3705}, {"scat": null, "quant": 24, "forn": "REGALO", "desc": "COLORI", "big": 3751}, {"scat": null, "quant": 25, "forn": "REGALO", "desc": "TEGLIA PER CROSTATA", "big": 3775}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "SKATEBORD", "big": 3800}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "TEGLIA PER CROSTATA", "big": 3801}, {"scat": null, "quant": 45, "forn": "REGALO", "desc": "TEGLIA PER CROSTATA", "big": 3851}, {"scat": null, "quant": 4, "forn": "REGALO", "desc": "LAVAGNETTA", "big": 3896}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "SKATEBORD", "big": 3900}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "LAVAGNETTA", "big": 3901}, {"scat": null, "quant": 46, "forn": "REGALO", "desc": "LAVAGNETTA", "big": 3951}, {"scat": null, "quant": 3, "forn": "REGALO", "desc": "BORRACCIA", "big": 3997}, {"scat": null, "quant": 1, "forn": "BARALE", "desc": "BICICLETTA", "big": 4000}, {"scat": null, "quant": 11, "forn": "REGALO", "desc": "CENTRIFUGA INSALATA", "big": 4001}, {"scat": null, "quant": 6, "forn": "REGALO", "desc": "VALIGETTA", "big": 4012}, {"scat": null, "quant": 20, "forn": "REGALO", "desc": "12 QUADERNI", "big": 4018}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "TISANIERA", "big": 4038}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "TRIS CONTENITORI", "big": 4050}, {"scat": null, "quant": 11, "forn": "REGALO", "desc": "TRIS CONTENITORI", "big": 4051}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "6 BICCHIERI", "big": 4062}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "TAZZINE VETRO", "big": 4074}, {"scat": null, "quant": 8, "forn": "REGALO", "desc": "BILANCIA CUCINA", "big": 4086}, {"scat": null, "quant": 6, "forn": "REGALO", "desc": "BIS BORSA", "big": 4094}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "SKATEBORD", "big": 4100}, {"scat": null, "quant": 6, "forn": "REGALO", "desc": "BIS BORSA", "big": 4101}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "OROLOGIO PINOCCHIO", "big": 4107}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "CORNICE 30X40", "big": 4119}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "6 CUSCINI", "big": 4131}, {"scat": null, "quant": 8, "forn": "REGALO", "desc": "TRIS CONTENITORI", "big": 4143}, {"scat": null, "quant": 28, "forn": "REGALO", "desc": "TRIS CONTENITORI", "big": 4151}, {"scat": null, "quant": 20, "forn": "REGALO", "desc": "TRIS BICCHIERI", "big": 4179}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "LAMPADA TIRA", "big": 4199}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "SKATEBORD", "big": 4200}, {"scat": null, "quant": 11, "forn": "REGALO", "desc": "LAMPADA TIRA", "big": 4201}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "GIOCO SOCIETA'", "big": 4212}, {"scat": null, "quant": 6, "forn": "REGALO", "desc": "VALIGETTA", "big": 4224}, {"scat": null, "quant": 21, "forn": "REGALO", "desc": "BORRACCIA", "big": 4230}, {"scat": null, "quant": 49, "forn": "REGALO", "desc": "BORRACCIA", "big": 4251}, {"scat": null, "quant": 1, "forn": "OLD 2025", "desc": "SKATEBORD", "big": 4300}, {"scat": null, "quant": 7, "forn": "REGALO", "desc": "BORRACCIA", "big": 4301}, {"scat": null, "quant": 43, "forn": "REGALO", "desc": "TRIS STUZZICADENTI", "big": 4308}, {"scat": null, "quant": 49, "forn": "REGALO", "desc": "TRIS STUZZICADENTI", "big": 4351}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "CANE PELUCHES", "big": 4400}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "TRIS STUZZICADENTI", "big": 4401}, {"scat": null, "quant": 2, "forn": "REGALO", "desc": "TRIS STUZZICADENTI", "big": 4451}, {"scat": null, "quant": 47, "forn": "REGALO", "desc": "ZUCCHERIERA CERAMICA", "big": 4453}, {"scat": null, "quant": 1, "forn": "UNIEURO", "desc": "FRIGGITRICE AD ARIA", "big": 4500}, {"scat": null, "quant": 49, "forn": "REGALO", "desc": "ZUCCHERIERA CERAMICA", "big": 4501}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "OSPITE", "big": 4550}, {"scat": null, "quant": 49, "forn": "REGALO", "desc": "OSPITE", "big": 4551}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "CANE PELUCHES", "big": 4600}, {"scat": null, "quant": 10, "forn": "REGALO", "desc": "OSPITE", "big": 4601}, {"scat": null, "quant": 40, "forn": "REGALO", "desc": "TOVAGLIETTE", "big": 4611}, {"scat": null, "quant": 36, "forn": "REGALO", "desc": "TOVAGLIETTE", "big": 4651}, {"scat": null, "quant": 13, "forn": "REGALO", "desc": "COLORI", "big": 4687}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "CANE PELUCHES", "big": 4700}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "COLORI", "big": 4701}, {"scat": null, "quant": 17, "forn": "REGALO", "desc": "COLORI", "big": 4751}, {"scat": null, "quant": 32, "forn": "REGALO", "desc": "TELO COPRITUTTO", "big": 4768}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "CANE PELUCHES", "big": 4800}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "TELO COPRITUTTO", "big": 4801}, {"scat": null, "quant": 14, "forn": "REGALO", "desc": "TELO COPRITUTTO", "big": 4851}, {"scat": 12, "quant": 33, "forn": "Old 2025", "desc": "SOTTOPENTOLA", "big": 4865}, {"scat": null, "quant": 2, "forn": "REGALO", "desc": "MUFFIN", "big": 4898}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "PORTA BIANCHERIA", "big": 4900}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "MUFFIN", "big": 4901}, {"scat": null, "quant": 49, "forn": "REGALO", "desc": "MUFFIN", "big": 4951}, {"scat": null, "quant": 1, "forn": "BARALE", "desc": "BICICLETTA BIMBO", "big": 5000}, {"scat": null, "quant": 7, "forn": "REGALO", "desc": "MUFFIN", "big": 5001}, {"scat": 15, "quant": 43, "forn": "Old 2025", "desc": "SPAZZOLINI PER UNGHIE", "big": 5008}, {"scat": 15, "quant": 29, "forn": "Old 2025", "desc": "SPAZZOLINI PER UNGHIE", "big": 5051}, {"scat": null, "quant": 20, "forn": "REGALO", "desc": "CESTINO PORTA MOLLETTE", "big": 5080}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "PORTA BIANCHERIA", "big": 5100}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "CESTINO PORTA MOLLETTE", "big": 5101}, {"scat": null, "quant": 2, "forn": "REGALO", "desc": "CESTINO PORTA MOLLETTE", "big": 5151}, {"scat": 14, "quant": 44, "forn": "Old 2025", "desc": "MOLLETTE", "big": 5153}, {"scat": 14, "quant": 3, "forn": "Old 2025", "desc": "CESTINO BIMBO PLASTICA", "big": 5197}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "PORTA BIANCHERIA", "big": 5200}, {"scat": 14, "quant": 11, "forn": "Old 2025", "desc": "CESTINO BIMBO PLASTICA", "big": 5201}, {"scat": null, "quant": null, "forn": "Old 2025", "desc": "BUSTE", "big": 5212}, {"scat": null, "quant": 27, "forn": "Old 2025", "desc": "VARIE 2", "big": 5224}, {"scat": null, "quant": 18, "forn": "Old 2025", "desc": "VARIE 2", "big": 5251}, {"scat": null, "quant": 31, "forn": "REGALO", "desc": "ACCENDI GAS", "big": 5269}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "PORTA BIANCHERIA", "big": 5300}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "ACCENDI GAS", "big": 5301}, {"scat": null, "quant": 39, "forn": "REGALO", "desc": "ACCENDI GAS", "big": 5351}, {"scat": 9, "quant": 10, "forn": "Old 2025", "desc": "SACCHETTO GREEN", "big": 5390}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "PORTA BIANCHERIA", "big": 5400}, {"scat": 9, "quant": 38, "forn": "Old 2025", "desc": "SACCHETTO GREEN", "big": 5401}, {"scat": null, "quant": 12, "forn": "REGALO", "desc": "GRIGLIE HAMBURGER", "big": 5439}, {"scat": null, "quant": 49, "forn": "REGALO", "desc": "GRIGLIE HAMBURGER", "big": 5451}, {"scat": null, "quant": 1, "forn": "UNIEURO", "desc": "TV 32 \"", "big": 5500}, {"scat": null, "quant": 39, "forn": "REGALO", "desc": "GRIGLIE HAMBURGER", "big": 5501}, {"scat": 13, "quant": 11, "forn": "Old 2025", "desc": "BATTI MOSCHE", "big": 5540}, {"scat": 13, "quant": 49, "forn": "Old 2025", "desc": "BATTI MOSCHE", "big": 5551}, {"scat": null, "quant": 1, "forn": "REGALO", "desc": "PORTA BIANCHERIA", "big": 5600}, {"scat": 13, "quant": 16, "forn": "Old 2025", "desc": "BATTI MOSCHE", "big": 5601}, {"scat": 4, "quant": 34, "forn": "Old 2025", "desc": "PORTATUTTO", "big": 5617}, {"scat": 4, "quant": 14, "forn": "Old 2025", "desc": "PORTATUTTO", "big": 5651}, {"scat": null, "quant": 35, "forn": "REGALO", "desc": "COLORI", "big": 5665}, {"scat": null, "quant": 1, "forn": "UNIEURO", "desc": "CARTELLETTA PORTA DOCUMENTI", "big": 5700}, {"scat": null, "quant": 50, "forn": "REGALO", "desc": "COLORI", "big": 5701}, {"scat": null, "quant": 49, "forn": "REGALO", "desc": "COLORI", "big": 5751}, {"scat": null, "quant": 1, "forn": "UNIEURO", "desc": "CARTELLETTA PORTA DOCUMENTI", "big": 5800}, {"scat": null, "quant": 26, "forn": "REGALO", "desc": "COLORI", "big": 5801}, {"scat": 6, "quant": 24, "forn": "Old 2025", "desc": "ACCENDIGAS", "big": 5827}, {"scat": 6, "quant": 15, "forn": "Old 2025", "desc": "ACCENDIGAS", "big": 5851}, {"scat": null, "quant": 34, "forn": "REGALO", "desc": "MATITE GIOCO", "big": 5866}, {"scat": null, "quant": 1, "forn": "UNIEURO", "desc": "CARTELLETTA PORTA DOCUMENTI", "big": 5900}, {"scat": null, "quant": 26, "forn": "REGALO", "desc": "MATITE GIOCO", "big": 5901}, {"scat": 11, "quant": 20, "forn": "Old 2025", "desc": "SPARGI ZUCCHERO", "big": 5927}, {"scat": 7, "quant": 4, "forn": "Old 2025", "desc": "BUSTE", "big": 5947}, {"scat": 7, "quant": 49, "forn": "Old 2025", "desc": "BUSTE", "big": 5951}, {"scat": null, "quant": 1, "forn": "GAMBA", "desc": "LAVATRICE", "big": 6000}];
+
+let sortKey = null;
+let sortDir = 1;
+let filtered = DATA;
+
+const tbody = document.getElementById('tbody');
+const searchInput = document.getElementById('search');
+const countEl = document.getElementById('count');
+const totalCountEl = document.getElementById('totalCount');
+
+totalCountEl.textContent = DATA.length.toLocaleString('it-IT');
+
+function esc(v) {
+  if (v === null || v === undefined) return '';
+  return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function render() {
+  const rowsHtml = filtered.map(r => `
+    <tr>
+      <td class="num">${esc(r.scat)}</td>
+      <td class="num">${esc(r.quant)}</td>
+      <td class="divider">|</td>
+      <td>${esc(r.forn)}</td>
+      <td class="desc">${esc(r.desc)}</td>
+      <td class="divider">|</td>
+      <td class="num">${esc(r.big)}</td>
+    </tr>`).join('');
+  tbody.innerHTML = rowsHtml || '';
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-msg">Nessun risultato trovato.</td></tr>';
+  }
+  countEl.textContent = filtered.length.toLocaleString('it-IT') + ' risultati';
+}
+
+function applyFilter() {
+  const q = searchInput.value.trim().toLowerCase();
+  if (!q) {
+    filtered = DATA;
+  } else {
+    filtered = DATA.filter(r =>
+      String(r.scat ?? '').toLowerCase().includes(q) ||
+      String(r.quant ?? '').toLowerCase().includes(q) ||
+      String(r.forn ?? '').toLowerCase().includes(q) ||
+      String(r.desc ?? '').toLowerCase().includes(q) ||
+      String(r.big ?? '').toLowerCase().includes(q)
+    );
+  }
+  applySort(false);
+}
+
+function applySort(toggle) {
+  if (sortKey) {
+    const type = document.querySelector(`th[data-key="${sortKey}"]`).dataset.type;
+    filtered = filtered.slice().sort((a, b) => {
+      let av = a[sortKey], bv = b[sortKey];
+      if (type === 'num') {
+        av = av === null || av === undefined ? -Infinity : Number(av);
+        bv = bv === null || bv === undefined ? -Infinity : Number(bv);
+        return (av - bv) * sortDir;
+      } else {
+        av = (av ?? '').toString();
+        bv = (bv ?? '').toString();
+        return av.localeCompare(bv, 'it', { sensitivity: 'base' }) * sortDir;
+      }
+    });
+  }
+  render();
+}
+
+document.querySelectorAll('th.sortable').forEach(th => {
+  th.addEventListener('click', () => {
+    const key = th.dataset.key;
+    if (sortKey === key) {
+      sortDir *= -1;
+    } else {
+      sortKey = key;
+      sortDir = 1;
+    }
+    document.querySelectorAll('th.sortable').forEach(h => {
+      h.classList.remove('sorted');
+      h.querySelector('.arrow').textContent = '';
+    });
+    th.classList.add('sorted');
+    th.querySelector('.arrow').textContent = sortDir === 1 ? '\u25B2' : '\u25BC';
+    applySort(true);
+  });
+});
+
+searchInput.addEventListener('input', applyFilter);
+
+render();
+countEl.textContent = DATA.length.toLocaleString('it-IT') + ' risultati';
+</script>
+</body>
+</html>

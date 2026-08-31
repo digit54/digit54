@@ -1,5 +1,9 @@
 ﻿// File generato automaticamente da genera_menu.ps1 - non modificare a mano
 const DATI = {
+  "Banco": [
+    { "nome": "per_allestimento", "file": "per_allestimento.html" },
+    { "nome": "registri", "file": "registri.html" }
+  ],
   "Convertitori Audio Video Immagini": [
     { "nome": "Converitore formati immagini", "file": "Converitore formati immagini.html" },
     { "nome": "converter Audio - Vari formati to mp3 e wav", "file": "converter Audio - Vari formati to mp3 e wav.html" }

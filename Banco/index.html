@@ -1,0 +1,153 @@
+﻿<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Banco</title>
+<script src="../dati.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: 'Poppins', 'Baloo 2', Arial, sans-serif;
+        background: linear-gradient(120deg, #ff9a9e, #fecfef 20%, #a1c4fd 45%, #fbc2eb 70%, #fad0c4 100%);
+        background-size: 300% 300%;
+        animation: gradientShift 18s ease infinite;
+        overflow-x: hidden;
+        position: relative;
+    }
+
+    @keyframes gradientShift {
+        0%   { background-position: 0% 50%; }
+        50%  { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    .blob {
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(2px);
+        opacity: 0.55;
+        pointer-events: none;
+        z-index: 0;
+        animation: float 9s ease-in-out infinite;
+    }
+    .blob.b1 { top: 8%;  left: 6%;  font-size: 70px; animation-duration: 8s; }
+    .blob.b2 { top: 70%; left: 10%; font-size: 55px; animation-duration: 10s; animation-delay: 1s; }
+    .blob.b3 { top: 15%; left: 88%; font-size: 60px; animation-duration: 7.5s; animation-delay: 0.5s; }
+    .blob.b4 { top: 78%; left: 90%; font-size: 55px; animation-duration: 9.5s; animation-delay: 1.5s; }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-22px) rotate(12deg); }
+    }
+
+    .container {
+        width: 100%;
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 50px 24px;
+        box-sizing: border-box;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+    }
+    h1 {
+        font-family: 'Baloo 2', 'Poppins', sans-serif;
+        font-size: 2.4em;
+        font-weight: 800;
+        margin: 0 0 34px;
+        letter-spacing: 0.5px;
+        background: linear-gradient(90deg, #a8edea, #fed6e3);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    h1 .emoji {
+        -webkit-background-clip: initial;
+        background-clip: initial;
+        color: initial;
+        filter: drop-shadow(0 3px 4px rgba(0,0,0,0.15));
+    }
+    .menu {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 22px;
+        margin-bottom: 36px;
+    }
+    .btn {
+        flex: 1 1 380px;
+        max-width: 420px;
+        box-sizing: border-box;
+        padding: 20px 22px;
+        background: linear-gradient(135deg, #a8edea, #fed6e3);
+        border: 3px solid rgba(255,255,255,0.6);
+        border-radius: 20px;
+        color: #fff;
+        font-family: 'Baloo 2', 'Poppins', sans-serif;
+        font-size: 1.15em;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+        text-decoration: none;
+        text-shadow: 0 1px 4px rgba(0,0,0,0.25);
+        box-shadow: 0 8px 0 rgba(0,0,0,0.08), 0 10px 18px rgba(0,0,0,0.15);
+        transition: transform 0.2s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .btn:hover {
+        border-color: rgba(255,255,255,0.95);
+        transform: translateY(-4px) rotate(-1deg) scale(1.03);
+        box-shadow: 0 4px 0 rgba(0,0,0,0.1), 0 16px 26px rgba(0,0,0,0.22);
+    }
+    .back {
+        display: inline-block;
+        padding: 11px 28px;
+        background: rgba(255,255,255,0.9);
+        border: 3px solid #fed6e3;
+        border-radius: 999px;
+        color: #4b3b7a;
+        font-family: 'Baloo 2', 'Poppins', sans-serif;
+        font-size: 0.95em;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+        text-decoration: none;
+        box-shadow: 0 4px 10px rgba(90,60,150,0.2);
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .back:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(90,60,150,0.3);
+    }
+    .vuoto { font-weight: 600; color: #6b5a99; font-style: italic; }
+</style>
+</head>
+<body>
+<span class="blob b1">&#127752;</span>
+<span class="blob b2">&#11088;</span>
+<span class="blob b3">&#10024;</span>
+<span class="blob b4">&#127881;</span>
+
+<div class="container">
+    <h1><span class="emoji">✨</span> Banco</h1>
+    <div class="menu" id="menu"></div>
+    <a class="back" href="../index.html">&#127968; Torna al Menu</a>
+</div>
+<script>
+    const lista = DATI["Banco"] || [];
+    const menu = document.getElementById("menu");
+    if (lista.length === 0) {
+        menu.innerHTML = "<p class=\"vuoto\">Nessun programma qui... per ora! 🌱</p>";
+    }
+    lista.forEach(function (item) {
+        const a = document.createElement("a");
+        a.className = "btn";
+        a.href = encodeURIComponent(item.file);
+        a.textContent = item.nome;
+        menu.appendChild(a);
+    });
+</script>
+</body>
+</html>
