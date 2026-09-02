@@ -112,6 +112,26 @@
   tbody tr:nth-child(even) { background: var(--row-alt); }
   tbody tr:hover { background: var(--row-hover); }
   td.num { font-variant-numeric: tabular-nums; }
+  th.chkcell, td.chkcell { width: 40px; }
+  input.chk { width: 17px; height: 17px; cursor: pointer; accent-color: var(--accent); vertical-align: middle; }
+  body.dragging-check { user-select: none; }
+  tr.done td:not(.chkcell) {
+    text-decoration: line-through;
+    text-decoration-color: #ff0000;
+    text-decoration-thickness: 2px;
+    color: var(--text-muted);
+  }
+  tr.done td.ticket { position: relative; text-decoration: none; }
+  tr.done td.ticket::after {
+    content: '';
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    top: 50%;
+    height: 3px;
+    background: #ff0000;
+    transform: translateY(-50%);
+  }
   .empty-msg {
     padding: 24px;
     text-align: center;
@@ -163,12 +183,14 @@
   <div class="toolbar">
     <input type="text" id="search" placeholder="Cerca per scatola, quantit&#224;, fornitore, descrizione o numero biglietto&#8230;" autocomplete="off">
     <span class="count" id="count"></span>
+    <span class="count" id="checkedCount"></span>
   </div>
 
   <div class="table-wrap">
     <table id="dataTable">
       <thead>
         <tr>
+          <th class="chkcell">Fatto</th>
           <th data-key="scat" data-type="num" class="sortable">Scat.<span class="arrow"></span></th>
           <th data-key="quant" data-type="num" class="sortable">QUANT.<span class="arrow"></span></th>
           <th class="divider">|</th>
@@ -193,9 +215,23 @@ let filtered = DATA;
 const tbody = document.getElementById('tbody');
 const searchInput = document.getElementById('search');
 const countEl = document.getElementById('count');
+const checkedCountEl = document.getElementById('checkedCount');
 const totalCountEl = document.getElementById('totalCount');
 
 totalCountEl.textContent = DATA.length.toLocaleString('it-IT');
+
+const CHECK_KEY = 'banco2026_checked';
+let checkedMap = {};
+try { checkedMap = JSON.parse(localStorage.getItem(CHECK_KEY) || '{}'); } catch (e) { checkedMap = {}; }
+
+function saveChecked() {
+  try { localStorage.setItem(CHECK_KEY, JSON.stringify(checkedMap)); } catch (e) {}
+}
+
+function updateCheckedCount() {
+  const n = Object.keys(checkedMap).length;
+  checkedCountEl.textContent = n.toLocaleString('it-IT') + ' spuntati';
+}
 
 function esc(v) {
   if (v === null || v === undefined) return '';
@@ -203,21 +239,26 @@ function esc(v) {
 }
 
 function render() {
-  const rowsHtml = filtered.map(r => `
-    <tr>
+  const rowsHtml = filtered.map(r => {
+    const done = !!checkedMap[r.big];
+    return `
+    <tr class="${done ? 'done' : ''}">
+      <td class="chkcell"><input type="checkbox" class="chk" data-big="${r.big}" ${done ? 'checked' : ''}></td>
       <td class="num">${esc(r.scat)}</td>
       <td class="num">${esc(r.quant)}</td>
       <td class="divider">|</td>
       <td>${esc(r.forn)}</td>
       <td class="desc">${esc(r.desc)}</td>
       <td class="divider">|</td>
-      <td class="num">${esc(r.big)}</td>
-    </tr>`).join('');
+      <td class="num ticket">${esc(r.big)}</td>
+    </tr>`;
+  }).join('');
   tbody.innerHTML = rowsHtml || '';
   if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty-msg">Nessun risultato trovato.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-msg">Nessun risultato trovato.</td></tr>';
   }
   countEl.textContent = filtered.length.toLocaleString('it-IT') + ' risultati';
+  updateCheckedCount();
 }
 
 function applyFilter() {
@@ -226,11 +267,11 @@ function applyFilter() {
     filtered = DATA;
   } else {
     filtered = DATA.filter(r =>
-      String(r.scat ?? '').toLowerCase().includes(q) ||
-      String(r.quant ?? '').toLowerCase().includes(q) ||
-      String(r.forn ?? '').toLowerCase().includes(q) ||
-      String(r.desc ?? '').toLowerCase().includes(q) ||
-      String(r.big ?? '').toLowerCase().includes(q)
+      String(((r.scat) === null || (r.scat) === undefined ? '' : (r.scat))).toLowerCase().includes(q) ||
+      String(((r.quant) === null || (r.quant) === undefined ? '' : (r.quant))).toLowerCase().includes(q) ||
+      String(((r.forn) === null || (r.forn) === undefined ? '' : (r.forn))).toLowerCase().includes(q) ||
+      String(((r.desc) === null || (r.desc) === undefined ? '' : (r.desc))).toLowerCase().includes(q) ||
+      String(((r.big) === null || (r.big) === undefined ? '' : (r.big))).toLowerCase().includes(q)
     );
   }
   applySort(false);
@@ -246,8 +287,8 @@ function applySort(toggle) {
         bv = bv === null || bv === undefined ? -Infinity : Number(bv);
         return (av - bv) * sortDir;
       } else {
-        av = (av ?? '').toString();
-        bv = (bv ?? '').toString();
+        av = (((av) === null || (av) === undefined ? '' : (av))).toString();
+        bv = (((bv) === null || (bv) === undefined ? '' : (bv))).toString();
         return av.localeCompare(bv, 'it', { sensitivity: 'base' }) * sortDir;
       }
     });
@@ -275,6 +316,45 @@ document.querySelectorAll('th.sortable').forEach(th => {
 });
 
 searchInput.addEventListener('input', applyFilter);
+
+tbody.addEventListener('change', function(e){
+  const cb = e.target.closest('input.chk');
+  if (!cb) return;
+  const big = cb.dataset.big;
+  if (cb.checked) {
+    checkedMap[big] = true;
+  } else {
+    delete checkedMap[big];
+  }
+  saveChecked();
+  cb.closest('tr').classList.toggle('done', cb.checked);
+  updateCheckedCount();
+});
+
+let dragging = false;
+let dragValue = null;
+
+tbody.addEventListener('mousedown', function(e){
+  const cb = e.target.closest('input.chk');
+  if (!cb) return;
+  dragging = true;
+  dragValue = !cb.checked;
+  document.body.classList.add('dragging-check');
+});
+
+tbody.addEventListener('mouseover', function(e){
+  if (!dragging) return;
+  const cb = e.target.closest('input.chk');
+  if (!cb || cb.checked === dragValue) return;
+  cb.checked = dragValue;
+  cb.dispatchEvent(new Event('change', { bubbles: true }));
+});
+
+document.addEventListener('mouseup', function(){
+  dragging = false;
+  dragValue = null;
+  document.body.classList.remove('dragging-check');
+});
 
 render();
 countEl.textContent = DATA.length.toLocaleString('it-IT') + ' risultati';
