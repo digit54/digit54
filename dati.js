@@ -9,9 +9,9 @@ const DATI = {
     { "nome": "converter Audio - Vari formati to mp3 e wav", "file": "converter Audio - Vari formati to mp3 e wav.html" }
   ],
   "Farlocche": [
-    { "nome": "Cerca sequenze pigreco", "file": "Cerca sequenze pigreco.html" },
     { "nome": "Giochino_screenv02", "file": "Giochino_screenv02.html" },
     { "nome": "Misura riflessi", "file": "Misura riflessi.html" },
+    { "nome": "Pigreco - Cerca le cifre", "file": "Pigreco - Cerca le cifre.html" },
     { "nome": "Quanti quadrati vedi", "file": "Quanti quadrati vedi.html" },
     { "nome": "Simil salvaschermo", "file": "Simil salvaschermo.html" }
   ],
