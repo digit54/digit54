@@ -42,6 +42,7 @@ const DATI = {
   "Utility": [
     { "nome": "Calcola proporzioni", "file": "Calcola proporzioni.html" },
     { "nome": "Crea Gif Move V1.5", "file": "Crea Gif Move V1.5.html" },
+    { "nome": "Da Voce a Testo", "file": "Da Voce a Testo.html" },
     { "nome": "Multi-Screenshot", "file": "Multi-Screenshot.html" },
     { "nome": "QR_Toolbox", "file": "QR_Toolbox.html" },
     { "nome": "Suite Percentuali", "file": "Suite Percentuali.html" },
