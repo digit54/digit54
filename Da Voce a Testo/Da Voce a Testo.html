@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Da voce a testo – Digit54</title>
+<style>
+:root {
+  --bg: #F2FFE9;
+  --fg: #16212B;
+  --accent: #81EA39;
+  --trough: #C7F5A0;
+  --play-trough: #B3D9FF;
+  --play-fill: #4A9EFF;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  font-size: 13px;
+}
+.frame { max-width: 760px; margin: 0 auto; padding: 8px 16px 8px; }
+.row { display: flex; align-items: center; margin-bottom: 5px; }
+label { color: var(--fg); }
+.lbl-tiny { width: 30px; }
+input[type="text"] {
+  flex: 1; padding: 5px 7px; border: 1px solid var(--trough); border-radius: 3px;
+  background: #fff; color: var(--fg); margin: 0 6px;
+}
+input[type="text"]:read-only { background: #fbfff7; color: #555; }
+select {
+  padding: 4px 6px; border: 1px solid var(--trough); border-radius: 3px;
+  background: #fff; color: var(--fg); margin-left: 6px;
+}
+button { border: none; border-radius: 3px; padding: 5px 12px; cursor: pointer; font-size: 13px; }
+button:disabled { cursor: default; opacity: 0.55; }
+.btn-accent { background: var(--accent); color: #000; }
+.btn-accent:hover:not(:disabled) { filter: brightness(0.95); }
+.btn-flat { background: var(--bg); color: var(--fg); border: 1px solid var(--trough); }
+.btn-flat:hover:not(:disabled) { background: var(--trough); }
+.w-play { width: 90px; margin-right: 4px; }
+/* Riquadri Ascolto / Trascrizione: bordo marcato, blu per il player (come la sua barra), verde per la trascrizione */
+.frame-seg { --seg-color: #3A8C00; border: 2px solid var(--seg-color); border-radius: 6px; padding: 4px 12px 2px; margin: 2px 0 8px; background: #fbfff7; }
+.frame-seg legend { padding: 2px 10px; color: #fff; background: var(--seg-color); border-radius: 4px; font-weight: 700; font-size: 12px; }
+/* Casella "solo da… a…" dentro il titolo del riquadro, per risparmiare una riga */
+.frame-seg legend .chk-seg { display: inline-flex; margin-left: 10px; font-weight: 400; color: #fff; }
+.frame-seg legend .chk-seg input { margin: 0; }
+#frameSeg { --seg-color: #2F7FD8; background: #f6faff; }
+#frameMarks { --seg-color: #D97706; background: #fffaf0; }
+/* ⏱ T_inizio arancione; quando aspetta la fine diventa ⏱ T_fine rosso lampeggiante */
+.btn-tag { background: #F59E0B; color: #000; font-weight: 700; margin-left: 4px; }
+.btn-tag:hover:not(:disabled) { filter: brightness(0.95); }
+.btn-tag.waiting { background: #DC2626; color: #fff; animation: tagpulse 1s ease-in-out infinite; }
+@keyframes tagpulse { 50% { box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.3); } }
+.row-marks { gap: 8px; flex-wrap: wrap; }
+.row-marks { gap: 6px; }
+.row-marks select { flex: 1; min-width: 180px; margin-left: 0; }
+.btn-icon { padding: 5px 9px; }
+.row-slider { gap: 6px; margin-bottom: 2px; }
+.time-val { width: 44px; display: inline-block; }
+input[type="range"] { flex: 1; accent-color: var(--accent); height: 18px; }
+.spacer { flex: 1; }
+.pin { margin-right: 4px; }
+.pos-val { width: 110px; display: inline-block; text-align: right; }
+.total-val { margin-left: 10px; white-space: nowrap; }
+.row-actions { gap: 8px; flex-wrap: wrap; }
+/* Salva .txt: bordo visibile anche da disattivato, verde pieno quando c'è un testo da salvare */
+.btn-save { background: var(--bg); color: var(--fg); border: 1px solid #3A8C00; font-weight: 600; }
+.btn-save:not(:disabled) { background: var(--accent); color: #000; }
+.btn-save:hover:not(:disabled) { filter: brightness(0.95); }
+.chk-seg { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.seg-sliders.off { opacity: 0.45; }
+.row-link { gap: 14px; flex-wrap: wrap; }
+.dlg { border: 1px solid var(--trough); border-radius: 6px; background: var(--bg); color: var(--fg); max-width: 440px; padding: 16px 18px; }
+.dlg::backdrop { background: rgba(0, 0, 0, 0.3); }
+.dlg p { margin: 0 0 14px; line-height: 1.5; white-space: pre-line; }
+.dlg-buttons { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+#ledCanvas { border-radius: 50%; }
+.row-progress { gap: 8px; }
+.progress-track { flex: 1; height: 16px; background: var(--trough); border-radius: 3px; overflow: hidden; position: relative; }
+.progress-fill { height: 100%; width: 0%; transition: width 0.15s linear; }
+.progress-fill.transcription { background: var(--accent); }
+.progress-fill.play { background: var(--play-fill); }
+.progress-track.play-mode { background: var(--play-trough); }
+.progress-fill.busy {
+  width: 100% !important;
+  background: repeating-linear-gradient(45deg, var(--accent), var(--accent) 10px, #c7f5a0 10px, #c7f5a0 20px);
+  animation: busystripe 1s linear infinite;
+}
+@keyframes busystripe { from { background-position: 0 0; } to { background-position: 28px 0; } }
+.pct-label { width: 42px; text-align: right; }
+.row-status { white-space: pre-line; min-height: 18px; padding-top: 2px; color: var(--fg); }
+.row-footer { justify-content: flex-end; margin: 0; }
+.badge { color: #3A8C00; font-weight: bold; font-size: 11px; }
+/* Informazioni: nascoste, si aprono/chiudono con il pulsante ℹ Info */
+.hint { font-size: 11px; color: #4a5a44; margin: 0 0 6px 0; line-height: 1.5; padding: 6px 8px; border: 1px dashed #9ccc7a; border-radius: 4px; background: #fbfff7; }
+.hint a { color: #2d6a00; }
+.btn-info { margin-left: auto; padding: 3px 10px; font-size: 12px; }
+/* Titolo in cima */
+.app-head { display: flex; align-items: center; gap: 6px; padding-bottom: 6px; margin-bottom: 8px; border-bottom: 2px solid var(--accent); }
+.app-title { display: flex; align-items: baseline; column-gap: 10px; flex-wrap: wrap; min-width: 0; flex: 1; }
+.app-head .btn-info, .app-head .btn-help { white-space: nowrap; flex-shrink: 0; align-self: center; }
+.app-title h1 { margin: 0; font-size: 20px; font-weight: 700; color: #2d6a00; white-space: nowrap; }
+.app-sub { font-size: 12px; color: #4a5a44; }
+.btn-help { margin-left: 6px; padding: 3px 10px; font-size: 12px; }
+/* Finestra Aiuto */
+.dlg-help { max-width: 640px; width: calc(100% - 32px); padding: 0; }
+.help-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--trough); position: sticky; top: 0; background: var(--bg); }
+.help-body { padding: 4px 18px 14px; max-height: 70vh; overflow-y: auto; line-height: 1.5; }
+.help-body h3 { font-size: 13px; margin: 14px 0 4px; }
+.help-body p, .help-body ul { margin: 4px 0; }
+.help-body ul { padding-left: 20px; }
+.help-body li { margin-bottom: 3px; }
+.help-tag { font-size: 11px; font-weight: 700; color: #fff; padding: 1px 7px; border-radius: 4px; margin-left: 6px; }
+.help-tag.blu { background: #2F7FD8; }
+.help-tag.arancio { background: #D97706; }
+.help-tag.verde { background: #3A8C00; }
+.help-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: middle; border: 1px solid #7F1D1D; }
+.help-dot.rosso { background: #C53030; }
+.help-dot.arancio { background: #F59E0B; }
+.help-dot.verde { background: #10B981; }
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <!-- ============ TITOLO ============ -->
+  <header class="app-head">
+    <div class="app-title">
+      <h1>🎙️ Da voce a testo</h1>
+      <span class="app-sub">Trascrive in testo l'audio di file audio e video (italiano / inglese), direttamente nel browser</span>
+    </div>
+    <button id="btnInfo" class="btn-flat btn-info" title="Mostra / nascondi le informazioni">ℹ  Info</button>
+    <button id="btnHelp" class="btn-flat btn-help" title="Guida all'uso">❓  Aiuto</button>
+  </header>
+
+  <div class="hint" id="infoBox" hidden>
+    Versione <strong>standalone</strong>: nessun server richiesto, tutto gira nel browser.
+    La prima volta che usi una qualità di estrazione, i suoi file vengono scaricati da internet (una tantum, poi restano in cache).
+    Funziona meglio se apri questo file tramite un piccolo server locale invece che con doppio click
+    (es. <code>npx serve</code> nella cartella) &mdash; con doppio click (<code>file://</code>) funziona comunque, ma può essere più lento.<br>
+    <strong>Segmenti marcati:</strong> durante l'ascolto premi <b>⏱ T_inizio</b> all'inizio del pezzo e <b>⏱ T_fine</b> alla fine.
+  </div>
+
+  <!-- ============ SELEZIONE FILE ============ -->
+  <div class="row row-file">
+    <label>File audio/video:</label>
+    <input type="text" id="pathDisplay" readonly placeholder="Nessun file selezionato">
+    <input type="file" id="fileInput" accept=".mp3,.wav,.m4a,.ogg,.flac,.opus,.mp4,.mkv,.mov,.avi" hidden>
+    <button id="btnBrowse" class="btn-accent">Sfoglia...</button>
+  </div>
+
+  <!-- ============ LINGUA + MODELLO ============ -->
+  <div class="row row-lang">
+    <label>Lingua:</label>
+    <select id="langSelect">
+      <option value="">Auto</option>
+      <option value="italian">Italiano</option>
+      <option value="english">English</option>
+    </select>
+    <label style="margin-left:16px;">Qualità estrazione:</label>
+    <select id="modelSelect">
+      <option value="Xenova/whisper-tiny">Bassa – veloce (~75MB)</option>
+      <option value="Xenova/whisper-base" selected>Media – bilanciata (~145MB)</option>
+      <option value="Xenova/whisper-small">Alta – più precisa, più lenta (~480MB)</option>
+    </select>
+  </div>
+
+  <!-- ============ AIUTO ============ -->
+  <dialog id="dlgHelp" class="dlg dlg-help">
+    <div class="help-head">
+      <strong>❓  Guida rapida</strong>
+      <button id="btnHelpClose" class="btn-flat" title="Chiudi (Esc)">✕  Chiudi</button>
+    </div>
+    <div class="help-body">
+      <h3>1. Scegli il file</h3>
+      <p>Premi <b>Sfoglia...</b> e scegli un file audio o video (mp3, wav, m4a, ogg, flac, opus, mp4, mkv, mov, avi).
+        Finché non c'è un file, i comandi di ascolto e dei segmenti restano grigi.</p>
+      <ul>
+        <li><b>Lingua:</b> se sai che l'audio è in italiano (o inglese), sceglila: è più preciso di <i>Auto</i> e riduce le frasi “inventate”.</li>
+        <li><b>Qualità estrazione:</b> <i>Bassa</i> è veloce, <i>Media</i> è un buon compromesso, <i>Alta</i> è la più precisa ma la più lenta.
+          La prima volta che usi una qualità, i suoi file vengono scaricati da internet.</li>
+      </ul>
+
+      <h3>2. Ascolto <span class="help-tag blu">riquadro blu</span></h3>
+      <ul>
+        <li><b>▶ Play / ⏸ Pausa / ⏹ Stop</b> per ascoltare il file.</li>
+        <li>Spunta <b>solo da… a…</b> (nel titolo del riquadro) e sposta i cursori <b>Da</b> e <b>A</b> per ascoltare solo un tratto.</li>
+      </ul>
+
+      <h3>3. Marca i pezzi da trascrivere <span class="help-tag arancio">riquadro arancione</span></h3>
+      <ul>
+        <li>Mentre ascolti, premi <b>⏱ T_inizio</b> quando comincia il pezzo che ti interessa: il pulsante diventa rosso e si chiama <b>⏱ T_fine</b>.
+          Premilo quando il pezzo finisce.</li>
+        <li>I tempi vengono corretti da soli: l'inizio è messo <b>3 secondi prima</b> (mai prima di 00:00), la fine <b>1 secondo prima</b>.</li>
+        <li>Il segmento compare nell'elenco a tendina. Scegli un segmento o <b>★ Tutti i segmenti</b>, poi:
+          <b>▶ Ascolta</b> (li suona uno dopo l'altro), <b>Trascrivi</b> (un unico testo, ogni pezzo con il suo orario),
+          <b>🗑 Elimina</b>.</li>
+        <li><b>💾 Salva elenco</b> salva i tempi in un file .txt; <b>📂 Carica elenco</b> li ricarica in un secondo momento.
+          Scegliendo un altro file l'elenco si svuota: salvalo prima, se ti serve.</li>
+      </ul>
+
+      <h3>4. Trascrizione <span class="help-tag verde">riquadro verde</span></h3>
+      <ul>
+        <li>Senza spunte, <b>Trascrivi</b> lavora su tutto il file.</li>
+        <li>Spunta <b>solo da… a…</b> e regola <b>Da</b> / <b>A</b> per trascrivere solo un tratto.</li>
+        <li><b>🔗 Aggancia all'ascolto</b>: i cursori della trascrizione seguono quelli dell'ascolto.
+          <b>↧ Copia Da/A dell'ascolto</b> li copia una volta sola.</li>
+        <li><b>Unisci i pezzi</b>: ogni nuova trascrizione si aggiunge in fondo al testo, con l'orario come titolo.
+          Senza questa spunta, se il testo precedente non è stato salvato, la pagina te lo chiede prima di sostituirlo.</li>
+      </ul>
+
+      <h3>5. Durante e dopo l'estrazione</h3>
+      <ul>
+        <li>Il testo compare nella lavagna man mano; la barra mostra l'avanzamento.</li>
+        <li><b>⏸ Pausa / ▶ Riprendi</b> ferma e riprende l'estrazione; <b>⏹ Arresta</b> la interrompe tenendo il testo fatto fino a lì.</li>
+        <li><b>💾 Salva .txt</b> salva il testo nella cartella Download del browser.</li>
+        <li>La spia accanto a Trascrivi: <span class="help-dot rosso"></span> lampeggia = in corso,
+          <span class="help-dot arancio"></span> = in pausa / interrotta, <span class="help-dot verde"></span> = finita.</li>
+      </ul>
+
+      <h3>Consigli</h3>
+      <ul>
+        <li>Su silenzi o musica il modello a volte ripete la stessa frase: la pagina se ne accorge, rifà quel pezzo e, se serve,
+          tiene una sola copia (lo trovi scritto nella riga di stato). Marcare solo le parti parlate aiuta molto.</li>
+        <li>Se la pagina è lenta, prova la qualità <i>Bassa</i> o <i>Media</i>, oppure trascrivi solo i segmenti che ti servono.</li>
+      </ul>
+    </div>
+  </dialog>
+
+  <!-- ============ SEGMENTO ============ -->
+  <fieldset id="frameSeg" class="frame-seg">
+    <legend>Ascolto <label class="chk-seg"><input type="checkbox" id="chkSeg"> solo da… a…</label></legend>
+
+    <div id="segSliders" class="seg-sliders off">
+      <div class="row row-slider">
+        <label class="lbl-tiny">Da:</label>
+        <span class="time-val" id="lblStartVal">00:00</span>
+        <input type="range" id="scaleStart" min="0" max="100" value="0" step="1" disabled>
+      </div>
+      <div class="row row-slider">
+        <label class="lbl-tiny">A:</label>
+        <span class="time-val" id="lblEndVal">00:00</span>
+        <input type="range" id="scaleEnd" min="0" max="100" value="100" step="1" disabled>
+      </div>
+    </div>
+
+    <div class="row row-player">
+      <button id="btnPlay" class="btn-accent w-play">▶  Play</button>
+      <button id="btnPause" class="btn-flat w-play" disabled>⏸  Pausa</button>
+      <button id="btnStop" class="btn-flat w-play" disabled>⏹  Stop</button>
+      <button id="btnTag" class="btn-tag" title="Segna l'inizio del pezzo che stai ascoltando; premi di nuovo per segnarne la fine">⏱  T_inizio</button>
+      <span class="spacer"></span>
+      <span class="pin">📍</span>
+      <span id="lblPos" class="pos-val">--:-- / --:--</span>
+      <span id="lblTotal" class="total-val"></span>
+    </div>
+    <audio id="audioPlayer" preload="auto"></audio>
+  </fieldset>
+
+  <!-- ============ SEGMENTI MARCATI (T_inizio / T_fine) ============ -->
+  <fieldset id="frameMarks" class="frame-seg">
+    <legend>Trascrivi segmenti marcati</legend>
+    <div class="row row-marks">
+      <select id="markList"></select>
+      <button id="btnMarkPlay" class="btn-flat" title="Ascolta il segmento scelto (o tutti, uno dopo l'altro)">▶  Ascolta</button>
+      <button id="btnMarkGo" class="btn-accent" title="Trascrivi il segmento scelto (o tutti, in un unico testo)">Trascrivi</button>
+      <button id="btnMarkDel" class="btn-flat" title="Elimina il segmento scelto (o tutti)">🗑  Elimina</button>
+      <button id="btnMarkSave" class="btn-flat btn-icon" title="Salva l'elenco dei segmenti in un file .txt">💾 Salva elenco</button>
+      <button id="btnMarkLoad" class="btn-flat btn-icon" title="Carica un elenco di segmenti salvato prima">📂 Carica elenco</button>
+      <input type="file" id="markFile" accept=".txt,text/plain" hidden>
+    </div>
+  </fieldset>
+
+  <!-- ============ SEGMENTO DA TRASCRIVERE ============ -->
+  <fieldset id="frameTr" class="frame-seg">
+    <legend>Trascrizione <label class="chk-seg"><input type="checkbox" id="chkTrSeg"> solo da… a…</label></legend>
+
+    <div class="row row-link">
+      <label class="chk-seg" title="I cursori della trascrizione seguono automaticamente quelli dell'ascolto">
+        <input type="checkbox" id="chkLink"> 🔗 Aggancia all'ascolto
+      </label>
+      <button id="btnCopyRange" class="btn-flat" title="Copia una volta qui il Da/A impostato per l'ascolto">↧  Copia Da/A dell'ascolto</button>
+    </div>
+    <div id="trSliders" class="seg-sliders off">
+      <div class="row row-slider">
+        <label class="lbl-tiny">Da:</label>
+        <span class="time-val" id="lblTrStartVal">00:00</span>
+        <input type="range" id="scaleTrStart" min="0" max="100" value="0" step="1" disabled>
+      </div>
+      <div class="row row-slider">
+        <label class="lbl-tiny">A:</label>
+        <span class="time-val" id="lblTrEndVal">00:00</span>
+        <input type="range" id="scaleTrEnd" min="0" max="100" value="100" step="1" disabled>
+      </div>
+    </div>
+    <div class="row">
+      <label class="chk-seg"><input type="checkbox" id="chkMerge"> Unisci i pezzi: ogni nuova trascrizione viene aggiunta in fondo al testo</label>
+    </div>
+  </fieldset>
+
+  <!-- ============ AVVISO: TESTO NON SALVATO ============ -->
+  <dialog id="dlgUnsaved" class="dlg">
+    <p id="dlgUnsavedMsg"></p>
+    <div class="dlg-buttons">
+      <button id="dlgSave" class="btn-accent">💾  Salva e trascrivi</button>
+      <button id="dlgNoSave" class="btn-flat">Trascrivi senza salvare</button>
+      <button id="dlgCancel" class="btn-flat">Annulla</button>
+    </div>
+  </dialog>
+
+  <!-- ============ AZIONI ============ -->
+  <div class="row row-actions">
+    <canvas id="ledCanvas" width="18" height="18"></canvas>
+    <button id="btnGo" class="btn-accent">Trascrivi</button>
+    <button id="btnTrPause" class="btn-flat" disabled>⏸  Pausa</button>
+    <button id="btnTrStop" class="btn-flat" disabled>⏹  Arresta</button>
+    <button id="btnOpen" class="btn-save" disabled>💾  Salva .txt</button>
+  </div>
+
+  <!-- ============ PROGRESS ============ -->
+  <div class="row row-progress">
+    <div class="progress-track" id="progressTrack">
+      <div id="progressBar" class="progress-fill transcription"></div>
+    </div>
+    <span id="pctLabel" class="pct-label"></span>
+  </div>
+
+  <!-- ============ STATUS ============ -->
+  <div class="row row-status" id="statusLabel">Pronto.</div>
+
+  <!-- ============ TESTO ESTRATTO ============ -->
+  <div class="row" style="align-items:flex-start;">
+    <textarea id="resultText" readonly rows="6"
+      style="flex:1; padding:8px; border:1px solid var(--trough); border-radius:3px; background:#fff; color:var(--fg); resize:vertical;"
+      placeholder="Il testo trascritto apparirà qui..."></textarea>
+  </div>
+
+  <!-- ============ FOOTER ============ -->
+  <div class="row row-footer">
+    <span class="badge">✔  Digit54 v. 5.0</span>
+  </div>
+
+</div>
+
+<!-- ============ WORKER (Whisper) ============
+     La trascrizione gira in un Web Worker, così la pagina resta reattiva e il testo
+     può essere mandato alla lavagna man mano. Il codice sta qui come testo e viene
+     avviato da un Blob URL come worker "classico" (non module): aprendo il file con
+     doppio click (file://) i module worker da Blob vengono rifiutati dal browser,
+     mentre un worker classico che carica la libreria con import() funziona. -->
+<script type="text/plain" id="workerSrc">
+// Il gestore onmessage deve esistere subito (niente attese prima), altrimenti
+// il primo messaggio della pagina arriva prima e va perso.
+const libReady = import("https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2").then(async (lib) => {
+  // Cache dei modelli nel browser (Cache API) tra una sessione e l'altra.
+  // Aperto con doppio click (file://) la Cache API può non esistere: transformers.js
+  // in quel caso lancia "Browser cache is not available", quindi la disattiviamo.
+  lib.env.allowLocalModels = false;
+  lib.env.useBrowserCache = await (async () => {
+    if (typeof caches === "undefined") return false;
+    try { await caches.open("transformers-cache"); return true; } catch { return false; }
+  })();
+  return lib;
+});
+
+const transcriberCache = {}; // model_id -> Promise<pipeline>
+
+async function getTranscriber(modelId) {
+  const { pipeline } = await libReady;
+  if (!transcriberCache[modelId]) {
+    transcriberCache[modelId] = pipeline("automatic-speech-recognition", modelId, {
+      progress_callback: (d) => postMessage({
+        type: "load", status: d.status, file: d.file, progress: d.progress,
+      }),
+    }).catch((err) => { delete transcriberCache[modelId]; throw err; });
+  }
+  return transcriberCache[modelId];
+}
+
+// Comandi dalla pagina durante la trascrizione.
+const ctrl = { paused: false, stop: false };
+class StopSignal extends Error {}
+class LoopSignal extends Error {}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function waitIfPaused() {
+  if (!ctrl.paused) return;
+  postMessage({ type: "paused" });
+  while (ctrl.paused) await sleep(100);
+  if (!ctrl.stop) postMessage({ type: "resumed" });
+}
+
+// Durante il calcolo di un blocco il worker non legge i messaggi della pagina (la
+// libreria non cede mai il controllo). Avvolgo model.forward, chiamato a ogni parola
+// generata, con una brevissima attesa: così Pausa e Arresta arrivano subito e la
+// pausa si ferma lì, a metà blocco, senza dover rifare nulla.
+function installControlPoint(model) {
+  if (model.__ctrlInstalled) return;
+  const forward = model.forward.bind(model);
+  model.forward = async (...args) => {
+    await sleep(0);
+    if (ctrl.stop) throw new StopSignal();
+    await waitIfPaused();
+    if (ctrl.stop) throw new StopSignal();
+    return forward(...args);
+  };
+  model.__ctrlInstalled = true;
+}
+
+// Se la coda dei token è la stessa sequenza ripetuta almeno 4 volte (e il ripetuto
+// è lungo almeno 16 token), restituisce dove tagliare per tenerne una sola copia;
+// altrimenti -1. Ripetizioni brevi e normali ("no, no, no") non vengono toccate.
+function loopCut(tokens) {
+  const n = tokens.length;
+  for (let p = 1; p <= 40 && p * 4 <= n; p++) {
+    let reps = 1;
+    while ((reps + 1) * p <= n) {
+      let same = true;
+      for (let i = 1; i <= p; i++) {
+        if (tokens[n - i] !== tokens[n - reps * p - i]) { same = false; break; }
+      }
+      if (!same) break;
+      reps++;
+    }
+    if (reps >= 4 && reps * p >= 16) return n - (reps - 1) * p;
+  }
+  return -1;
+}
+
+self.onmessage = (e) => {
+  const m = e.data;
+  if (m.type === "start") transcribe(m);
+  else if (m.type === "pause") ctrl.paused = true;
+  else if (m.type === "resume") ctrl.paused = false;
+  else if (m.type === "stop") { ctrl.stop = true; ctrl.paused = false; }
+};
+
+// Stessa logica di _call_whisper di transformers.js 2.17.2 (blocchi da 30s con 5s di
+// sovrapposizione, stesse opzioni di generazione) ma eseguita qui un blocco alla volta,
+// così tra un blocco e l'altro si possono gestire Pausa e Arresta. Il testo finale è
+// identico a quello di transcriber(audio, { chunk_length_s: 30, stride_length_s: 5 }).
+async function transcribe({ audio, modelId, language, paused }) {
+  ctrl.paused = !!paused;
+  ctrl.stop = false;
+  const chunks = [];
+  let transcriber = null;
+  const decode = () => {
+    if (!transcriber || !chunks.length) return "";
+    const timePrecision = transcriber.processor.feature_extractor.config.chunk_length
+      / transcriber.model.config.max_source_positions;
+    const [text] = transcriber.tokenizer._decode_asr(chunks, {
+      time_precision: timePrecision, return_timestamps: false, force_full_sequences: false,
+    });
+    return text.trim();
+  };
+
+  try {
+    transcriber = await getTranscriber(modelId);
+    installControlPoint(transcriber.model);
+    if (ctrl.stop) throw new StopSignal();
+    postMessage({ type: "ready" });
+
+    const fe = transcriber.processor.feature_extractor.config;
+    const sr = fe.sampling_rate;
+    const window = sr * 30;
+    const stride = sr * 5;
+    const jump = window - 2 * stride;
+    const totalChunks = Math.max(1, Math.ceil(audio.length / jump));
+
+    const genKwargs = { chunk_length_s: 30, stride_length_s: 5 };
+    const promptIds = transcriber.tokenizer.get_decoder_prompt_ids({ language, task: "transcribe", no_timestamps: true });
+    if (promptIds.length > 0) genKwargs.forced_decoder_ids = promptIds;
+
+    let lastPost = 0;
+    const sendPartial = () => {
+      lastPost = Date.now();
+      postMessage({ type: "partial", text: decode(), doneChunks: chunks.filter((c) => c.finalised).length, totalChunks });
+    };
+
+    let blockNo = 0;
+    for (let offset = 0; offset < audio.length; offset += jump) {
+      blockNo++;
+      // Lascia arrivare i messaggi della pagina, poi gestisce Pausa / Arresta.
+      await sleep(0);
+      await waitIfPaused();
+      if (ctrl.stop) throw new StopSignal();
+
+      const subarr = audio.subarray(offset, offset + window);
+      const isFirst = offset === 0;
+      const isLast = offset + jump >= audio.length;
+      const { input_features } = await transcriber.processor(subarr);
+      const chunk = { stride: [subarr.length, isFirst ? 0 : stride, isLast ? 0 : stride], tokens: [], finalised: false, is_last: isLast };
+      chunks.push(chunk);
+
+      // Se il blocco va in loop viene rifatto una volta con una penalità sulle ripetizioni
+      // (come il "fallback" di faster-whisper); se va in loop anche così, si tiene una sola copia.
+      let retryNoLoop = false;
+      for (;;) {
+        try {
+          const data = await transcriber.model.generate(input_features, {
+            ...genKwargs,
+            ...(retryNoLoop ? { repetition_penalty: 1.2 } : {}),
+            num_frames: Math.floor(subarr.length / fe.hop_length),
+            callback_function: (beams) => {
+              const t = beams[0].output_token_ids;
+              // Whisper a volte entra in loop ("del sottotitolo del sottotitolo…") su
+              // silenzi, musica o parlato poco chiaro: tengo una copia e chiudo il blocco.
+              const cut = loopCut(t);
+              if (cut > 0) { chunk.tokens = t.slice(0, cut); throw new LoopSignal(); }
+              chunk.tokens = [...t];
+              if (Date.now() - lastPost >= 250) sendPartial(); // max ~4 aggiornamenti/s
+            },
+          });
+          chunk.tokens = data[0];
+          break;
+        } catch (err) {
+          if (err instanceof LoopSignal) {
+            if (!retryNoLoop) {
+              retryNoLoop = true;
+              postMessage({ type: "retry", block: blockNo });
+              continue;
+            }
+            postMessage({ type: "loop", block: blockNo });
+            break;
+          }
+          throw err;
+        }
+      }
+      chunk.stride = chunk.stride.map((x) => x / sr);
+      chunk.finalised = true;
+      sendPartial();
+    }
+
+    postMessage({ type: "done", text: decode() });
+  } catch (err) {
+    if (err instanceof StopSignal) {
+      // Tiene solo i blocchi completati: quello interrotto è a metà.
+      while (chunks.length && !chunks[chunks.length - 1].finalised) chunks.pop();
+      postMessage({ type: "stopped", text: decode() });
+    } else {
+      postMessage({ type: "error", message: err && err.message ? err.message : String(err) });
+    }
+  }
+}
+</script>
+
+<script type="module">
+// ============================ STATO ============================
+const state = {
+  file: null,
+  duration: 0,
+  audioBlobUrl: null,
+  resampled: null,      // Float32Array a 16kHz mono, calcolato al momento della trascrizione
+  paused: false,
+  autoStopArmed: false,
+  outputText: null,
+  outputName: null,
+  marks: [],            // segmenti marcati con T_inizio / T_fine: [{ start, end }] in secondi
+  markStart: null,      // T_inizio premuto, in attesa di T_fine
+  playOverride: null,   // segmento marcato in ascolto (sostituisce il Da/A dell'ascolto)
+  playQueue: [],        // segmenti marcati ancora da ascoltare
+  playIndex: 0,
+  playTotal: 0,
+  saved: true,          // false quando c'è un testo trascritto non ancora salvato
+  lastRange: "",        // intervallo dell'ultima trascrizione, per l'avviso
+};
+
+let worker = null; // creato alla prima trascrizione, poi riusato (tiene i modelli caricati)
+
+// ============================ UTIL ============================
+function fmtTime(seconds) {
+  if (!seconds || seconds < 0) seconds = 0;
+  seconds = Math.floor(seconds);
+  const m = Math.floor(seconds / 60).toString().padStart(2, "0");
+  const s = (seconds % 60).toString().padStart(2, "0");
+  return `${m}:${s}`;
+}
+
+function setStatus(msg) { el.statusLabel.textContent = msg; }
+
+function setProgress(pct, style) {
+  el.progressBar.classList.remove("busy");
+  pct = Math.max(0, Math.min(100, pct));
+  el.progressBar.style.width = pct + "%";
+  el.progressBar.classList.remove("transcription", "play");
+  el.progressBar.classList.add(style || "transcription");
+  el.progressTrack.classList.toggle("play-mode", style === "play");
+  el.pctLabel.textContent = pct > 0 ? Math.round(pct) + "%" : "";
+}
+
+function setBusyIndeterminate(on) {
+  if (on) {
+    el.progressBar.classList.add("busy");
+    el.pctLabel.textContent = "";
+  } else {
+    el.progressBar.classList.remove("busy");
+  }
+}
+
+function resetProgress() { setProgress(0, "transcription"); }
+
+// ============================ ELEMENTI ============================
+const el = {
+  pathDisplay: document.getElementById("pathDisplay"),
+  fileInput: document.getElementById("fileInput"),
+  btnBrowse: document.getElementById("btnBrowse"),
+
+  langSelect: document.getElementById("langSelect"),
+  modelSelect: document.getElementById("modelSelect"),
+
+  frameSeg: document.getElementById("frameSeg"),
+  chkSeg: document.getElementById("chkSeg"),
+  segSliders: document.getElementById("segSliders"),
+  scaleStart: document.getElementById("scaleStart"),
+  scaleEnd: document.getElementById("scaleEnd"),
+  lblStartVal: document.getElementById("lblStartVal"),
+  lblEndVal: document.getElementById("lblEndVal"),
+
+  frameTr: document.getElementById("frameTr"),
+  chkTrSeg: document.getElementById("chkTrSeg"),
+  btnCopyRange: document.getElementById("btnCopyRange"),
+  trSliders: document.getElementById("trSliders"),
+  scaleTrStart: document.getElementById("scaleTrStart"),
+  scaleTrEnd: document.getElementById("scaleTrEnd"),
+  lblTrStartVal: document.getElementById("lblTrStartVal"),
+  lblTrEndVal: document.getElementById("lblTrEndVal"),
+  chkMerge: document.getElementById("chkMerge"),
+  chkLink: document.getElementById("chkLink"),
+  dlgUnsaved: document.getElementById("dlgUnsaved"),
+  dlgUnsavedMsg: document.getElementById("dlgUnsavedMsg"),
+
+  btnPlay: document.getElementById("btnPlay"),
+  btnPause: document.getElementById("btnPause"),
+  btnStop: document.getElementById("btnStop"),
+  btnTag: document.getElementById("btnTag"),
+  frameMarks: document.getElementById("frameMarks"),
+  markList: document.getElementById("markList"),
+  btnMarkPlay: document.getElementById("btnMarkPlay"),
+  btnMarkGo: document.getElementById("btnMarkGo"),
+  btnMarkDel: document.getElementById("btnMarkDel"),
+  btnMarkSave: document.getElementById("btnMarkSave"),
+  btnMarkLoad: document.getElementById("btnMarkLoad"),
+  markFile: document.getElementById("markFile"),
+  lblPos: document.getElementById("lblPos"),
+  lblTotal: document.getElementById("lblTotal"),
+  audioPlayer: document.getElementById("audioPlayer"),
+
+  ledCanvas: document.getElementById("ledCanvas"),
+  btnGo: document.getElementById("btnGo"),
+  btnTrPause: document.getElementById("btnTrPause"),
+  btnTrStop: document.getElementById("btnTrStop"),
+  btnOpen: document.getElementById("btnOpen"),
+
+  progressTrack: document.getElementById("progressTrack"),
+  progressBar: document.getElementById("progressBar"),
+  pctLabel: document.getElementById("pctLabel"),
+  statusLabel: document.getElementById("statusLabel"),
+  resultText: document.getElementById("resultText"),
+};
+
+// ============================ LED ============================
+const ledCtx = el.ledCanvas.getContext("2d");
+let ledBlinking = false;
+let ledOn = true;
+
+function drawLed(fill) {
+  ledCtx.clearRect(0, 0, 18, 18);
+  ledCtx.beginPath();
+  ledCtx.arc(9, 9, 7, 0, Math.PI * 2);
+  ledCtx.fillStyle = fill;
+  ledCtx.strokeStyle = "#7F1D1D";
+  ledCtx.fill();
+  ledCtx.stroke();
+}
+function ledSet(fill) { drawLed(fill); }
+function ledBlinkTick() {
+  if (!ledBlinking) return;
+  ledOn = !ledOn;
+  drawLed(ledOn ? "#C53030" : "#FECACA");
+  setTimeout(ledBlinkTick, 300);
+}
+function ledBlinkStart() { ledBlinking = true; ledBlinkTick(); }
+function ledBlinkStop() { ledBlinking = false; }
+drawLed("#C53030");
+
+// ============================ INFO (apri / chiudi) ============================
+// Il riquadro informazioni parte chiuso; la scelta viene ricordata nel browser.
+const infoBox = document.getElementById("infoBox");
+const btnInfo = document.getElementById("btnInfo");
+function setInfoOpen(open) {
+  infoBox.hidden = !open;
+  btnInfo.textContent = open ? "✕  Chiudi info" : "ℹ  Info";
+  try { localStorage.setItem("mp3txt.infoOpen", open ? "1" : "0"); } catch {}
+}
+btnInfo.addEventListener("click", () => setInfoOpen(infoBox.hidden));
+try { setInfoOpen(localStorage.getItem("mp3txt.infoOpen") === "1"); } catch { setInfoOpen(false); }
+
+// ============================ AIUTO ============================
+const dlgHelp = document.getElementById("dlgHelp");
+document.getElementById("btnHelp").addEventListener("click", () => dlgHelp.showModal());
+document.getElementById("btnHelpClose").addEventListener("click", () => dlgHelp.close());
+// Clic fuori dalla finestra (sullo sfondo scuro) = chiudi
+dlgHelp.addEventListener("click", (e) => { if (e.target === dlgHelp) dlgHelp.close(); });
+
+// ============================ SELEZIONE FILE ============================
+// I riquadri sono sempre visibili; finché non c'è un file (con una durata leggibile)
+// i comandi che ne hanno bisogno restano disattivati.
+function setFileReady(ready) {
+  for (const c of [el.btnPlay, el.btnTag, el.btnCopyRange, el.chkSeg, el.chkTrSeg, el.chkLink, el.btnMarkLoad]) {
+    c.disabled = !ready;
+  }
+  if (ready) {
+    el.chkTrSeg.disabled = el.chkLink.checked; // con l'aggancio la casella resta bloccata
+    el.btnCopyRange.disabled = el.chkLink.checked;
+  } else {
+    el.lblTotal.textContent = "";
+    el.lblPos.textContent = "--:-- / --:--";
+  }
+}
+
+el.btnBrowse.addEventListener("click", () => el.fileInput.click());
+el.fileInput.addEventListener("change", () => {
+  const file = el.fileInput.files[0];
+  if (file) onFileSelected(file);
+});
+
+function onFileSelected(file) {
+  state.file = file;
+  state.resampled = null;
+  state.outputText = null;
+  state.outputName = null;
+  state.saved = true;
+  state.marks = [];       // i segmenti marcati valgono per il file a cui si riferiscono
+  state.markStart = null;
+  renderMarks();
+  updateTagButton();
+  el.btnOpen.disabled = true;
+  el.resultText.value = "";
+  onStop();
+  state.duration = 0;
+  setFileReady(false); // si riattiva quando il browser ha letto la durata del nuovo file
+
+  if (state.audioBlobUrl) URL.revokeObjectURL(state.audioBlobUrl);
+  state.audioBlobUrl = URL.createObjectURL(file);
+  el.audioPlayer.src = state.audioBlobUrl;
+  el.pathDisplay.value = file.name;
+
+  el.audioPlayer.addEventListener("loadedmetadata", function onMeta() {
+    el.audioPlayer.removeEventListener("loadedmetadata", onMeta);
+    state.duration = el.audioPlayer.duration || 0;
+    if (state.duration > 0 && isFinite(state.duration)) {
+      playRange.reset(state.duration);
+      trRange.reset(state.duration);
+      el.lblTotal.textContent = "Durata totale: " + fmtTime(state.duration);
+      el.lblPos.textContent = `00:00 / ${fmtTime(state.duration)}`;
+      setFileReady(true);
+    } else {
+      setFileReady(false);
+      setStatus(`Selezionato: ${file.name}, ma il browser non riesce a leggerne la durata: ` +
+        `ascolto e segmenti non disponibili (la trascrizione di tutto il file può funzionare).`);
+    }
+  }, { once: true });
+
+  const size = file.size > 1024 * 1024
+    ? (file.size / 1024 / 1024).toFixed(1) + " MB"
+    : (file.size / 1024).toFixed(1) + " KB";
+  setStatus(`Selezionato: ${file.name} (${size})`);
+}
+
+// ============================ SEGMENTI / SLIDER ============================
+// Due intervalli Da…A indipendenti: uno per l'ascolto, uno per la trascrizione.
+// Ognuno ha la sua casella: se non è spuntata vale tutto il file.
+// locked(): se restituisce true i cursori restano bloccati anche con la casella spuntata.
+function makeRange({ chk, sliders, start, end, lblStart, lblEnd, onToggle, locked }) {
+  const refresh = () => {
+    let s = parseFloat(start.value);
+    let e = parseFloat(end.value);
+    if (s > e) { start.value = e; s = e; }
+    lblStart.textContent = fmtTime(s);
+    lblEnd.textContent = fmtTime(e);
+  };
+  start.addEventListener("input", refresh);
+  end.addEventListener("input", refresh);
+  chk.addEventListener("change", () => {
+    const usable = chk.checked && !(locked && locked());
+    start.disabled = !usable;
+    end.disabled = !usable;
+    sliders.classList.toggle("off", !chk.checked);
+    if (onToggle) onToggle();
+  });
+  return {
+    refresh,
+    reset(duration) {
+      start.max = duration; end.max = duration;
+      start.value = 0; end.value = duration;
+      refresh();
+    },
+    set(s, e) { start.value = s; end.value = e; refresh(); },
+    get() {
+      if (!chk.checked || !(state.duration > 0)) return { start: 0, end: state.duration, whole: true };
+      return { start: parseFloat(start.value), end: parseFloat(end.value), whole: false };
+    },
+  };
+}
+
+const playRange = makeRange({
+  chk: el.chkSeg, sliders: el.segSliders, start: el.scaleStart, end: el.scaleEnd,
+  lblStart: el.lblStartVal, lblEnd: el.lblEndVal,
+  onToggle: () => {
+    syncLinked();
+    if (state.autoStopArmed) onStop(); // il player ricomincia con il nuovo intervallo
+  },
+});
+const trRange = makeRange({
+  chk: el.chkTrSeg, sliders: el.trSliders, start: el.scaleTrStart, end: el.scaleTrEnd,
+  lblStart: el.lblTrStartVal, lblEnd: el.lblTrEndVal,
+  locked: () => el.chkLink.checked,
+});
+// Usato dal player: se si stanno ascoltando i segmenti marcati vale quello in corso.
+function getRange() { return state.playOverride || playRange.get(); }
+
+// Copia nella trascrizione il Da/A dell'ascolto (e spunta "Trascrivi solo da… a…").
+function copyPlayToTr() {
+  const { start, end } = playRange.get();
+  if (!el.chkTrSeg.checked) { el.chkTrSeg.checked = true; el.chkTrSeg.dispatchEvent(new Event("change")); }
+  trRange.set(start, end);
+  return { start, end };
+}
+el.btnCopyRange.addEventListener("click", () => {
+  const { start, end } = copyPlayToTr();
+  setStatus(`Segmento da trascrivere: ${fmtTime(start)} → ${fmtTime(end)}`);
+});
+
+// "Aggancia all'ascolto": finché è spuntata, i cursori della trascrizione seguono
+// quelli dell'ascolto e sono bloccati (si regolano solo dal riquadro Ascolto).
+function syncLinked() {
+  if (el.chkLink.checked) copyPlayToTr();
+}
+el.scaleStart.addEventListener("input", syncLinked);
+el.scaleEnd.addEventListener("input", syncLinked);
+el.chkLink.addEventListener("change", () => {
+  const linked = el.chkLink.checked;
+  el.chkTrSeg.disabled = linked;
+  el.btnCopyRange.disabled = linked;
+  if (linked) {
+    copyPlayToTr();
+    const { start, end } = trRange.get();
+    setStatus(`🔗 Trascrizione agganciata all'ascolto: ${fmtTime(start)} → ${fmtTime(end)}`);
+  }
+  el.chkTrSeg.dispatchEvent(new Event("change")); // aggiorna blocco/sblocco dei cursori
+});
+
+// ============================ PLAYER ============================
+el.btnPlay.addEventListener("click", onPlay);
+el.btnPause.addEventListener("click", onPause);
+el.btnStop.addEventListener("click", onStop);
+
+function onPlay() {
+  if (!state.file) return;
+  let { start: startSec, end: endSec } = getRange();
+  if (endSec <= startSec) endSec = state.duration;
+
+  el.audioPlayer.currentTime = startSec;
+  el.audioPlayer.play();
+  state.autoStopArmed = true;
+
+  el.btnPlay.disabled = true;
+  el.btnPlay.textContent = "▶ ...";
+  el.btnPause.disabled = false;
+  el.btnStop.disabled = false;
+  setStatus(playStatus(startSec, endSec));
+  setProgress(0, "play");
+}
+
+function playStatus(startSec, endSec) {
+  if (state.playOverride) {
+    return `▶  Segmento marcato ${state.playIndex}/${state.playTotal}: ${fmtTime(startSec)} → ${fmtTime(endSec)}`;
+  }
+  return `▶  Anteprima: ${fmtTime(startSec)} → ${fmtTime(endSec)}`;
+}
+
+// Ascolta uno o più segmenti marcati, uno dopo l'altro.
+function playSegments(list) {
+  if (!list.length) return;
+  onStop();
+  state.playQueue = list.slice(1);
+  state.playOverride = { ...list[0] };
+  state.playIndex = 1;
+  state.playTotal = list.length;
+  onPlay();
+}
+
+function onPause() {
+  if (!state.file) return;
+  if (state.paused) {
+    el.audioPlayer.play();
+    state.paused = false;
+    el.btnPause.textContent = "⏸  Pausa";
+  } else {
+    el.audioPlayer.pause();
+    state.paused = true;
+    el.btnPause.textContent = "▶  Riprendi";
+  }
+}
+
+function onStop() {
+  state.autoStopArmed = false;
+  el.audioPlayer.pause();
+  const { start, end } = getRange();
+  el.audioPlayer.currentTime = start || 0;
+  state.paused = false;
+  el.btnPlay.disabled = !(state.duration > 0); // senza file (o senza durata) Play resta spento
+  el.btnPlay.textContent = "▶  Play";
+  el.btnPause.disabled = true;
+  el.btnPause.textContent = "⏸  Pausa";
+  el.btnStop.disabled = true;
+  el.lblPos.textContent = `${fmtTime(start)} / ${fmtTime(end)}`;
+  resetProgress();
+  state.playOverride = null; // fine (o stop) dell'ascolto dei segmenti marcati
+  state.playQueue = [];
+}
+
+el.audioPlayer.addEventListener("timeupdate", () => {
+  if (!state.autoStopArmed) return;
+  const { start: startSec, end: endSec } = getRange();
+  const segDur = Math.max(endSec - startSec, 1.0);
+  const posSec = el.audioPlayer.currentTime;
+  el.lblPos.textContent = `${fmtTime(posSec)} / ${fmtTime(endSec)}`;
+  const pct = Math.min(((posSec - startSec) / segDur) * 100, 100);
+  setProgress(pct, "play");
+  if (posSec >= endSec) {
+    if (state.playQueue && state.playQueue.length) {
+      // Passa al segmento marcato successivo.
+      state.playOverride = { ...state.playQueue.shift() };
+      state.playIndex++;
+      el.audioPlayer.currentTime = state.playOverride.start;
+      setStatus(playStatus(state.playOverride.start, state.playOverride.end));
+    } else {
+      onStop();
+    }
+  }
+});
+el.audioPlayer.addEventListener("ended", () => { if (state.autoStopArmed) onStop(); });
+
+// ============================ SEGMENTI MARCATI (T_inizio / T_fine) ============================
+// Tempo con i decimi (mm:ss.d), perché i segni sono presi "al volo" durante l'ascolto.
+function fmtTimeD(seconds) {
+  seconds = Math.max(0, seconds || 0);
+  const m = Math.floor(seconds / 60).toString().padStart(2, "0");
+  const s = (seconds % 60).toFixed(1).padStart(4, "0");
+  return `${m}:${s}`;
+}
+const markLabel = (m) => `${fmtTimeD(m.start)} → ${fmtTimeD(m.end)}`;
+
+function updateTagButton() {
+  const waiting = state.markStart !== null;
+  el.btnTag.classList.toggle("waiting", waiting);
+  el.btnTag.textContent = waiting ? `⏱  T_fine  (da ${fmtTimeD(state.markStart)})` : "⏱  T_inizio";
+}
+
+function renderMarks(selectValue) {
+  const list = el.markList;
+  list.innerHTML = "";
+  const n = state.marks.length;
+  if (!n) {
+    list.add(new Option("— nessun segmento —", ""));
+  } else {
+    list.add(new Option(`★  Tutti i segmenti (${n})`, "all"));
+    state.marks.forEach((m, i) => {
+      list.add(new Option(`${i + 1})  ${markLabel(m)}   (${Math.round(m.end - m.start)} s)`, String(i)));
+    });
+  }
+  list.value = selectValue != null && n ? String(selectValue) : (n ? "all" : "");
+  for (const b of [el.btnMarkPlay, el.btnMarkGo, el.btnMarkDel, el.btnMarkSave]) b.disabled = !n;
+}
+
+function addMark(start, end) {
+  state.marks.push({ start, end });
+  state.marks.sort((a, b) => a.start - b.start);
+  return state.marks.findIndex((m) => m.start === start && m.end === end);
+}
+
+// Segmenti scelti nella tendina: tutti, oppure quello selezionato.
+function selectedMarks() {
+  const v = el.markList.value;
+  if (v === "all") return state.marks.slice();
+  if (v === "") return [];
+  return [state.marks[Number(v)]];
+}
+
+// Correzioni automatiche dei segni: T_inizio viene anticipato di 3 s (mai prima di
+// 00:00), T_fine viene anticipato di 1 s.
+const TAG_START_BACK_S = 3;
+const TAG_END_BACK_S = 1;
+
+el.btnTag.addEventListener("click", () => {
+  if (!state.file) return;
+  const t = el.audioPlayer.currentTime;
+  if (state.markStart === null) {
+    state.markStart = Math.max(0, t - TAG_START_BACK_S);
+    setStatus(`⏱  Inizio segnato a ${fmtTimeD(state.markStart)} (premuto a ${fmtTimeD(t)}, −${TAG_START_BACK_S} s). Premi ⏱ T_fine quando il pezzo finisce.`);
+  } else {
+    const end = Math.max(0, t - TAG_END_BACK_S);
+    if (end - state.markStart < 0.5) {
+      setStatus(`⏱  T_fine (${fmtTimeD(end)}, cioè −${TAG_END_BACK_S} s) deve venire dopo T_inizio (${fmtTimeD(state.markStart)}): lascia scorrere l'audio e riprova.`);
+      return;
+    }
+    const idx = addMark(state.markStart, end);
+    setStatus(`✔  Segmento ${idx + 1} aggiunto: ${markLabel(state.marks[idx])}  (fine premuta a ${fmtTimeD(t)}, −${TAG_END_BACK_S} s)`);
+    state.markStart = null;
+    renderMarks(idx);
+  }
+  updateTagButton();
+});
+
+el.btnMarkPlay.addEventListener("click", () => playSegments(selectedMarks()));
+el.btnMarkGo.addEventListener("click", () => {
+  const list = selectedMarks();
+  if (list.length) onGo(list);
+});
+el.btnMarkDel.addEventListener("click", () => {
+  const v = el.markList.value;
+  if (v === "all") {
+    if (!confirm(`Eliminare tutti i ${state.marks.length} segmenti marcati?`)) return;
+    state.marks = [];
+  } else if (v !== "") {
+    state.marks.splice(Number(v), 1);
+  }
+  renderMarks();
+});
+
+// Elenco salvato come testo, una riga per segmento: "01:23.4 → 01:45.0".
+el.btnMarkSave.addEventListener("click", () => {
+  const baseName = state.file.name.replace(/\.[^/.]+$/, "");
+  const lines = [`# Segmenti marcati di: ${state.file.name}`, ...state.marks.map(markLabel)];
+  const blob = new Blob([lines.join("\n") + "\n"], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = baseName + "_segmenti.txt";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+el.btnMarkLoad.addEventListener("click", () => el.markFile.click());
+el.markFile.addEventListener("change", async () => {
+  const f = el.markFile.files[0];
+  el.markFile.value = "";
+  if (!f) return;
+  const re = /(\d+):(\d+(?:[.,]\d+)?)\s*(?:→|->|-)\s*(\d+):(\d+(?:[.,]\d+)?)/;
+  let added = 0;
+  for (const line of (await f.text()).split(/\r?\n/)) {
+    const m = line.match(re);
+    if (!m) continue;
+    const sec = (mm, ss) => Number(mm) * 60 + Number(ss.replace(",", "."));
+    let start = sec(m[1], m[2]);
+    let end = sec(m[3], m[4]);
+    if (state.duration > 0) end = Math.min(end, state.duration);
+    if (end - start < 0.5) continue;
+    addMark(start, end);
+    added++;
+  }
+  renderMarks();
+  setStatus(added ? `📂  Caricati ${added} segmenti da ${f.name}` : `📂  Nessun segmento valido trovato in ${f.name}`);
+});
+
+// ============================ DECODIFICA / RESAMPLE (16kHz mono) ============================
+async function decodeAndResample(file, onStatus) {
+  onStatus("Decodifica audio...");
+  const arrayBuffer = await file.arrayBuffer();
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  const tmpCtx = new AudioCtx();
+  const audioBuffer = await tmpCtx.decodeAudioData(arrayBuffer);
+  tmpCtx.close();
+
+  onStatus("Ricampionamento a 16kHz mono...");
+  const targetRate = 16000;
+  const offline = new OfflineAudioContext(1, Math.ceil(audioBuffer.duration * targetRate), targetRate);
+  const src = offline.createBufferSource();
+  src.buffer = audioBuffer;
+  src.connect(offline.destination);
+  src.start(0);
+  const rendered = await offline.startRendering();
+  return rendered.getChannelData(0); // Float32Array mono @ 16kHz
+}
+
+// ============================ TRASCRIZIONE (client-side, Whisper WASM) ============================
+function getWorker() {
+  if (!worker) {
+    const src = document.getElementById("workerSrc").textContent;
+    const url = URL.createObjectURL(new Blob([src], { type: "text/javascript" }));
+    worker = new Worker(url);
+  }
+  return worker;
+}
+
+// Manda l'audio al worker; onPartial(text, doneChunks, totalChunks) riceve il testo parziale.
+// Risolve con { text, stopped } (stopped = interrotta con Arresta: text è la parte fatta).
+function transcribeInWorker(audio, modelId, language, onPartial) {
+  return new Promise((resolve, reject) => {
+    const w = getWorker();
+    w.onmessage = (e) => {
+      const m = e.data;
+      if (m.type === "load") {
+        if (m.status === "progress") {
+          const pct = m.progress || 0;
+          setProgress(pct, "transcription");
+          setStatus(`Scarico i file per la qualità scelta (${m.file})...  ${pct.toFixed(0)}%`);
+        } else if (m.status === "done") {
+          setStatus(`File pronto: ${m.file}`);
+        } else if (m.status === "initiate") {
+          setStatus(`Preparo il download di: ${m.file}`);
+        }
+      } else if (m.type === "ready") {
+        resetProgress();
+        setStatus("Trascrizione in corso... il testo appare nella lavagna man mano");
+      } else if (m.type === "partial") {
+        onPartial(m.text, m.doneChunks, m.totalChunks);
+      } else if (m.type === "retry") {
+        loopsRetried++;
+        if (!trPaused) setStatus(`Blocco ${m.block}: il modello ripeteva la stessa frase, lo rifaccio con un'impostazione diversa...`);
+      } else if (m.type === "loop") {
+        loopsRemoved++;
+      } else if (m.type === "paused") {
+        ledBlinkStop();
+        ledSet("#F59E0B");
+        setStatus("⏸  Trascrizione in pausa. Premi 'Riprendi' per continuare.");
+      } else if (m.type === "resumed") {
+        ledBlinkStart();
+        setStatus("Trascrizione ripresa...");
+      } else if (m.type === "done") {
+        resolve({ text: m.text, stopped: false });
+      } else if (m.type === "stopped") {
+        resolve({ text: m.text, stopped: true });
+      } else if (m.type === "error") {
+        reject(new Error(m.message));
+      }
+    };
+    w.onerror = (e) => {
+      // Errore nel caricamento del worker stesso (es. libreria non scaricabile): lo ricreo la prossima volta.
+      e.preventDefault();
+      worker.terminate();
+      worker = null;
+      reject(new Error(e.message || "impossibile avviare il motore di trascrizione"));
+    };
+    // paused: se l'utente ha premuto Pausa tra un segmento marcato e l'altro, il nuovo parte in pausa.
+    w.postMessage({ type: "start", audio, modelId, language, paused: trPaused }, [audio.buffer]);
+  });
+}
+
+// Pausa / Arresta: hanno effetto alla fine del blocco da 30s in corso
+// (Arresta prova anche a interrompere subito).
+let trPaused = false;
+let stopRequested = false;
+let loopsRetried = 0; // blocchi rifatti perché il modello ripeteva la stessa frase
+let loopsRemoved = 0; // blocchi in cui anche il secondo tentativo ripeteva: tenuta una copia
+function loopNote() {
+  if (!loopsRetried) return "";
+  const bl = (n) => `${n} ${n === 1 ? "blocco" : "blocchi"}`;
+  let s = `\nℹ ${bl(loopsRetried)} ${loopsRetried === 1 ? "rifatto" : "rifatti"} perché il modello ripeteva la stessa frase.`;
+  if (loopsRemoved) {
+    s += ` ⚠ In ${bl(loopsRemoved)} ripeteva ancora: tenuta una sola copia, lì può mancare del testo.` +
+      ` Succede su silenzi/musica; se la lingua è nota, sceglierla (invece di Auto) aiuta.`;
+  }
+  return s;
+}
+function setTrButtons(running) {
+  el.btnTrPause.disabled = !running;
+  el.btnTrStop.disabled = !running;
+  if (!running) { trPaused = false; el.btnTrPause.textContent = "⏸  Pausa"; }
+}
+el.btnTrPause.addEventListener("click", () => {
+  if (!worker) return;
+  trPaused = !trPaused;
+  worker.postMessage({ type: trPaused ? "pause" : "resume" });
+  el.btnTrPause.textContent = trPaused ? "▶  Riprendi" : "⏸  Pausa";
+  if (trPaused) setStatus("Metto in pausa...");
+});
+el.btnTrStop.addEventListener("click", () => {
+  stopRequested = true; // con più segmenti marcati ferma anche quelli non ancora iniziati
+  if (worker) worker.postMessage({ type: "stop" });
+  el.btnTrPause.disabled = true;
+  el.btnTrStop.disabled = true;
+  setStatus("Arresto in corso... tengo il testo già estratto.");
+});
+
+el.btnGo.addEventListener("click", () => onGo());
+
+// segList: segmenti marcati da trascrivere ([{ start, end }]); senza, usa il Da/A
+// del riquadro Trascrizione (o tutto il file). Con più segmenti, o con "Unisci i
+// pezzi", ogni pezzo ha come intestazione il suo intervallo di tempo.
+async function onGo(segList) {
+  if (!state.file) {
+    alert("Seleziona prima un file audio/video dal tuo PC.");
+    return;
+  }
+  onStop();
+
+  let pieces;
+  if (segList && segList.length) {
+    pieces = segList.map((s) => ({ start: s.start, end: s.end, whole: false }));
+  } else {
+    const range = trRange.get();
+    if (!range.whole && range.end - range.start < 1) {
+      alert("Il segmento da trascrivere è troppo corto: sposta 'A' più avanti di 'Da'.");
+      return;
+    }
+    pieces = [range];
+  }
+  const multi = pieces.length > 1;
+  const rngOf = (p) => p.whole
+    ? `${fmtTime(0)} → ${fmtTime(state.duration)}`
+    : (segList ? markLabel(p) : `${fmtTime(p.start)} → ${fmtTime(p.end)}`);
+  const rng = multi ? `${pieces.length} segmenti marcati` : rngOf(pieces[0]);
+
+  // Senza "Unisci i pezzi" la nuova trascrizione sostituisce il testo: se quello
+  // attuale non è stato salvato, avvisa prima.
+  const merge = el.chkMerge.checked;
+  if (!merge && !state.saved && state.outputText) {
+    const choice = await askUnsaved();
+    if (choice === "cancel") return;
+    if (choice === "save") saveTxt();
+  }
+  const withHeaders = merge || multi;
+  // Testo accumulato: con "Unisci i pezzi" si parte da quello che c'è già.
+  let acc = merge && state.outputText ? state.outputText : "";
+
+  const modelId = el.modelSelect.value;
+  const language = el.langSelect.value || null;
+
+  el.btnGo.disabled = true;
+  el.btnMarkGo.disabled = true;
+  el.btnGo.textContent = "In corso...";
+  el.btnOpen.disabled = true;
+  el.resultText.value = acc;
+  ledSet("#C53030");
+  ledBlinkStart();
+  resetProgress();
+  setTrButtons(true);
+  loopsRemoved = 0;
+  loopsRetried = 0;
+  stopRequested = false;
+
+  try {
+    const full16k = await decodeAndResample(state.file, setStatus);
+    const total = state.duration || full16k.length / 16000;
+
+    const quality = el.modelSelect.selectedOptions[0].textContent.split(" –")[0];
+    setStatus(`Preparo la qualità di estrazione '${quality}' (la prima volta va scaricata, poi resta in cache nel browser)...`);
+
+    let stopped = false;
+    for (let i = 0; i < pieces.length && !stopRequested; i++) {
+      const p = pieces[i];
+      const useClip = !p.whole && total > 0 && (p.start > 0 || p.end < total - 0.5);
+      const startIdx = useClip ? Math.floor(p.start * 16000) : 0;
+      const endIdx = useClip ? Math.min(Math.ceil(p.end * 16000), full16k.length) : full16k.length;
+      const segment = full16k.slice(startIdx, endIdx); // copia: il buffer viene trasferito al worker
+
+      const prefix = acc ? acc + "\n\n" : "";
+      const header = withHeaders ? `[${rngOf(p)}]\n` : "";
+      const segInfo = multi ? `Segmento ${i + 1}/${pieces.length} (${rngOf(p)})  •  ` : "";
+
+      const res = await transcribeInWorker(segment, modelId, language, (partial, done, tot) => {
+        // Scorre in fondo solo se l'utente era già in fondo (così può rileggere più su).
+        const ta = el.resultText;
+        const atBottom = ta.scrollHeight - ta.scrollTop - ta.clientHeight < 30;
+        ta.value = prefix + header + partial.trim();
+        if (atBottom) ta.scrollTop = ta.scrollHeight;
+        setProgress(((i + done / tot) / pieces.length) * 100, "transcription");
+        if (!trPaused) {
+          setStatus(`${segInfo}Trascrizione in corso... blocco ${Math.min(done + 1, tot)}/${tot}  (il testo appare nella lavagna man mano)` + loopNote());
+        }
+      });
+
+      if (res.text || !withHeaders) {
+        acc = prefix + header + res.text + (res.stopped && withHeaders ? "  [interrotto]" : "");
+      }
+      if (res.stopped) { stopped = true; break; }
+    }
+    if (stopRequested) stopped = true;
+
+    setTrButtons(false);
+
+    const baseName = state.file.name.replace(/\.[^/.]+$/, "");
+    if (acc || !withHeaders) {
+      state.outputText = acc;
+      state.outputName = baseName + (multi ? "_segmenti_trascritti.txt"
+        : merge ? "_trascritto_unito.txt"
+        : stopped ? "_trascritto_parziale.txt" : "_trascritto.txt");
+      state.saved = !state.outputText;
+      state.lastRange = rng;
+    }
+    el.resultText.value = state.outputText || "";
+    el.resultText.scrollTop = el.resultText.scrollHeight;
+
+    ledBlinkStop();
+    if (stopped) {
+      ledSet("#F59E0B");
+      setStatus(`Interrotta.  •  Tenuto il testo estratto fino all'arresto  •  ${multi ? "" : "Segmento: "}${rng}`);
+      el.btnOpen.disabled = !state.outputText;
+    } else {
+      setProgress(100, "transcription");
+      ledSet("#10B981");
+      setStatus(`Fatto!  •  Lingua: ${language || "auto"}  •  ${multi ? "" : "Segmento: "}${rng}` + loopNote());
+      el.btnOpen.disabled = false;
+      alert("Trascrizione completata! Usa '💾 Salva .txt' per salvare il file.");
+    }
+  } catch (err) {
+    console.error(err);
+    setBusyIndeterminate(false);
+    ledBlinkStop();
+    ledSet("#C53030");
+    resetProgress();
+    el.resultText.value = state.outputText || ""; // rimette il testo che c'era prima
+    el.btnOpen.disabled = !state.outputText;
+    setStatus("Errore: " + err.message);
+    alert("Errore: " + err.message);
+  } finally {
+    setTrButtons(false);
+    el.btnGo.disabled = false;
+    el.btnMarkGo.disabled = !state.marks.length;
+    el.btnGo.textContent = "Trascrivi";
+  }
+}
+
+// ============================ SALVA .TXT ============================
+function saveTxt() {
+  if (!state.outputText || !state.outputName) {
+    alert("Nessuna trascrizione disponibile ancora.");
+    return;
+  }
+  const blob = new Blob([state.outputText], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = state.outputName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  state.saved = true;
+}
+el.btnOpen.addEventListener("click", saveTxt);
+
+// Avviso "testo non salvato": risolve con "save", "nosave" o "cancel".
+function askUnsaved() {
+  return new Promise((resolve) => {
+    const dlg = el.dlgUnsaved;
+    el.dlgUnsavedMsg.textContent =
+      `Il testo trascritto (${state.lastRange}) non è stato salvato.\n` +
+      `Trascrivendo un nuovo pezzo verrà sostituito.\n\n` +
+      `Per tenerli tutti insieme spunta "Unisci i pezzi".`;
+    const done = (choice) => {
+      dlg.querySelectorAll("button").forEach((b) => (b.onclick = null));
+      dlg.onclose = null;
+      dlg.close();
+      resolve(choice);
+    };
+    document.getElementById("dlgSave").onclick = () => done("save");
+    document.getElementById("dlgNoSave").onclick = () => done("nosave");
+    document.getElementById("dlgCancel").onclick = () => done("cancel");
+    dlg.onclose = () => done("cancel"); // tasto Esc
+    dlg.showModal();
+  });
+}
+
+// ============================ AVVIO ============================
+// Pagina aperta tutta subito: riquadri visibili, comandi attivi solo dopo aver scelto un file.
+setFileReady(false);
+renderMarks();
+updateTagButton();
+</script>
+</body>
+</html>

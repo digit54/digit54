@@ -1,12 +1,11 @@
 ﻿// File generato automaticamente da genera_menu.ps1 - non modificare a mano
 const DATI = {
-  "Banco": [
-    { "nome": "per_allestimento", "file": "per_allestimento.html" },
-    { "nome": "registri", "file": "registri.html" }
-  ],
   "Convertitori Audio Video Immagini": [
     { "nome": "Converitore formati immagini", "file": "Converitore formati immagini.html" },
     { "nome": "converter Audio - Vari formati to mp3 e wav", "file": "converter Audio - Vari formati to mp3 e wav.html" }
+  ],
+  "Da Voce a Testo": [
+    { "nome": "Da Voce a Testo", "file": "Da Voce a Testo.html" }
   ],
   "Farlocche": [
     { "nome": "Giochino_screenv02", "file": "Giochino_screenv02.html" },
@@ -42,7 +41,6 @@ const DATI = {
   "Utility": [
     { "nome": "Calcola proporzioni", "file": "Calcola proporzioni.html" },
     { "nome": "Crea Gif Move V1.5", "file": "Crea Gif Move V1.5.html" },
-    { "nome": "Da Voce a Testo", "file": "Da Voce a Testo.html" },
     { "nome": "Multi-Screenshot", "file": "Multi-Screenshot.html" },
     { "nome": "QR_Toolbox", "file": "QR_Toolbox.html" },
     { "nome": "Suite Percentuali", "file": "Suite Percentuali.html" },
