@@ -1,0 +1,205 @@
+<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Slide Censimento 2026</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Literata:opsz,wght@7..72,600;7..72,800&display=swap">
+<style>
+/* Layout: una slide 16:9 alla volta, testo grande scalato sulla slide; a destra il disegno dello schermo (telefono o computer) */
+:root{
+  --bg:#e9ecf1; --slide:#ffffff; --fg:#1b2330; --muted:#566275; --line:#cfd6e0;
+  --accent:#1f4e8c; --accent-soft:#e3ecf8; --mark:#e0a100; --mark-soft:#fff4d6; --warn:#a33b1f; --warn-soft:#fbe9e3;
+  --f-display:"Literata", Georgia, serif; --f-body:"Atkinson Hyperlegible", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1218; --slide:#1a2029; --fg:#e8ecf2; --muted:#a3adbc; --line:#334055;
+  --accent:#8db6ee; --accent-soft:#1d2a3d; --mark:#f0bd3c; --mark-soft:#2e2715; --warn:#f09a7d; --warn-soft:#3a201a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1218; --slide:#1a2029; --fg:#e8ecf2; --muted:#a3adbc; --line:#334055;
+  --accent:#8db6ee; --accent-soft:#1d2a3d; --mark:#f0bd3c; --mark-soft:#2e2715; --warn:#f09a7d; --warn-soft:#3a201a; color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:1rem;box-sizing:border-box}
+.stage{width:min(100%, calc((100vh - 8rem) * 16 / 9));container-type:inline-size}
+.slide{aspect-ratio:16/9;max-width:100%;background:var(--slide);border:1px solid var(--line);border-radius:14px;box-sizing:border-box;
+  padding:4.2cqw 5.5cqw 5.5cqw;display:flex;flex-direction:column;gap:2cqw;overflow:hidden;position:relative}
+.slide[hidden]{display:none!important}
+.tag{font-size:1.6cqw;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+h1,h2{font-family:var(--f-display);margin:0;line-height:1.15;text-wrap:balance}
+h1{font-size:5.2cqw;font-weight:800}
+h2{font-size:3.9cqw;font-weight:800;display:flex;align-items:center;gap:2cqw}
+.n{flex:none;min-width:6cqw;height:6cqw;border-radius:3cqw;background:var(--accent);color:var(--slide);display:grid;place-items:center;font-size:3.2cqw;padding:0 .8cqw;box-sizing:border-box}
+p,li{font-size:2.7cqw;line-height:1.4;margin:0}
+ul,ol{margin:0;padding-left:3.4cqw;display:grid;gap:1.4cqw}
+.sub{font-size:2.4cqw;color:var(--muted)}
+.btn{background:var(--accent);color:var(--slide);border-radius:.7cqw;padding:0 .9cqw;font-weight:700;white-space:nowrap}
+.url{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--mark-soft);padding:0 .6cqw;border-radius:.5cqw;color:inherit;word-break:break-all}
+.crumbs{display:flex;gap:1cqw;flex-wrap:wrap}
+.pill{font-size:1.6cqw;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:var(--mark-soft);border-radius:99px;padding:.35cqw 1.4cqw}
+.pill.dev{background:var(--accent-soft);color:var(--accent)}
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:2cqw}
+.card{border:1px solid var(--line);border-radius:1.2cqw;padding:1.8cqw;display:flex;flex-direction:column;gap:.6cqw}
+.card b,.card a.big{font-size:3cqw;font-weight:700;font-variant-numeric:tabular-nums;color:var(--accent)}
+.card span{font-size:2cqw;color:var(--muted)}
+.foot{position:absolute;left:5.5cqw;right:5.5cqw;bottom:1.8cqw;font-size:1.5cqw;color:var(--muted);display:flex;justify-content:space-between}
+.alert{border-left:.7cqw solid var(--warn);background:var(--warn-soft);padding:1.2cqw 1.8cqw;border-radius:0 1cqw 1cqw 0}
+.alert strong{color:var(--warn)}
+.hl{border-left:.7cqw solid var(--mark);background:var(--mark-soft);padding:1.2cqw 1.8cqw;border-radius:0 1cqw 1cqw 0}
+.split{display:grid;grid-template-columns:1fr auto;gap:4cqw;align-items:center;flex:1;min-height:0}
+.split>div:first-child{display:flex;flex-direction:column;gap:2cqw;min-width:0}
+/* disegni degli schermi */
+.mock{border:.45cqw solid var(--fg);background:var(--slide);display:flex;flex-direction:column;gap:1cqw;box-sizing:border-box}
+.mock.phone{width:20cqw;min-height:30cqw;border-radius:3cqw;padding:2.6cqw 1.6cqw}
+.mock.pc{width:32cqw;min-height:21cqw;border-radius:1.2cqw;padding:1.4cqw}
+.mk-bar{font-size:1.4cqw;border:1px solid var(--line);border-radius:3cqw;padding:.5cqw 1cqw;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mk-t{font-size:1.4cqw;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.mk-q{font-size:1.8cqw;font-weight:700;line-height:1.3}
+.mk-b{font-size:1.7cqw;border:1px solid var(--line);border-radius:1cqw;padding:.8cqw;text-align:center}
+.mk-b.go{background:var(--accent);color:var(--slide);border-color:var(--accent);font-weight:700;outline:.4cqw solid var(--mark);outline-offset:.3cqw}
+.mk-qr{width:9cqw;height:9cqw;align-self:center;background:
+  repeating-linear-gradient(90deg,var(--fg) 0 1cqw,transparent 1cqw 2cqw),repeating-linear-gradient(0deg,var(--fg) 0 1cqw,transparent 1cqw 2cqw);
+  background-blend-mode:normal;opacity:.75;border:.6cqw solid var(--fg);border-radius:.4cqw}
+.mk-card{width:11cqw;height:7cqw;border-radius:.8cqw;border:.35cqw solid var(--accent);align-self:center;display:grid;place-items:center;font-size:1.8cqw;font-weight:700;color:var(--accent)}
+.mk-pin{display:flex;gap:.5cqw;justify-content:center}
+.mk-pin i{width:1.6cqw;height:1.6cqw;border-radius:50%;background:var(--fg)}
+.mk-dev{display:flex;gap:2cqw;align-items:flex-end}
+.mk-dev .mock.pc{width:24cqw;min-height:17cqw}.mk-dev .mock.phone{width:15cqw;min-height:22cqw}
+/* scelte */
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:3cqw}
+.choice button{font:inherit;cursor:pointer;text-align:left;background:var(--slide);color:var(--fg);border:.4cqw solid var(--line);border-radius:1.8cqw;padding:2.6cqw;display:flex;flex-direction:column;gap:1.2cqw}
+.choice button:hover,.choice button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.choice button:focus-visible{outline:3px solid var(--mark);outline-offset:2px}
+.choice .ct{font-family:var(--f-display);font-weight:800;font-size:3.8cqw;color:var(--accent)}
+.choice .cd{font-size:2.2cqw;color:var(--muted);line-height:1.4}
+.ico{display:block;border:.45cqw solid var(--accent);background:var(--slide)}
+.ico.phone{width:5cqw;height:8.5cqw;border-radius:1cqw}
+.ico.pc{width:12cqw;height:7.5cqw;border-radius:.6cqw;border-bottom-width:1.4cqw}
+/* comandi */
+.bar{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;justify-content:center}
+.bar button{font:inherit;font-size:1.2rem;font-weight:700;padding:.75rem 1.4rem;border-radius:10px;border:2px solid var(--accent);background:var(--slide);color:var(--accent);cursor:pointer;min-height:48px}
+.bar button.primary{background:var(--accent);color:var(--slide)}
+.bar button:disabled{opacity:.35;cursor:default}
+.bar button:focus-visible{outline:3px solid var(--mark);outline-offset:2px}
+#count{font-variant-numeric:tabular-nums;color:var(--muted);min-width:4rem;text-align:center;font-size:1.1rem}
+@media (max-width:600px){.bar button{font-size:1rem;padding:.6rem 1rem}}
+.newtab{font-size:.75em;font-weight:700;color:var(--warn);white-space:nowrap}
+</style>
+</head><body>
+
+<div class="stage" id="stage">
+<section class="slide" data-path="all">
+  <span class="tag">Censimento 2026</span>
+  <h1>Il censimento online, passo dopo passo</h1>
+  <p class="sub">Con il cellulare o con il computer, usando SPID Poste o la carta d'identità elettronica</p>
+  <div class="cols" style="margin-top:auto">
+    <div class="card"><b>5 ott – 11 nov</b><span>Compilazione online</span></div>
+    <div class="card"><b>6 dicembre</b><span>Ultimo giorno online da soli</span></div>
+    <div class="card"><b>23 dicembre</b><span>Fine del censimento</span></div>
+  </div>
+  <p class="hl">Premi <b>Avanti</b> in basso per cominciare.</p>
+</section>
+<section class="slide" data-path="all" id="sceltaDev">
+  <h2>Scegli · <span style="color:var(--warn)">Con cosa vuoi compilare?</span></h2>
+  <div class="choice">
+    <button type="button" data-dev="cell" aria-pressed="false"><span class="ico phone"></span><span class="ct">Con il cellulare</span><span class="cd">Fai tutto sullo stesso telefono</span></button>
+    <button type="button" data-dev="pc" aria-pressed="false"><span class="ico pc"></span><span class="ct">Con il computer</span><span class="cd">Compili sul computer, il cellulare serve solo per entrare</span></button>
+  </div>
+  <p class="sub">Se non hai dimestichezza con nessuno dei due, fatti aiutare da un familiare o chiama il numero gratuito Istat 1510.</p>
+</section>
+<section class="slide" data-path="all" id="sceltaMet">
+  <h2>Scegli · <span style="color:var(--warn)">Con cosa vuoi entrare?</span></h2>
+  <div class="choice">
+    <button type="button" data-met="spid" aria-pressed="false"><span class="ct">SPID Poste</span><span class="cd">Hai lo SPID di Poste Italiane e l'app <b>PosteID</b> sul cellulare</span></button>
+    <button type="button" data-met="cie" aria-pressed="false"><span class="ct">Carta d'identità elettronica</span><span class="cd">Hai la carta, il suo <b>PIN</b> e l'app <b>CieID</b> sul cellulare</span></button>
+  </div>
+  <p class="sub">Non hai né SPID né CIE? Usa codice utente e password scritti sulla lettera Istat.</p>
+</section>
+<section class="slide step" data-path="cell-spid"><div class="crumbs"><span class="pill dev">Con il cellulare</span><span class="pill">SPID Poste</span></div><h2><span class="n"></span>Prepara queste cose</h2><ol><li>La <b>lettera Istat</b> arrivata a casa</li><li>Il <b>cellulare</b> carico e collegato a Internet</li><li>L'app <b>PosteID</b> già attivata sul cellulare</li><li>Il tuo <b>codice PosteID</b> (le cifre che usi per entrare)</li></ol><p class="hl">Fatti aiutare da un familiare se vuoi: puoi compilare insieme a lui.</p></section>
+<section class="slide step" data-path="cell-spid"><div class="crumbs"><span class="pill dev">Con il cellulare</span><span class="pill">SPID Poste</span></div><h2><span class="n"></span>Apri Internet sul cellulare</h2><div class="split"><div><ol><li>Tocca l'icona di <b>Chrome</b> (Android) o <b>Safari</b> (iPhone)</li><li>Tocca la <b>barra in alto</b>, dove si scrivono gli indirizzi</li><li>Scrivi o tocca: <a class="url" href="https://raccoltadati.istat.it/questionario/" target="_blank" rel="noopener" title="Si apre in una nuova pagina">raccoltadati.istat.it/questionario</a> <span class="newtab">↗ si apre in una nuova pagina</span></li><li>Tocca <span class="btn">Vai</span> sulla tastiera</li></ol></div><div class="mock phone" aria-hidden="true"><span class="mk-bar">raccoltadati.istat.it/questionario</span><span class="mk-q">Censimento 2026</span><span class="mk-b">Entra con SPID</span><span class="mk-b">Entra con CIE</span></div></div></section>
+<section class="slide" data-path="cell-spid"><div class="crumbs"><span class="pill dev">Con il cellulare</span><span class="pill">SPID Poste</span></div><h2>Come tornare a queste slide</h2><div class="split"><div><ul><li>Se tocchi il link dell'Istat, il questionario si apre in una <b>nuova scheda</b></li><li>Per tornare alle slide, tocca l'<b>icona delle schede</b>: un quadratino con un numero (Android) o due quadratini (iPhone)</li><li>Poi tocca la pagina <b>«Slide Censimento 2026»</b></li></ul></div><div class="mock phone" aria-hidden="true"><span class="mk-t">Schede aperte</span><span class="mk-b go">Slide Censimento 2026</span><span class="mk-b">Istat – Questionario</span></div></div></section>
+<section class="slide step" data-path="cell-spid"><div class="crumbs"><span class="pill dev">Con il cellulare</span><span class="pill">SPID Poste</span></div><h2><span class="n"></span>Tocca «Entra con SPID»</h2><div class="split"><div><ol><li>Scorri la pagina se non lo vedi</li><li>Tocca il pulsante <span class="btn">Entra con SPID</span></li><li>Compare un elenco di nomi: tocca <span class="btn">Poste ID</span></li></ol></div><div class="mock phone" aria-hidden="true"><span class="mk-bar">raccoltadati.istat.it</span><span class="mk-t">Scegli il gestore</span><span class="mk-b go">Poste ID</span><span class="mk-b">Aruba ID</span><span class="mk-b">Sielte ID</span></div></div></section>
+<section class="slide step" data-path="cell-spid"><div class="crumbs"><span class="pill dev">Con il cellulare</span><span class="pill">SPID Poste</span></div><h2><span class="n"></span>Scrivi i tuoi dati Poste</h2><div class="split"><div><ol><li>Scrivi la tua <b>email</b> (o nome utente) di PosteID</li><li>Scrivi la <b>password</b></li><li>Tocca <span class="btn">Entra con SPID</span></li></ol></div><div class="mock phone" aria-hidden="true"><span class="mk-bar">posteid.poste.it</span><span class="mk-t">PosteID</span><span class="mk-b">Email</span><span class="mk-b">Password</span><span class="mk-b go">Entra con SPID</span></div></div></section>
+<section class="slide step" data-path="cell-spid"><div class="crumbs"><span class="pill dev">Con il cellulare</span><span class="pill">SPID Poste</span></div><h2><span class="n"></span>Conferma sull'app PosteID</h2><div class="split"><div><ol><li>In alto sul cellulare compare un <b>avviso</b>: toccalo</li><li>Si apre l'app PosteID: tocca <span class="btn">Sì, autorizzo</span></li><li>Scrivi il tuo <b>codice PosteID</b></li></ol><p class="hl">L'avviso non compare? Apri tu l'app PosteID: la richiesta ti aspetta lì.</p></div><div class="mock phone" aria-hidden="true"><span class="mk-t">App PosteID</span><span class="mk-q">Richiesta di accesso: Istat</span><span class="mk-b go">Sì, autorizzo</span><span class="mk-b">No, nega</span></div></div></section>
+<section class="slide step" data-path="cell-spid"><div class="crumbs"><span class="pill dev">Con il cellulare</span><span class="pill">SPID Poste</span></div><h2><span class="n"></span>Torna su Internet e accetta</h2><div class="split"><div><ol><li>Torna a <b>Chrome</b> o <b>Safari</b>: spesso il cellulare ci torna da solo</li><li>Se no, tocca il tasto delle <b>app aperte</b> e scegli il browser</li><li>Tocca <span class="btn">Acconsento</span></li><li>Ora vedi il questionario</li></ol></div><div class="mock phone" aria-hidden="true"><span class="mk-bar">raccoltadati.istat.it</span><span class="mk-q">Dati inviati: nome, cognome, codice fiscale</span><span class="mk-b go">Acconsento</span><span class="mk-b">Annulla</span></div></div></section>
+<section class="slide step" data-path="pc-spid"><div class="crumbs"><span class="pill dev">Con il computer</span><span class="pill">SPID Poste</span></div><h2><span class="n"></span>Prepara queste cose</h2><ol><li>La <b>lettera Istat</b> arrivata a casa</li><li>Il <b>computer</b> acceso e collegato a Internet</li><li>Il <b>cellulare</b> vicino, con l'app <b>PosteID</b> attivata</li><li>Il tuo <b>codice PosteID</b></li></ol><p class="hl">Userai tutti e due: il computer per compilare, il cellulare solo per confermare chi sei.</p></section>
+<section class="slide step" data-path="pc-spid"><div class="crumbs"><span class="pill dev">Con il computer</span><span class="pill">SPID Poste</span></div><h2><span class="n"></span>Apri Internet sul computer</h2><div class="split"><div><ol><li>Fai doppio clic sull'icona di <b>Chrome</b>, <b>Edge</b> o <b>Firefox</b></li><li>Clicca sulla <b>barra in alto</b></li><li>Scrivi o fai doppio clic su: <a class="url" href="https://raccoltadati.istat.it/questionario/" target="_blank" rel="noopener" title="Si apre in una nuova pagina">raccoltadati.istat.it/questionario</a> <span class="newtab">↗ si apre in una nuova pagina</span></li><li>Premi il tasto <span class="btn">Invio</span></li></ol></div><div class="mock pc" aria-hidden="true"><span class="mk-bar">raccoltadati.istat.it/questionario</span><span class="mk-q">Censimento 2026</span><span class="mk-b">Entra con SPID</span><span class="mk-b">Entra con CIE</span></div></div></section>
+<section class="slide" data-path="pc-spid"><div class="crumbs"><span class="pill dev">Con il computer</span><span class="pill">SPID Poste</span></div><h2>Come tornare a queste slide</h2><div class="split"><div><ul><li>Se clicchi il link dell'Istat, il questionario si apre in una <b>nuova scheda</b>, in alto nella finestra</li><li>Le slide restano aperte nella scheda accanto</li><li>Per tornare qui, clicca in alto la scheda <b>«Slide Censimento 2026»</b></li></ul></div><div class="mock pc" aria-hidden="true"><span class="mk-dev" style="gap:.6cqw"><span class="mk-b go" style="font-size:1.4cqw">Slide Censimento 2026</span><span class="mk-b" style="font-size:1.4cqw">Istat – Questionario</span></span><span class="mk-q">Clicca qui in alto per cambiare pagina</span></div></div></section>
+<section class="slide step" data-path="pc-spid"><div class="crumbs"><span class="pill dev">Con il computer</span><span class="pill">SPID Poste</span></div><h2><span class="n"></span>Clicca «Entra con SPID»</h2><div class="split"><div><ol><li>Clicca <span class="btn">Entra con SPID</span></li><li>Nell'elenco che si apre clicca <span class="btn">Poste ID</span></li></ol></div><div class="mock pc" aria-hidden="true"><span class="mk-bar">raccoltadati.istat.it</span><span class="mk-t">Scegli il gestore</span><span class="mk-b go">Poste ID</span><span class="mk-b">Aruba ID</span></div></div></section>
+<section class="slide step" data-path="pc-spid"><div class="crumbs"><span class="pill dev">Con il computer</span><span class="pill">SPID Poste</span></div><h2><span class="n"></span>Prendi il cellulare e inquadra</h2><div class="split"><div><ol><li>Sul computer compare un <b>quadrato a puntini</b> (QR code)</li><li>Apri l'app <b>PosteID</b> sul cellulare</li><li>Tocca <b>Autorizza con QR code</b></li><li>Punta la fotocamera sul quadrato del computer</li></ol></div><div class="mk-dev"><div class="mock pc" aria-hidden="true"><span class="mk-t">PosteID</span><span class="mk-q">Inquadra con l'app</span><span class="mk-qr"></span></div><div class="mock phone" aria-hidden="true"><span class="mk-t">App PosteID</span><span class="mk-b go">Autorizza con QR code</span></div></div></div></section>
+<section class="slide step" data-path="pc-spid"><div class="crumbs"><span class="pill dev">Con il computer</span><span class="pill">SPID Poste</span></div><h2><span class="n"></span>Conferma sul cellulare</h2><div class="split"><div><ol><li>Sul cellulare tocca <span class="btn">Sì, autorizzo</span></li><li>Scrivi il tuo <b>codice PosteID</b></li><li>Poi <b>guarda di nuovo il computer</b></li></ol><p class="hl">Non trovi il QR code? Puoi scrivere email e password sul computer: poi arriva un avviso sul cellulare.</p></div><div class="mock phone" aria-hidden="true"><span class="mk-t">App PosteID</span><span class="mk-q">Richiesta di accesso: Istat</span><span class="mk-b go">Sì, autorizzo</span><span class="mk-b">No, nega</span></div></div></section>
+<section class="slide step" data-path="pc-spid"><div class="crumbs"><span class="pill dev">Con il computer</span><span class="pill">SPID Poste</span></div><h2><span class="n"></span>Accetta sul computer</h2><div class="split"><div><ol><li>Sul computer compare l'elenco dei dati inviati (nome, cognome, codice fiscale)</li><li>Clicca <span class="btn">Acconsento</span></li><li>Ora vedi il questionario</li></ol></div><div class="mock pc" aria-hidden="true"><span class="mk-bar">raccoltadati.istat.it</span><span class="mk-q">Dati inviati: nome, cognome, codice fiscale</span><span class="mk-b go">Acconsento</span></div></div></section>
+<section class="slide step" data-path="cell-cie"><div class="crumbs"><span class="pill dev">Con il cellulare</span><span class="pill">CIE</span></div><h2><span class="n"></span>Prepara queste cose</h2><ol><li>La <b>lettera Istat</b> arrivata a casa</li><li>La <b>carta d'identità elettronica</b> (CIE)</li><li>Il <b>PIN</b> della carta (8 cifre)</li><li>Il <b>cellulare</b> con l'app <b>CieID</b></li></ol><p class="hl">PIN: le prime 4 cifre sono sulla ricevuta della richiesta della carta, le ultime 4 nella busta con la carta.</p></section>
+<section class="slide step" data-path="cell-cie"><div class="crumbs"><span class="pill dev">Con il cellulare</span><span class="pill">CIE</span></div><h2><span class="n"></span>Apri Internet sul cellulare</h2><div class="split"><div><ol><li>Su Android controlla che l'<b>NFC</b> sia acceso (nelle Impostazioni)</li><li>Tocca l'icona di <b>Chrome</b> o <b>Safari</b></li><li>Tocca la <b>barra in alto</b></li><li>Scrivi o tocca: <a class="url" href="https://raccoltadati.istat.it/questionario/" target="_blank" rel="noopener" title="Si apre in una nuova pagina">raccoltadati.istat.it/questionario</a> <span class="newtab">↗ si apre in una nuova pagina</span></li><li>Tocca <span class="btn">Vai</span> sulla tastiera</li></ol></div><div class="mock phone" aria-hidden="true"><span class="mk-bar">raccoltadati.istat.it/questionario</span><span class="mk-q">Censimento 2026</span><span class="mk-b">Entra con SPID</span><span class="mk-b">Entra con CIE</span></div></div></section>
+<section class="slide" data-path="cell-cie"><div class="crumbs"><span class="pill dev">Con il cellulare</span><span class="pill">CIE</span></div><h2>Come tornare a queste slide</h2><div class="split"><div><ul><li>Se tocchi il link dell'Istat, il questionario si apre in una <b>nuova scheda</b></li><li>Per tornare alle slide, tocca l'<b>icona delle schede</b>: un quadratino con un numero (Android) o due quadratini (iPhone)</li><li>Poi tocca la pagina <b>«Slide Censimento 2026»</b></li></ul></div><div class="mock phone" aria-hidden="true"><span class="mk-t">Schede aperte</span><span class="mk-b go">Slide Censimento 2026</span><span class="mk-b">Istat – Questionario</span></div></div></section>
+<section class="slide step" data-path="cell-cie"><div class="crumbs"><span class="pill dev">Con il cellulare</span><span class="pill">CIE</span></div><h2><span class="n"></span>Tocca «Entra con CIE»</h2><div class="split"><div><ol><li>Tocca <span class="btn">Entra con CIE</span></li><li>Se la pagina lo chiede, tocca <span class="btn">Prosegui</span></li><li>Si apre da sola l'app <b>CieID</b></li></ol></div><div class="mock phone" aria-hidden="true"><span class="mk-bar">raccoltadati.istat.it</span><span class="mk-q">Censimento 2026</span><span class="mk-b">Entra con SPID</span><span class="mk-b go">Entra con CIE</span></div></div></section>
+<section class="slide step" data-path="cell-cie"><div class="crumbs"><span class="pill dev">Con il cellulare</span><span class="pill">CIE</span></div><h2><span class="n"></span>Scrivi il PIN</h2><div class="split"><div><ol><li>Nell'app CieID scrivi le <b>8 cifre del PIN</b></li><li>Scrivile con calma: dopo 3 errori la carta si blocca</li></ol><p class="hl">Hai già registrato la carta nell'app? Basta il <b>codice di sblocco</b> o l'impronta: salta la slide successiva.</p></div><div class="mock phone" aria-hidden="true"><span class="mk-t">App CieID</span><span class="mk-q">Inserisci il PIN</span><span class="mk-pin"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="mk-b go">Prosegui</span></div></div></section>
+<section class="slide step" data-path="cell-cie"><div class="crumbs"><span class="pill dev">Con il cellulare</span><span class="pill">CIE</span></div><h2><span class="n"></span>Appoggia la carta al cellulare</h2><div class="split"><div><ol><li>Appoggia la carta sul <b>retro del cellulare</b>, nella parte alta</li><li><b>Tienila ferma</b> finché il telefono non conferma</li><li>Se non legge, spostala piano di poco e riprova</li></ol></div><div class="mock phone" aria-hidden="true"><span class="mk-t">App CieID</span><span class="mk-q">Appoggia la carta sul retro</span><span class="mk-card">CIE</span><span class="mk-b">Lettura in corso…</span></div></div></section>
+<section class="slide step" data-path="cell-cie"><div class="crumbs"><span class="pill dev">Con il cellulare</span><span class="pill">CIE</span></div><h2><span class="n"></span>Torna su Internet e accetta</h2><div class="split"><div><ol><li>Il cellulare torna da solo al browser</li><li>Se no, tocca il tasto delle <b>app aperte</b> e scegli Chrome o Safari</li><li>Tocca <span class="btn">Prosegui</span> / <span class="btn">Acconsento</span></li><li>Ora vedi il questionario</li></ol></div><div class="mock phone" aria-hidden="true"><span class="mk-bar">raccoltadati.istat.it</span><span class="mk-q">Dati inviati: nome, cognome, codice fiscale</span><span class="mk-b go">Prosegui</span></div></div></section>
+<section class="slide step" data-path="pc-cie"><div class="crumbs"><span class="pill dev">Con il computer</span><span class="pill">CIE</span></div><h2><span class="n"></span>Prepara queste cose</h2><ol><li>La <b>lettera Istat</b> e la <b>carta d'identità elettronica</b></li><li>Il <b>PIN</b> della carta (8 cifre)</li><li>Il <b>computer</b> collegato a Internet</li><li>Il <b>cellulare</b> con l'app <b>CieID</b></li></ol><p class="hl">Il computer serve per compilare, il cellulare e la carta solo per entrare.</p></section>
+<section class="slide step" data-path="pc-cie"><div class="crumbs"><span class="pill dev">Con il computer</span><span class="pill">CIE</span></div><h2><span class="n"></span>Apri Internet sul computer</h2><div class="split"><div><ol><li>Fai doppio clic sull'icona di <b>Chrome</b>, <b>Edge</b> o <b>Firefox</b></li><li>Clicca sulla <b>barra in alto</b></li><li>Scrivi o fai doppio clic su: <a class="url" href="https://raccoltadati.istat.it/questionario/" target="_blank" rel="noopener" title="Si apre in una nuova pagina">raccoltadati.istat.it/questionario</a> <span class="newtab">↗ si apre in una nuova pagina</span></li><li>Premi il tasto <span class="btn">Invio</span></li></ol></div><div class="mock pc" aria-hidden="true"><span class="mk-bar">raccoltadati.istat.it/questionario</span><span class="mk-q">Censimento 2026</span><span class="mk-b">Entra con SPID</span><span class="mk-b">Entra con CIE</span></div></div></section>
+<section class="slide" data-path="pc-cie"><div class="crumbs"><span class="pill dev">Con il computer</span><span class="pill">CIE</span></div><h2>Come tornare a queste slide</h2><div class="split"><div><ul><li>Se clicchi il link dell'Istat, il questionario si apre in una <b>nuova scheda</b>, in alto nella finestra</li><li>Le slide restano aperte nella scheda accanto</li><li>Per tornare qui, clicca in alto la scheda <b>«Slide Censimento 2026»</b></li></ul></div><div class="mock pc" aria-hidden="true"><span class="mk-dev" style="gap:.6cqw"><span class="mk-b go" style="font-size:1.4cqw">Slide Censimento 2026</span><span class="mk-b" style="font-size:1.4cqw">Istat – Questionario</span></span><span class="mk-q">Clicca qui in alto per cambiare pagina</span></div></div></section>
+<section class="slide step" data-path="pc-cie"><div class="crumbs"><span class="pill dev">Con il computer</span><span class="pill">CIE</span></div><h2><span class="n"></span>Clicca «Entra con CIE»</h2><div class="split"><div><ol><li>Clicca <span class="btn">Entra con CIE</span></li><li>Scegli l'accesso con lo <b>smartphone</b> (app CieID)</li><li>Sul computer compare un <b>quadrato a puntini</b> (QR code)</li></ol></div><div class="mock pc" aria-hidden="true"><span class="mk-t">Accesso con CIE</span><span class="mk-q">Entra con CIE</span><span class="mk-qr"></span></div></div></section>
+<section class="slide step" data-path="pc-cie"><div class="crumbs"><span class="pill dev">Con il computer</span><span class="pill">CIE</span></div><h2><span class="n"></span>Inquadra con il cellulare</h2><div class="split"><div><ol><li>Apri l'app <b>CieID</b> sul cellulare</li><li>Tocca <b>Inquadra il QR code</b></li><li>Punta la fotocamera sul quadrato del computer</li></ol></div><div class="mk-dev"><div class="mock pc" aria-hidden="true"><span class="mk-t">Accesso CIE</span><span class="mk-qr"></span></div><div class="mock phone" aria-hidden="true"><span class="mk-t">App CieID</span><span class="mk-b go">Inquadra il QR code</span></div></div></div></section>
+<section class="slide step" data-path="pc-cie"><div class="crumbs"><span class="pill dev">Con il computer</span><span class="pill">CIE</span></div><h2><span class="n"></span>PIN e carta sul cellulare</h2><div class="split"><div><ol><li>Sul cellulare scrivi le <b>8 cifre del PIN</b></li><li>Appoggia la carta sul <b>retro del cellulare</b>, in alto</li><li><b>Tienila ferma</b> finché non conferma</li></ol><p class="alert">Dopo 3 PIN sbagliati la carta si blocca: si sblocca con il <b>PUK</b>.</p></div><div class="mock phone" aria-hidden="true"><span class="mk-t">App CieID</span><span class="mk-pin"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="mk-card">CIE</span><span class="mk-b">Lettura in corso…</span></div></div></section>
+<section class="slide step" data-path="pc-cie"><div class="crumbs"><span class="pill dev">Con il computer</span><span class="pill">CIE</span></div><h2><span class="n"></span>Accetta sul computer</h2><div class="split"><div><ol><li><b>Guarda di nuovo il computer</b></li><li>Clicca <span class="btn">Prosegui</span> / <span class="btn">Acconsento</span></li><li>Ora vedi il questionario</li></ol></div><div class="mock pc" aria-hidden="true"><span class="mk-bar">raccoltadati.istat.it</span><span class="mk-q">Dati inviati: nome, cognome, codice fiscale</span><span class="mk-b go">Prosegui</span></div></div></section>
+<section class="slide step" data-path="all-after"><div class="crumbs" data-crumbs></div><h2><span class="n"></span>Rispondi alle domande</h2><ol><li><b>Chi vive in casa</b>: controlla l'elenco, aggiungi o togli persone</li><li><b>La casa</b>: alcune notizie sull'abitazione</li><li><b>Ogni persona</b>: studio, lavoro, come si sposta</li></ol><p class="hl">Rispondi pensando a com'era la famiglia il <b>4 ottobre 2026</b>.</p></section>
+<section class="slide step" data-path="all-after"><div class="crumbs" data-crumbs></div><h2><span class="n"></span>Vai avanti con calma</h2><ol><li>Usa i pulsanti <span class="btn">Avanti</span> e <span class="btn">Indietro</span> del questionario</li><li>Puoi fermarti e rientrare dopo: ritrovi quello che hai scritto</li><li>Se una risposta manca, il questionario te lo segnala</li></ol></section>
+<section class="slide step" data-path="all-after"><div class="crumbs" data-crumbs></div><h2><span class="n"></span>Invia e salva la ricevuta</h2><ol><li>Alla fine tocca <span class="btn">Invia</span></li><li>Salva o fatti mandare per email la <b>ricevuta</b></li><li>Fatto! Non devi fare altro</li></ol><p class="hl">Conserva la ricevuta: dimostra che hai risposto.</p></section>
+<section class="slide" data-path="all-after"><h2>E l'app IO?</h2>
+  <ul><li>L'app IO <b>non serve</b> per il censimento</li><li>Per SPID Poste serve l'app <b>PosteID</b>, per la carta d'identità l'app <b>CieID</b></li><li>Scrivi tu l'indirizzo del questionario: non usare link arrivati per SMS o email</li></ul>
+  <p class="alert"><strong>Mai</strong> dire a nessuno password, codice PosteID o PIN della carta, nemmeno al rilevatore. Il rilevatore vero ha un tesserino e un tablet.</p></section>
+<section class="slide" data-path="all-after"><h2>Serve aiuto?</h2>
+  <div class="cols" style="grid-template-columns:repeat(2,1fr)">
+    <div class="card"><a class="big" href="tel:1510">1510</a><span>Numero Istat gratuito. Lunedì–sabato, ore 9–21</span></div>
+    <div class="card"><a href="mailto:censimento.lista@istat.it" style="font-size:2.1cqw;font-weight:700;color:var(--accent);word-break:break-all">censimento.lista@istat.it</a><span>Scrivi il codice questionario della lettera</span></div>
+  </div>
+  <p>Dal <b>12 novembre</b> chi non ha risposto viene contattato da un rilevatore.</p>
+  <p class="sub"><a href="https://raccoltadati.istat.it/questionario/" target="_blank" rel="noopener" title="Si apre in una nuova pagina">Vai al questionario</a> <span class="newtab">↗ si apre in una nuova pagina</span> · Rispondere è obbligatorio (sanzioni da 206 a 2.065 €).</p>
+</section>
+</div>
+
+<div class="bar">
+  <button id="prev" type="button" aria-label="Slide precedente">← Indietro</button>
+  <span id="count" aria-live="polite">1 / 1</span>
+  <button id="next" class="primary" type="button" aria-label="Slide successiva">Avanti →</button>
+  <button id="change" type="button">Cambia scelte</button>
+</div>
+<script>
+(function(){
+  var all=[].slice.call(document.querySelectorAll('.slide'));
+  var dev=null, met=null, seq=[], i=0;
+  var prev=document.getElementById('prev'), next=document.getElementById('next'), count=document.getElementById('count');
+  var sDev=document.getElementById('sceltaDev'), sMet=document.getElementById('sceltaMet');
+  var DEV={cell:'Con il cellulare',pc:'Con il computer'}, MET={spid:'SPID Poste',cie:'CIE'};
+  all.forEach(function(s){if(s!==all[0]){var f=document.createElement('div');f.className='foot';f.innerHTML='<span>Censimento 2026 · Guida passo passo</span><span class="pg"></span>';s.appendChild(f)}});
+  function build(){
+    var key=dev&&met?dev+'-'+met:null;
+    seq=all.filter(function(s){var p=s.getAttribute('data-path');return p==='all'||(key&&(p===key||p==='all-after'))});
+    var k=0, steps=seq.filter(function(s){return s.classList.contains('step')}).length;
+    seq.forEach(function(s){if(s.classList.contains('step')){k++;s.querySelector('.n').textContent=k}});
+    [].forEach.call(document.querySelectorAll('[data-crumbs]'),function(c){c.innerHTML=key?'<span class="pill dev">'+DEV[dev]+'</span><span class="pill">'+MET[met]+'</span>':''});
+  }
+  function show(n){
+    i=Math.max(0,Math.min(seq.length-1,n));
+    all.forEach(function(s){s.hidden=s!==seq[i]});
+    seq.forEach(function(s,k){var pg=s.querySelector('.pg');if(pg)pg.textContent=(k+1)+' / '+seq.length});
+    count.textContent=(i+1)+' / '+seq.length;
+    prev.disabled=i===0;
+    var cur=seq[i];
+    next.disabled=(cur===sDev&&!dev)||(cur===sMet&&!met)||i===seq.length-1;
+  }
+  function press(attr,val){[].forEach.call(document.querySelectorAll('['+attr+']'),function(b){b.setAttribute('aria-pressed',b.getAttribute(attr)===val?'true':'false')})}
+  [].forEach.call(document.querySelectorAll('[data-dev]'),function(b){b.onclick=function(){dev=b.getAttribute('data-dev');press('data-dev',dev);build();show(seq.indexOf(sMet))}});
+  [].forEach.call(document.querySelectorAll('[data-met]'),function(b){b.onclick=function(){met=b.getAttribute('data-met');press('data-met',met);build();show(seq.indexOf(sMet)+1)}});
+  prev.onclick=function(){show(i-1)}; next.onclick=function(){if(!next.disabled)show(i+1)};
+  document.getElementById('change').onclick=function(){show(seq.indexOf(sDev))};
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();next.onclick()}
+    if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();show(i-1)}
+  });
+  var x0=null, st=document.getElementById('stage');
+  st.addEventListener('touchstart',function(e){x0=e.touches[0].clientX},{passive:true});
+  st.addEventListener('touchend',function(e){if(x0===null)return;var d=e.changedTouches[0].clientX-x0;if(Math.abs(d)>60){if(d<0)next.onclick();else show(i-1)}x0=null});
+  [].forEach.call(document.querySelectorAll('a[target="_blank"]'),function(a){var t=0;a.addEventListener('click',function(e){var n=Date.now();if(n-t<1500)e.preventDefault();t=n})});
+  build(); show(0);
+})();
+</script>
+</body></html>
