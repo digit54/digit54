@@ -34,6 +34,7 @@ const DATI = {
     { "nome": "VueltaEspana2026_Startlist", "file": "VueltaEspana2026_Startlist.html" }
   ],
   "Tutto_Pdf": [
+    { "nome": "Convertitore_Jpg_To_Pdf_v1.3", "file": "Convertitore_Jpg_To_Pdf_v1.3.html" },
     { "nome": "Estrae & Unisce file.Pdf v.2.4", "file": "Estrae & Unisce file.Pdf v.2.4.html" },
     { "nome": "Jpg to Pdf", "file": "Jpg to Pdf.html" },
     { "nome": "Tutto_Pdf", "file": "Tutto_Pdf.html" }
@@ -41,6 +42,7 @@ const DATI = {
   "Utility": [
     { "nome": "Calcola proporzioni", "file": "Calcola proporzioni.html" },
     { "nome": "Crea Gif Move V1.5", "file": "Crea Gif Move V1.5.html" },
+    { "nome": "Il censimento online, passo dopo passo", "file": "Il censimento online, passo dopo passo.html" },
     { "nome": "Multi-Screenshot", "file": "Multi-Screenshot.html" },
     { "nome": "QR_Toolbox", "file": "QR_Toolbox.html" },
     { "nome": "Suite Percentuali", "file": "Suite Percentuali.html" },
