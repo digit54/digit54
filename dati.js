@@ -30,8 +30,7 @@ const DATI = {
     { "nome": "chimica & Tavola periodica degli elementi v. 2.0", "file": "chimica & Tavola periodica degli elementi v. 2.0.html" }
   ],
   "Sport": [
-    { "nome": "Interval Timer Fitness", "file": "Interval Timer Fitness.html" },
-    { "nome": "VueltaEspana2026_Startlist", "file": "VueltaEspana2026_Startlist.html" }
+    { "nome": "Coppa_del_Mondo_Sci_2026-27", "file": "Coppa_del_Mondo_Sci_2026-27.html" }
   ],
   "Tutto_Pdf": [
     { "nome": "Convertitore_Jpg_To_Pdf_v1.3", "file": "Convertitore_Jpg_To_Pdf_v1.3.html" },
