@@ -8,6 +8,7 @@ const DATI = {
     { "nome": "Da Voce a Testo", "file": "Da Voce a Testo.html" }
   ],
   "Farlocche": [
+    { "nome": "Effetto_Ottico_leggero", "file": "Effetto_Ottico_leggero.html" },
     { "nome": "Giochino_screenv02", "file": "Giochino_screenv02.html" },
     { "nome": "Misura riflessi", "file": "Misura riflessi.html" },
     { "nome": "Pigreco - Cerca le cifre", "file": "Pigreco - Cerca le cifre.html" },
