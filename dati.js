@@ -42,7 +42,7 @@ const DATI = {
   "Utility": [
     { "nome": "Calcola proporzioni", "file": "Calcola proporzioni.html" },
     { "nome": "Crea Gif Move V1.5", "file": "Crea Gif Move V1.5.html" },
-    { "nome": "Digit54 Lente", "file": "Digit54 Lente.html" },
+    { "nome": "Digit54_Lente_V1.1", "file": "Digit54_Lente_V1.1.html" },
     { "nome": "Il censimento online passo dopo passo", "file": "Il censimento online passo dopo passo.html" },
     { "nome": "Multi-Screenshot", "file": "Multi-Screenshot.html" },
     { "nome": "QR_Toolbox", "file": "QR_Toolbox.html" },

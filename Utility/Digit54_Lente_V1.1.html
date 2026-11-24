@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Digit54 Lente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: strumento pratico, chiaro, per occhi stanchi
+   IDEA: una lente da banco da elettronico — vetro grande, manopole sotto
+   PICTURE: il riquadro ingrandito occupa quasi tutto lo schermo
+   COLOUR and TYPE: nero antracite + giallo segnale; Atkinson Hyperlegible (fatto per ipovedenti)
+   LAYOUT: barra sottile, vetro, pannello comandi in basso a portata di pollice */
+:root{color-scheme:dark;--bg:#121417;--panel:#1c1f24;--line:#2c3138;--ink:#f3f1ea;--dim:#a6abb3;--acc:#ffd23f;--accInk:#1a1600}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 "Atkinson Hyperlegible",system-ui,sans-serif;overflow:hidden;display:flex;flex-direction:column;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+header{display:flex;align-items:center;justify-content:space-between;padding:8px 14px}
+header h1{font-size:20px;margin:0;font-weight:700}
+header h1 b{color:var(--acc)}
+header small{color:var(--dim);font-size:13px}
+#stage{position:relative;flex:1;margin:0 10px;border-radius:18px;overflow:hidden;background:#000;touch-action:none;border:2px solid var(--line)}
+#layer{position:absolute;inset:0;transform-origin:50% 50%;will-change:transform}
+#layer>*{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+#empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;color:var(--dim)}
+#empty svg{width:min(46vw,190px);height:auto}
+#empty p{margin:0;max-width:30ch;font-size:17px}
+#empty p b{color:var(--ink)}
+#badge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.6);color:var(--acc);font-weight:700;font-size:18px;padding:4px 10px;border-radius:10px;pointer-events:none}
+#msg{position:absolute;left:10px;right:10px;bottom:10px;background:rgba(20,20,20,.9);border:1px solid var(--line);color:var(--ink);padding:10px 12px;border-radius:12px;font-size:15px}
+[hidden]{display:none!important}
+#msg{bottom:auto;top:52px}
+.panel{background:var(--panel);margin:10px;border-radius:18px;padding:12px;display:grid;gap:10px;border:1px solid var(--line)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row label{color:var(--dim);font-size:14px;width:56px;flex:none}
+input[type=range]{flex:1;height:44px;accent-color:var(--acc)}
+.val{width:58px;text-align:right;font-weight:700;font-size:18px;color:var(--acc);white-space:nowrap}
+button{font:inherit;font-weight:700;font-size:16px;min-height:46px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:#262a31;color:var(--ink);flex:1 1 auto;cursor:pointer}
+button:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+button.on{background:var(--acc);color:var(--accInk);border-color:var(--acc)}
+button.main{background:var(--acc);color:var(--accInk);border-color:var(--acc)}
+button:disabled{opacity:.4}
+.seg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;width:100%}
+.seg button{font-size:14px;padding:0 4px}
+input[type=file]{display:none}
+@media(prefers-reduced-motion:no-preference){#layer.ease{transition:transform .18s ease-out}}
+</style>
+</head>
+<body>
+<header><h1>Digit54 <b>Lente</b></h1><small>V.1.1</small></header>
+
+<div id="stage">
+  <div id="layer">
+    <video id="vid" playsinline muted hidden></video>
+    <canvas id="cv" hidden></canvas>
+    <img id="img" alt="Foto da ingrandire" hidden>
+  </div>
+  <div id="empty">
+    <svg viewBox="0 0 200 200" aria-hidden="true">
+      <circle cx="84" cy="84" r="62" fill="#1d232b" stroke="#ffd23f" stroke-width="12"/>
+      <circle cx="84" cy="84" r="50" fill="#26303b"/>
+      <path d="M52 66a40 40 0 0 1 28-20" stroke="#fff" stroke-opacity=".5" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <text x="84" y="98" text-anchor="middle" font-size="40" font-weight="700" fill="#f3f1ea" font-family="Atkinson Hyperlegible,sans-serif">Aa</text>
+      <rect x="128" y="126" width="22" height="64" rx="9" transform="rotate(-45 139 158)" fill="#ffd23f"/>
+    </svg>
+    <p>Tocca <b>Fotocamera</b> per la lente dal vivo, oppure <b>Foto</b> per scattare e ingrandire.</p>
+  </div>
+  <div id="badge" hidden>1,0×</div>
+  <div id="msg" hidden></div>
+</div>
+
+<div class="panel">
+  <div class="row"><label for="zoom">Zoom</label><input id="zoom" type="range" min="1" max="10" step="0.1" value="1"><span class="val" id="zv">1,0×</span></div>
+  <div class="row"><label for="lum">Luce</label><input id="lum" type="range" min="0.6" max="2" step="0.05" value="1"><span class="val" id="lv">100%</span></div>
+  <div class="seg" role="group" aria-label="Visione">
+    <button data-m="normal" class="on">Normale</button>
+    <button data-m="contr">Contrasto</button>
+    <button data-m="neg">Negativo</button>
+    <button data-m="gial">Giallo</button>
+  </div>
+  <div class="row">
+    <button id="bCam" class="main">Fotocamera</button>
+    <button id="bFoto">Foto</button>
+    <button id="bFreeze" disabled>Blocca</button>
+    <button id="bTorch" disabled>Flash</button>
+  </div>
+  <input id="file" type="file" accept="image/*" capture="environment">
+</div>
+
+<script>
+{
+const $=id=>document.getElementById(id);
+const stage=$('stage'),layer=$('layer'),vid=$('vid'),cv=$('cv'),img=$('img'),msg=$('msg'),badge=$('badge'),empty=$('empty');
+const zoomIn=$('zoom'),lumIn=$('lum');
+let z=1,tx=0,ty=0,light=1,mode='normal',src='none',frozen=false;
+let stream=null,track=null,hw=null,hzCur=1,torch=false,msgT=0;
+const FILT={normal:'',contr:'grayscale(1) contrast(2)',neg:'grayscale(1) invert(1) contrast(1.7)',gial:'grayscale(1) invert(1) sepia(1) saturate(7) hue-rotate(2deg) contrast(1.4)'};
+const fmt=n=>n.toFixed(1).replace('.',',')+'×';
+
+function say(t,ms=4500){msg.textContent=t;msg.hidden=false;clearTimeout(msgT);if(ms)msgT=setTimeout(()=>msg.hidden=true,ms)}
+function showEl(el){[vid,cv,img].forEach(e=>e.hidden=e!==el);empty.hidden=!el;badge.hidden=!el}
+
+function cssScale(){return (src==='live'&&hw)?z/hzCur:z}
+function clamp(){
+  const s=cssScale(),r=stage.getBoundingClientRect();
+  const mx=r.width*(s-1)/2,my=r.height*(s-1)/2;
+  tx=Math.max(-mx,Math.min(mx,tx));ty=Math.max(-my,Math.min(my,ty));
+}
+let hwPending=false;
+function applyHw(){
+  if(!(src==='live'&&hw&&!frozen&&track)||hwPending)return;
+  const want=Math.max(hw.min,Math.min(z,hw.max));
+  if(Math.abs(want-hzCur)<0.05)return;
+  hwPending=true;
+  track.applyConstraints({advanced:[{zoom:want}]}).then(()=>{hzCur=want}).catch(()=>{hw=null;hzCur=1})
+    .finally(()=>{hwPending=false;render();applyHw()});
+}
+function render(){
+  clamp();
+  layer.style.transform=`translate(${tx}px,${ty}px) scale(${cssScale()})`;
+  layer.style.filter=(FILT[mode]+` brightness(${light})`).trim();
+  zoomIn.value=z;$('zv').textContent=fmt(z);badge.textContent=fmt(z)+(frozen?' · bloccata':'');
+  $('lv').textContent=Math.round(light*100)+'%';
+}
+function setZoom(v){z=Math.max(1,Math.min(10,v));applyHw();render()}
+
+/* --- Fotocamera dal vivo --- */
+async function startCam(){
+  const inFrame=window.top!==window.self;
+  if(!window.isSecureContext){say('La pagina non è aperta da https: la fotocamera dal vivo non parte. Usa il tasto Foto.',0);return}
+  if(!navigator.mediaDevices?.getUserMedia){say('Questo browser non dà accesso alla fotocamera. Aprila in Chrome, oppure usa il tasto Foto.',0);return}
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:3840},height:{ideal:2160}}});
+  }catch(e){
+    const why=e.name==='NotAllowedError'?(inFrame?'La pagina è dentro un riquadro (iframe) del sito senza permesso camera: aprila direttamente.':'Permesso fotocamera negato: abilitalo dal lucchetto accanto all\'indirizzo.'):
+      e.name==='NotFoundError'?'Nessuna fotocamera trovata.':e.name==='NotReadableError'?'La fotocamera è usata da un\'altra app: chiudila e riprova.':('Errore: '+e.name);
+    say(why+' Intanto puoi usare il tasto Foto.',0);
+    return;
+  }
+  track=stream.getVideoTracks()[0];
+  const cap=track.getCapabilities?track.getCapabilities():{};
+  if(cap.focusMode&&cap.focusMode.includes('continuous'))track.applyConstraints({advanced:[{focusMode:'continuous'}]}).catch(()=>{});
+  hw=cap.zoom?{min:cap.zoom.min||1,max:cap.zoom.max||1}:null;hzCur=hw?(track.getSettings().zoom||1):1;
+  $('bTorch').disabled=!cap.torch;
+  vid.srcObject=stream;await vid.play().catch(()=>{});
+  src='live';frozen=false;showEl(vid);
+  $('bCam').textContent='Spegni';$('bCam').classList.remove('main');$('bFreeze').disabled=false;$('bFreeze').classList.remove('on');$('bFreeze').textContent='Blocca';
+  msg.hidden=true;setZoom(z);
+}
+function stopCam(){
+  if(stream)stream.getTracks().forEach(t=>t.stop());
+  stream=track=null;hw=null;hzCur=1;torch=false;
+  $('bTorch').disabled=true;$('bTorch').classList.remove('on');
+  $('bCam').textContent='Fotocamera';$('bCam').classList.add('main');
+  if(src==='live'){src='none';frozen=false;showEl(null);$('bFreeze').disabled=true}
+}
+$('bCam').onclick=()=>stream?stopCam():startCam();
+
+function grabFrame(){cv.width=vid.videoWidth;cv.height=vid.videoHeight;cv.getContext('2d').drawImage(vid,0,0)}
+$('bFreeze').onclick=async()=>{
+  if(src!=='live')return;
+  frozen=!frozen;
+  if(frozen){
+    grabFrame();showEl(cv);
+    /* foto a piena risoluzione del sensore, se il browser lo permette */
+    if(window.ImageCapture&&track){
+      try{const bmp=await createImageBitmap(await new ImageCapture(track).takePhoto());
+        if(frozen){cv.width=bmp.width;cv.height=bmp.height;cv.getContext('2d').drawImage(bmp,0,0)}}catch(e){}
+    }
+  }
+  else{showEl(vid);applyHw()}
+  $('bFreeze').classList.toggle('on',frozen);$('bFreeze').textContent=frozen?'Riprendi':'Blocca';render();
+};
+
+$('bTorch').onclick=async()=>{
+  if(!track)return;
+  try{await track.applyConstraints({advanced:[{torch:!torch}]});torch=!torch;$('bTorch').classList.toggle('on',torch)}
+  catch(e){say('Flash non controllabile su questo telefono.')}
+};
+
+/* --- Foto da ingrandire --- */
+$('bFoto').onclick=()=>$('file').click();
+$('file').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  stopCam();
+  if(img.dataset.url)URL.revokeObjectURL(img.dataset.url);
+  const u=URL.createObjectURL(f);img.dataset.url=u;img.src=u;
+  img.onload=()=>{src='photo';frozen=false;showEl(img);$('bFreeze').disabled=true;tx=ty=0;setZoom(Math.max(z,2.5));say('Allarga con due dita o usa lo slider; trascina per spostarti.',3500)};
+  e.target.value='';
+};
+
+/* --- Comandi --- */
+zoomIn.oninput=()=>setZoom(+zoomIn.value);
+lumIn.oninput=()=>{light=+lumIn.value;render()};
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{
+  mode=b.dataset.m;document.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x===b));render();
+});
+
+/* --- Gesti: trascina, pizzica, doppio tocco --- */
+const pts=new Map();let pinch0=0,z0=1,lastTap=0;
+stage.addEventListener('pointerdown',e=>{
+  if(src==='none')return;
+  stage.setPointerCapture(e.pointerId);pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pts.size===2){const [a,b]=[...pts.values()];pinch0=Math.hypot(a.x-b.x,a.y-b.y);z0=z}
+  if(pts.size===1){const now=Date.now();if(now-lastTap<300){layer.classList.add('ease');tx=ty=0;setZoom(z>1.5?1:3);setTimeout(()=>layer.classList.remove('ease'),220)}lastTap=now}
+});
+stage.addEventListener('pointermove',e=>{
+  const p=pts.get(e.pointerId);if(!p)return;
+  if(pts.size===1){tx+=e.clientX-p.x;ty+=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;render();return}
+  p.x=e.clientX;p.y=e.clientY;
+  if(pts.size===2&&pinch0){const [a,b]=[...pts.values()];setZoom(z0*Math.hypot(a.x-b.x,a.y-b.y)/pinch0)}
+});
+const up=e=>{pts.delete(e.pointerId);if(pts.size<2)pinch0=0};
+stage.addEventListener('pointerup',up);stage.addEventListener('pointercancel',up);
+stage.addEventListener('wheel',e=>{if(src==='none')return;e.preventDefault();setZoom(z*(e.deltaY<0?1.1:0.9))},{passive:false});
+
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&stream)stopCam()});
+new ResizeObserver(render).observe(stage);
+render();
+}
+</script>
+</body>
+</html>
